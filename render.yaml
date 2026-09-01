@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: fams
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /up
+    envVars:
+      - key: APP_NAME
+        value: FAMS
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: fams-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: fams-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: fams-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: fams-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: fams-db
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: SANCTUM_STATEFUL_DOMAINS
+        sync: false
+      - key: MAIL_MAILER
+        value: log
+    disk:
+      name: fams-documents
+      mountPath: /var/www/html/storage/app/documents
+      sizeGB: 10
+
+databases:
+  - name: fams-db
+    plan: starter
+    postgresMajorVersion: "16"

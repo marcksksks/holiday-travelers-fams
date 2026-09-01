@@ -1,0 +1,213 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        @apply bg-background;
+    }
+
+    body {
+        @apply bg-background font-body text-slate-700 antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-heading text-primary;
+    }
+
+    button,
+    input[type="submit"],
+    input[type="button"] {
+        @apply font-button;
+    }
+
+    ::selection {
+        @apply bg-accent/30 text-primary;
+    }
+}
+
+@layer components {
+
+    /* =========================
+       CARDS
+    ========================== */
+
+    .card {
+        @apply rounded-2xl border border-border bg-card shadow-card;
+    }
+
+    .card-hover {
+        @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-soft;
+    }
+
+
+    /* =========================
+       BUTTONS
+    ========================== */
+
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2
+               rounded-xl bg-primary px-4 py-2.5
+               font-button text-sm font-medium text-white
+               shadow-sm transition-all duration-200
+               hover:bg-[#0F315C]
+               active:scale-[0.98]
+               focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2
+               rounded-xl bg-secondary px-4 py-2.5
+               font-button text-sm font-medium text-white
+               shadow-sm transition-all duration-200
+               hover:bg-[#E08A3B]
+               active:scale-[0.98]
+               focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:ring-offset-2;
+    }
+
+    .btn-outline {
+        @apply inline-flex items-center justify-center gap-2
+               rounded-xl border border-border bg-white px-4 py-2.5
+               font-button text-sm font-medium text-primary
+               transition-all duration-200
+               hover:border-accent hover:bg-sky-50
+               active:scale-[0.98];
+    }
+
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2
+               rounded-xl bg-error px-4 py-2.5
+               font-button text-sm font-medium text-white
+               transition-all duration-200
+               hover:bg-red-600
+               active:scale-[0.98];
+    }
+
+
+    /* =========================
+       FORMS
+    ========================== */
+
+    .input {
+        @apply w-full rounded-xl border border-border
+               bg-white px-3.5 py-2.5
+               font-body text-sm text-primary
+               outline-none transition-all duration-200
+               placeholder:text-slate-400
+               focus:border-accent focus:ring-2 focus:ring-accent/25;
+    }
+
+    .label {
+        @apply mb-1.5 block font-body text-sm font-medium text-primary;
+    }
+
+    select.input {
+        @apply cursor-pointer;
+    }
+
+    textarea.input {
+        @apply resize-y;
+    }
+
+
+    /* =========================
+       BADGES
+    ========================== */
+
+    .badge {
+        @apply inline-flex items-center rounded-full px-2.5 py-1
+               text-xs font-semibold;
+    }
+
+    .badge-success {
+        @apply bg-success/10 text-success ring-1 ring-inset ring-success/20;
+    }
+
+    .badge-warning {
+        @apply bg-warning/10 text-amber-700 ring-1 ring-inset ring-warning/30;
+    }
+
+    .badge-error {
+        @apply bg-error/10 text-error ring-1 ring-inset ring-error/20;
+    }
+
+    .badge-info {
+        @apply bg-accent/10 text-primary ring-1 ring-inset ring-accent/30;
+    }
+
+
+    /* =========================
+       TABLES
+    ========================== */
+
+    .table-shell {
+        @apply overflow-hidden rounded-2xl border border-border bg-white shadow-card;
+    }
+
+    .table-header {
+        @apply bg-background font-button text-xs uppercase tracking-wider text-slate-500;
+    }
+
+    .table-row {
+        @apply border-t border-border transition-colors hover:bg-sky-50/50;
+    }
+
+
+    /* =========================
+       PAGE ELEMENTS
+    ========================== */
+
+    .page-title {
+        @apply font-heading text-2xl font-bold text-primary;
+    }
+
+    .page-subtitle {
+        @apply mt-1 font-body text-sm text-slate-500;
+    }
+
+    .section-title {
+        @apply font-heading text-lg font-semibold text-primary;
+    }
+
+    .icon-box-primary {
+        @apply flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary;
+    }
+
+    .icon-box-secondary {
+        @apply flex h-10 w-10 items-center justify-center rounded-full bg-secondary/10 text-secondary;
+    }
+
+    .icon-box-accent {
+        @apply flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-accent;
+    }
+}
+
+
+/* =========================
+   SCROLLBAR
+========================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #F8FAFC;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #E5E7EB;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6FA9E6;
+}

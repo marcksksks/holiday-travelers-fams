@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@yield('title', 'Dashboard') · FAMS</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+    @php
+        $navItems = [
+            'dashboard' => ['label' => 'Dashboard', 'route' => 'dashboard'],
+            'facilities.index' => ['label' => 'Facilities', 'route' => 'facilities.index'],
+            'reservations.index' => ['label' => 'Reservations', 'route' => 'reservations.index'],
+            'appointments.index' => ['label' => 'Appointments', 'route' => 'appointments.index'],
+            'visitors.index' => ['label' => 'Visitor Desk', 'route' => 'visitors.index'],
+            'documents.index' => ['label' => 'Records Archive', 'route' => 'documents.index'],
+            'legal.index' => ['label' => 'Legal Records', 'route' => 'legal.index'],
+            'contracts.index' => ['label' => 'Contracts', 'route' => 'contracts.index'],
+            'retention.index' => ['label' => 'Retention', 'route' => 'retention.index'],
+            'reports.index' => ['label' => 'Reports', 'route' => 'reports.index'],
+            'audit-trail.index' => ['label' => 'Audit Trail', 'route' => 'audit-trail.index'],
+            'users.index' => ['label' => 'Staff Accounts', 'route' => 'users.index'],
+        ];
+        $allowedNav = \App\Support\Rbac::navFor(auth()->user()->app_role ?? null);
+    @endphp
+
+    <div class="flex min-h-screen">
+        <aside class="hidden w-64 flex-col bg-slate-950 text-slate-200 md:flex">
+            <div class="px-5 py-5 text-lg font-semibold tracking-tight text-white">FAMS</div>
+            <nav class="flex-1 space-y-1 px-3">
+                @foreach ($navItems as $key => $item)
+                    @if (in_array($key, $allowedNav, true))
+                        <a href="{{ route($item['route']) }}"
+                           class="block rounded-lg px-3 py-2 text-sm font-medium {{ request()->routeIs($item['route']) ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-900 hover:text-white' }}">
+                            {{ $item['label'] }}
+                        </a>
+                    @endif
+                @endforeach
+            </nav>
+            <div class="border-t border-slate-800 px-5 py-4 text-xs text-slate-400">
+                {{ \App\Models\User::ROLES[auth()->user()->app_role] ?? auth()->user()->app_role }}
+            </div>
+        </aside>
+
+        <div class="flex flex-1 flex-col">
+            <header class="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:px-8">
+                <h1 class="text-lg font-semibold">@yield('title', 'Dashboard')</h1>
+                <div class="flex items-center gap-4">
+                    <span class="hidden text-sm text-slate-500 sm:inline">{{ auth()->user()->full_name }}</span>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn-secondary">Log out</button>
+                    </form>
+                </div>
+            </header>
+
+            <main class="flex-1 p-4 md:p-8">
+                @if (session('status'))
+                    <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                        {{ session('status') }}
+                    </div>
+                @endif
+                @if ($errors->any())
+                    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                        <ul class="list-inside list-disc">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @yield('content')
+            </main>
+        </div>
+    </div>
+</body>
+</html>

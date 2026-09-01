@@ -1,0 +1,77 @@
+name: Laravel CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fams
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: fams_testing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U fams"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, pdo_pgsql, pgsql, bcmath, zip, gd
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install JS dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Set test database env
+        run: |
+          echo "DB_CONNECTION=pgsql" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_DATABASE=fams_testing" >> .env
+          echo "DB_USERNAME=fams" >> .env
+          echo "DB_PASSWORD=secret" >> .env
+
+      - name: Directory permissions
+        run: chmod -R 777 storage bootstrap/cache
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Run test suite
+        run: php artisan test
+
+      - name: Lint (Pint, dry-run)
+        run: vendor/bin/pint --test
