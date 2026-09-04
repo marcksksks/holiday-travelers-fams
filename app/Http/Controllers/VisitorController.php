@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\VisitorRequest;
 use App\Models\Visitor;
 use App\Services\AiAssistService;
+use App\Services\AuditService;
 use App\Services\CalendarSyncService;
 use App\Services\VisitorCheckService;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +18,7 @@ class VisitorController extends Controller
         private VisitorCheckService $checks,
         private CalendarSyncService $calendar,
         private AiAssistService $ai,
+        private AuditService $audit,
     ) {}
 
     public function index(Request $request)
@@ -34,6 +36,15 @@ class VisitorController extends Controller
     public function store(VisitorRequest $request): RedirectResponse
     {
         $visitor = Visitor::create($request->validated());
+
+        $this->audit->log(
+            $request->user(),
+            'create',
+            'visitors',
+            "Visitor • {$visitor->full_name}",
+            (string) $visitor->id,
+            'Visitor registered'
+        );
 
         return redirect()->route('visitors.index')->with('status', "{$visitor->full_name} logged.");
     }

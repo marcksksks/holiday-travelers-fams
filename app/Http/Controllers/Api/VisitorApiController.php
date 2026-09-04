@@ -6,12 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\VisitorRequest;
 use App\Http\Resources\VisitorResource;
 use App\Models\Visitor;
+use App\Services\AuditService;
 use App\Services\VisitorCheckService;
 use Illuminate\Http\Request;
 
 class VisitorApiController extends Controller
 {
-    public function __construct(private VisitorCheckService $checks) {}
+    public function __construct(
+        private VisitorCheckService $checks,
+        private AuditService $audit
+    ) {}
 
     public function index(Request $request)
     {
@@ -30,7 +34,21 @@ class VisitorApiController extends Controller
 
     public function store(VisitorRequest $request)
     {
+        abort_unless(
+            $request->user()->can('operateVisitorDesk'),
+            403
+        );
+
         $visitor = Visitor::create($request->validated());
+
+        $this->audit->log(
+            $request->user(),
+            'create',
+            'visitors',
+            "Visitor • {$visitor->full_name}",
+            (string) $visitor->id,
+            'Visitor registered'
+        );
 
         return (new VisitorResource($visitor))->response()->setStatusCode(201);
     }

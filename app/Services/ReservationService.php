@@ -60,6 +60,12 @@ class ReservationService
     /** Port of base44/functions/decideReservation/entry.ts */
     public function decide(User $user, Reservation $reservation, string $decision, ?string $note = null): Reservation
     {
+        if (! $user->can('decideReservations')) {
+            throw ValidationException::withMessages([
+                'app_role' => 'You are not authorised to decide reservation requests.',
+            ])->status(403);
+        }
+
         if (! in_array($decision, ['approved', 'rejected'], true)) {
             throw ValidationException::withMessages(['decision' => 'A valid decision is required.']);
         }

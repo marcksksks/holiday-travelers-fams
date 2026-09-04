@@ -6,12 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ReservationRequest;
 use App\Http\Resources\ReservationResource;
 use App\Models\Reservation;
+use App\Services\AuditService;
 use App\Services\ReservationService;
 use Illuminate\Http\Request;
 
 class ReservationApiController extends Controller
 {
-    public function __construct(private ReservationService $service) {}
+    public function __construct(
+        private ReservationService $service,
+        private AuditService $audit
+    ) {}
 
     public function index(Request $request)
     {
@@ -56,6 +60,15 @@ class ReservationApiController extends Controller
         abort_unless($reservation->requester_email === $request->user()->email || $request->user()->can('decideReservations'), 403);
         abort_if(in_array($reservation->status, ['cancelled', 'rejected', 'completed'], true), 422);
         $reservation->update(['status' => 'cancelled']);
+
+        $this->audit->log(
+            $request->user(),
+            'update',
+            'facilities',
+            "Reservation • {$reservation->facility_name} {$reservation->date->toDateString()}",
+            (string) $reservation->id,
+            'Cancelled'
+        );
 
         return response()->json(null, 204);
     }

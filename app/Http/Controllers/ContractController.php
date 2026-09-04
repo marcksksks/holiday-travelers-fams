@@ -23,6 +23,11 @@ class ContractController extends Controller
 
     public function store(ContractRequest $request): RedirectResponse
     {
+        abort_unless(
+            $request->user()->can('manageContracts'),
+            403
+        );
+
         $data = $request->validated();
         if ($request->hasFile('file')) {
             $path = $request->file('file')->store('contracts', 'documents');
@@ -43,6 +48,11 @@ class ContractController extends Controller
 
     public function update(ContractRequest $request, Contract $contract): RedirectResponse
     {
+        abort_unless(
+            $request->user()->can('manageContracts'),
+            403
+        );
+
         $data = $request->validated();
         $oldPath = $contract->file_uri;
         if ($request->hasFile('file')) {

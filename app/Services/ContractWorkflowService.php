@@ -80,7 +80,7 @@ class ContractWorkflowService
             'title' => "Legal review: {$outcome}",
             'body' => "{$contract->title} — ".($comments ?: 'no comments'),
             'module' => 'contracts',
-            'severity' => $outcome === 'objections' ? 'critical' : 'info',
+            'severity' => $outcome === 'objections' ? 'error' : 'info',
             'link' => '/contracts',
         ]]);
 

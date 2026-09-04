@@ -5,13 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ReservationRequest;
 use App\Models\Facility;
 use App\Models\Reservation;
+use App\Services\AuditService;
 use App\Services\ReservationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
-    public function __construct(private ReservationService $reservations) {}
+    public function __construct(
+        private ReservationService $reservations,
+        private AuditService $audit
+    ) {}
 
     public function index(Request $request)
     {
@@ -55,6 +59,15 @@ class ReservationController extends Controller
         abort_unless($reservation->requester_email === $request->user()->email || $request->user()->can('decideReservations'), 403);
         abort_if(in_array($reservation->status, ['cancelled', 'rejected', 'completed'], true), 422);
         $reservation->update(['status' => 'cancelled']);
+
+        $this->audit->log(
+            $request->user(),
+            'update',
+            'facilities',
+            "Reservation • {$reservation->facility_name} {$reservation->date->toDateString()}",
+            (string) $reservation->id,
+            'Cancelled'
+        );
 
         return redirect()->route('reservations.index')->with('status', 'Reservation cancelled.');
     }

@@ -11,6 +11,11 @@ class RetentionPolicyController extends Controller
     public function store(
         RetentionPolicyRequest $request
     ): RedirectResponse {
+        abort_unless(
+            $request->user()->can('manageRetention'),
+            403
+        );
+
         RetentionPolicy::create(
             $request->validated()
         );
@@ -27,6 +32,11 @@ class RetentionPolicyController extends Controller
         RetentionPolicyRequest $request,
         RetentionPolicy $policy
     ): RedirectResponse {
+        abort_unless(
+            $request->user()->can('manageRetention'),
+            403
+        );
+
         $policy->update(
             $request->validated()
         );

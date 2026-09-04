@@ -82,6 +82,11 @@ class RetentionController extends Controller
 
     public function store(RecordRetentionRequest $request): RedirectResponse
     {
+        abort_unless(
+            $request->user()->can('manageRetention'),
+            403
+        );
+
         $data = $request->validated();
 
         if (! empty($data['policy_id'])) {
@@ -115,6 +120,11 @@ class RetentionController extends Controller
         RecordRetentionRequest $request,
         RecordRetention $retention
     ): RedirectResponse {
+        abort_unless(
+            $request->user()->can('manageRetention'),
+            403
+        );
+
         $data = $request->validated();
 
         if (! empty($data['policy_id'])) {
@@ -723,7 +733,8 @@ class RetentionController extends Controller
         ]);
 
         $retention->update([
-            'disposition_status' => 'approved',
+            'disposition_status' =>
+                'approved',
 
             'disposition_decided_by' =>
                 $request->user()->email,
@@ -807,6 +818,50 @@ class RetentionController extends Controller
                 now(),
         ]);
 
+        /*
+         * Notify the user who originally
+         * requested the disposal.
+         */
+        if ($retention->disposition_requested_by) {
+
+            $notifications = app(
+                \App\Services\NotificationService::class
+            );
+
+            $requestKey =
+                $retention
+                    ->disposition_requested_at
+                    ?->format('YmdHis')
+                ?? (string) $retention->id;
+
+            $notifications->notifyOnce([[
+                'recipient_email' =>
+                    $retention->disposition_requested_by,
+
+                'title' =>
+                    'Disposal Request Approved',
+
+                'body' =>
+                    "The disposal request for {$retention->record_title} has been approved. No file has been permanently deleted.",
+
+                'module' =>
+                    'retention',
+
+                'severity' =>
+                    'success',
+
+                'link' =>
+                    route(
+                        'retention.review',
+                        $retention,
+                        false
+                    ),
+
+                'key' =>
+                    "disposal-approved:{$retention->id}:{$requestKey}",
+            ]]);
+        }
+
         return redirect()
             ->route('retention.index')
             ->with(
@@ -814,7 +869,6 @@ class RetentionController extends Controller
                 'Disposal request approved. The record has not been permanently deleted.'
             );
     }
-
 
     public function rejectDisposal(
         Request $request,
@@ -907,7 +961,8 @@ class RetentionController extends Controller
                         now()->toISOString(),
 
                     'note' =>
-                        'Retention disposal request rejected. '.$data['decision_notes'],
+                        'Retention disposal request rejected. ' .
+                        $data['decision_notes'],
                 ];
 
                 $document->update([
@@ -946,6 +1001,50 @@ class RetentionController extends Controller
             'created_at' =>
                 now(),
         ]);
+
+        /*
+         * Notify the user who originally
+         * requested disposal.
+         */
+        if ($retention->disposition_requested_by) {
+
+            $notifications = app(
+                \App\Services\NotificationService::class
+            );
+
+            $requestKey =
+                $retention
+                    ->disposition_requested_at
+                    ?->format('YmdHis')
+                ?? (string) $retention->id;
+
+            $notifications->notifyOnce([[
+                'recipient_email' =>
+                    $retention->disposition_requested_by,
+
+                'title' =>
+                    'Disposal Request Rejected',
+
+                'body' =>
+                    "The disposal request for {$retention->record_title} was rejected and returned for review.",
+
+                'module' =>
+                    'retention',
+
+                'severity' =>
+                    'warning',
+
+                'link' =>
+                    route(
+                        'retention.review',
+                        $retention,
+                        false
+                    ),
+
+                'key' =>
+                    "disposal-rejected:{$retention->id}:{$requestKey}",
+            ]]);
+        }
 
         return redirect()
             ->route('retention.index')

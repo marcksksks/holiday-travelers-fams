@@ -282,6 +282,11 @@ class DocumentController extends Controller
     public function store(
         ArchiveDocumentRequest $request
     ): RedirectResponse {
+        abort_unless(
+            $request->user()->can('manageDocuments'),
+            403
+        );
+
         $data = $request->validated();
 
         $relatedType =

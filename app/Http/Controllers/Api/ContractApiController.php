@@ -6,76 +6,217 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ContractRequest;
 use App\Http\Resources\ContractResource;
 use App\Models\Contract;
+use App\Services\AuditService;
 use App\Services\ContractWorkflowService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ContractApiController extends Controller
 {
-    public function __construct(private ContractWorkflowService $workflow) {}
+    public function __construct(
+        private ContractWorkflowService $workflow,
+        private AuditService $audit
+    ) {}
 
     public function index(Request $request)
     {
-        abort_unless($request->user()->can('manageContracts') || $request->user()->can('viewContracts'), 403);
-        $contracts = Contract::when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
-            ->orderByDesc('updated_at')->paginate(20);
+        abort_unless(
+            $request->user()->can('viewContracts'),
+            403
+        );
 
-        return ContractResource::collection($contracts);
+        $contracts = Contract::query()
+            ->when(
+                $request->filled('status'),
+                fn ($q) => $q->where(
+                    'status',
+                    $request->string('status')
+                )
+            )
+            ->orderByDesc('updated_at')
+            ->paginate(20);
+
+        return ContractResource::collection(
+            $contracts
+        );
     }
 
-    public function show(Request $request, Contract $contract)
-    {
-        abort_unless($request->user()->can('manageContracts') || $request->user()->can('viewContracts'), 403);
-        return new ContractResource($contract);
+    public function show(
+        Request $request,
+        Contract $contract
+    ) {
+        abort_unless(
+            $request->user()->can('viewContracts'),
+            403
+        );
+
+        return new ContractResource(
+            $contract
+        );
     }
 
-    public function store(ContractRequest $request)
-    {
+    public function store(
+        ContractRequest $request
+    ) {
+        abort_unless(
+            $request->user()->can('manageContracts'),
+            403
+        );
+
         $data = $request->validated();
 
         if ($request->hasFile('file')) {
-            $data['file_uri'] = $request->file('file')->store('contracts', 'documents');
-            $data['file_name'] = $request->file('file')->getClientOriginalName();
+            $data['file_uri'] = $request
+                ->file('file')
+                ->store(
+                    'contracts',
+                    'documents'
+                );
+
+            $data['file_name'] = $request
+                ->file('file')
+                ->getClientOriginalName();
         }
 
-        $contract = Contract::create($data);
+        $contract = Contract::create(
+            $data
+        );
 
-        return (new ContractResource($contract))->response()->setStatusCode(201);
+        $this->audit->log(
+            $request->user(),
+            'create',
+            'contracts',
+            "Contract • {$contract->title}",
+            (string) $contract->id
+        );
+
+        return (
+            new ContractResource($contract)
+        )
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function update(ContractRequest $request, Contract $contract)
-    {
+    public function update(
+        ContractRequest $request,
+        Contract $contract
+    ) {
+        abort_unless(
+            $request->user()->can('manageContracts'),
+            403
+        );
+
         $data = $request->validated();
+
         $oldPath = $contract->file_uri;
 
         if ($request->hasFile('file')) {
-            $data['file_uri'] = $request->file('file')->store('contracts', 'documents');
-            $data['file_name'] = $request->file('file')->getClientOriginalName();
+            $data['file_uri'] = $request
+                ->file('file')
+                ->store(
+                    'contracts',
+                    'documents'
+                );
+
+            $data['file_name'] = $request
+                ->file('file')
+                ->getClientOriginalName();
         }
 
         $contract->update($data);
-        if ($request->hasFile('file') && $oldPath && $oldPath !== $contract->file_uri) {
-            \Illuminate\Support\Facades\Storage::disk('documents')->delete($oldPath);
+
+        if (
+            $request->hasFile('file') &&
+            $oldPath &&
+            $oldPath !== $contract->file_uri
+        ) {
+            Storage::disk('documents')
+                ->delete($oldPath);
         }
 
-        return new ContractResource($contract);
+        $this->audit->log(
+            $request->user(),
+            'update',
+            'contracts',
+            "Contract • {$contract->title}",
+            (string) $contract->id
+        );
+
+        return new ContractResource(
+            $contract->refresh()
+        );
     }
 
-    public function submitForReview(Request $request, Contract $contract)
-    {
-        return new ContractResource($this->workflow->submitForReview($request->user(), $contract));
+    public function submitForReview(
+        Request $request,
+        Contract $contract
+    ) {
+        $contract = $this->workflow
+            ->submitForReview(
+                $request->user(),
+                $contract
+            );
+
+        return new ContractResource(
+            $contract
+        );
     }
 
-    public function legalReview(Request $request, Contract $contract)
-    {
-        $data = $request->validate(['outcome' => ['required', 'in:approved,objections,in_review'], 'comments' => ['nullable', 'string']]);
+    public function legalReview(
+        Request $request,
+        Contract $contract
+    ) {
+        $data = $request->validate([
+            'outcome' => [
+                'required',
+                'in:approved,objections,in_review',
+            ],
 
-        return new ContractResource($this->workflow->legalReview($request->user(), $contract, $data['outcome'], $data['comments'] ?? null));
+            'comments' => [
+                'nullable',
+                'string',
+            ],
+        ]);
+
+        $contract = $this->workflow
+            ->legalReview(
+                $request->user(),
+                $contract,
+                $data['outcome'],
+                $data['comments'] ?? null
+            );
+
+        return new ContractResource(
+            $contract
+        );
     }
 
-    public function decide(Request $request, Contract $contract)
-    {
-        $data = $request->validate(['decision' => ['required', 'in:approve,reject'], 'comments' => ['nullable', 'string']]);
+    public function decide(
+        Request $request,
+        Contract $contract
+    ) {
+        $data = $request->validate([
+            'decision' => [
+                'required',
+                'in:approve,reject',
+            ],
 
-        return new ContractResource($this->workflow->decide($request->user(), $contract, $data['decision'] === 'approve', $data['comments'] ?? null));
+            'comments' => [
+                'nullable',
+                'string',
+            ],
+        ]);
+
+        $contract = $this->workflow
+            ->decide(
+                $request->user(),
+                $contract,
+                $data['decision'] === 'approve',
+                $data['comments'] ?? null
+            );
+
+        return new ContractResource(
+            $contract
+        );
     }
 }

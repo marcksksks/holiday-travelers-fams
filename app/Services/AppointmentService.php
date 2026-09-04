@@ -14,6 +14,12 @@ class AppointmentService
 
     public function create(User $user, array $data): Appointment
     {
+        if (! $user->can('manageAppointments')) {
+            throw ValidationException::withMessages([
+                'app_role' => 'You are not authorised to manage appointments.',
+            ])->status(403);
+        }
+
         return DB::transaction(function () use ($user, $data) {
             $facility = ! empty($data['facility_id'])
                 ? Facility::query()->lockForUpdate()->findOrFail($data['facility_id'])
@@ -38,6 +44,12 @@ class AppointmentService
 
     public function update(User $user, Appointment $appointment, array $data): Appointment
     {
+        if (! $user->can('manageAppointments')) {
+            throw ValidationException::withMessages([
+                'app_role' => 'You are not authorised to manage appointments.',
+            ])->status(403);
+        }
+
         return DB::transaction(function () use ($user, $appointment, $data) {
             $appointment->refresh();
             $allowedTransitions = [

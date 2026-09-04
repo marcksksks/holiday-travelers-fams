@@ -17,6 +17,12 @@ class VisitorCheckService
 
     public function checkIn(User $user, Visitor $visitor, ?string $badgeNumber = null, ?string $notes = null): Visitor
     {
+        if (! $user->can('operateVisitorDesk')) {
+            throw ValidationException::withMessages([
+                'app_role' => 'You are not authorised to operate the visitor desk.',
+            ])->status(403);
+        }
+
         if ($visitor->status === 'checked_in') {
             throw ValidationException::withMessages(['status' => 'Visitor is already checked in.']);
         }
@@ -51,6 +57,12 @@ class VisitorCheckService
 
     public function checkOut(User $user, Visitor $visitor): Visitor
     {
+        if (! $user->can('operateVisitorDesk')) {
+            throw ValidationException::withMessages([
+                'app_role' => 'You are not authorised to operate the visitor desk.',
+            ])->status(403);
+        }
+
         if ($visitor->status !== 'checked_in') {
             throw ValidationException::withMessages(['status' => 'Only checked-in visitors can be checked out.']);
         }
@@ -84,6 +96,12 @@ class VisitorCheckService
 
     public function decline(User $user, Visitor $visitor, ?string $notes = null): Visitor
     {
+        if (! $user->can('operateVisitorDesk')) {
+            throw ValidationException::withMessages([
+                'app_role' => 'You are not authorised to operate the visitor desk.',
+            ])->status(403);
+        }
+
         $visitor->update([
             'status' => 'declined',
             'notes' => $notes ?? $visitor->notes,

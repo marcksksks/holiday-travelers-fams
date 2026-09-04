@@ -7,12 +7,16 @@ use App\Http\Requests\AppointmentRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
 use App\Models\Facility;
-use Illuminate\Http\Request;
 use App\Services\AppointmentService;
+use App\Services\AuditService;
+use Illuminate\Http\Request;
 
 class AppointmentApiController extends Controller
 {
-    public function __construct(private AppointmentService $appointments) {}
+    public function __construct(
+        private AppointmentService $appointments,
+        private AuditService $audit
+    ) {}
 
     public function index(Request $request)
     {
@@ -48,6 +52,16 @@ class AppointmentApiController extends Controller
         abort_unless($request->user()->can('manageAppointments'), 403);
         abort_if(in_array($appointment->status, ['completed', 'cancelled'], true), 422);
         $appointment->update(['status' => 'cancelled']);
+
+        $this->audit->log(
+            $request->user(),
+            'update',
+            'appointments',
+            "Appointment • {$appointment->visitor_name}",
+            (string) $appointment->id,
+            'Cancelled'
+        );
+
         return response()->json(null, 204);
     }
 

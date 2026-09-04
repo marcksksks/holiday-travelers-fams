@@ -12,54 +12,148 @@ use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
-    public function __construct(private AppointmentService $appointments) {}
+    public function __construct(
+        private AppointmentService $appointments
+    ) {}
 
     public function index(Request $request)
     {
         $appointments = Appointment::with('facility')
-            ->when($request->filled('date'), fn ($q) => $q->whereDate('date', $request->date('date')))
-            ->orderBy('date')->orderBy('start_time')
-            ->paginate(15)->withQueryString();
+            ->when(
+                $request->filled('date'),
+                fn ($q) =>
+                    $q->whereDate(
+                        'date',
+                        $request->date('date')
+                    )
+            )
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->paginate(15)
+            ->withQueryString();
 
-        $facilities = Facility::where('status', 'available')->orderBy('name')->get();
+        $facilities = Facility::where(
+            'status',
+            'available'
+        )
+            ->orderBy('name')
+            ->get();
 
-        return view('appointments.index', compact('appointments', 'facilities'));
+        return view(
+            'appointments.index',
+            compact(
+                'appointments',
+                'facilities'
+            )
+        );
     }
 
-    public function store(AppointmentRequest $request): RedirectResponse
-    {
-        $appointment = $this->appointments->create($request->user(), $request->validated());
+    public function store(
+        AppointmentRequest $request
+    ): RedirectResponse {
+        abort_unless(
+            $request->user()->can(
+                'manageAppointments'
+            ),
+            403
+        );
 
-        AuditLog::create([
-            'actor_email' => $request->user()->email, 'actor_role' => $request->user()->app_role,
-            'action' => 'create', 'module' => 'appointments', 'record_label' => "Appointment • {$appointment->visitor_name}",
-            'record_id' => $appointment->id, 'created_at' => now(),
+        $this->appointments->create(
+            $request->user(),
+            $request->validated()
+        );
+
+        return redirect()
+            ->route('appointments.index')
+            ->with(
+                'status',
+                'Appointment scheduled.'
+            );
+    }
+
+    public function update(
+        AppointmentRequest $request,
+        Appointment $appointment
+    ): RedirectResponse {
+        abort_unless(
+            $request->user()->can(
+                'manageAppointments'
+            ),
+            403
+        );
+
+        $this->appointments->update(
+            $request->user(),
+            $appointment,
+            $request->validated()
+        );
+
+        return redirect()
+            ->route('appointments.index')
+            ->with(
+                'status',
+                'Appointment updated.'
+            );
+    }
+
+    public function destroy(
+        Request $request,
+        Appointment $appointment
+    ): RedirectResponse {
+        abort_unless(
+            $request->user()->can(
+                'manageAppointments'
+            ),
+            403
+        );
+
+        abort_if(
+            in_array(
+                $appointment->status,
+                [
+                    'completed',
+                    'cancelled',
+                ],
+                true
+            ),
+            422
+        );
+
+        $appointment->update([
+            'status' => 'cancelled',
         ]);
 
-        return redirect()->route('appointments.index')->with('status', 'Appointment scheduled.');
-    }
-
-    public function update(AppointmentRequest $request, Appointment $appointment): RedirectResponse
-    {
-        $data = $request->validated();
-        if (! empty($data['facility_id'])) {
-            $data['facility_name'] = Facility::find($data['facility_id'])->name;
-        }
-        $appointment->update($data);
-
-        return redirect()->route('appointments.index')->with('status', 'Appointment updated.');
-    }
-
-    public function destroy(Request $request, Appointment $appointment): RedirectResponse
-    {
-        $appointment->update(['status' => 'cancelled']);
-
         AuditLog::create([
-            'actor_email' => $request->user()->email, 'actor_role' => $request->user()->app_role,
-            'action' => 'update', 'module' => 'appointments', 'record_label' => "Appointment • {$appointment->visitor_name}",
-            'record_id' => $appointment->id, 'details' => 'Cancelled', 'created_at' => now(),
+            'actor_email' =>
+                $request->user()->email,
+
+            'actor_role' =>
+                $request->user()->app_role,
+
+            'action' =>
+                'update',
+
+            'module' =>
+                'appointments',
+
+            'record_label' =>
+                "Appointment • {$appointment->visitor_name}",
+
+            'record_id' =>
+                $appointment->id,
+
+            'details' =>
+                'Cancelled',
+
+            'created_at' =>
+                now(),
         ]);
 
-        return redirect()->route('appointments.index')->with('status', 'Appointment cancelled.');
+        return redirect()
+            ->route('appointments.index')
+            ->with(
+                'status',
+                'Appointment cancelled.'
+            );
     }
 }

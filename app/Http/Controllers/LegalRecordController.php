@@ -20,6 +20,11 @@ class LegalRecordController extends Controller
 
     public function store(LegalRecordRequest $request): RedirectResponse
     {
+        abort_unless(
+            $request->user()->can('manageLegal'),
+            403
+        );
+
         $data = $request->validated();
         if ($request->hasFile('file')) {
             $data['file_uri'] = $request->file('file')->store('legal', 'documents');
@@ -39,6 +44,11 @@ class LegalRecordController extends Controller
 
     public function update(LegalRecordRequest $request, LegalRecord $legal): RedirectResponse
     {
+        abort_unless(
+            $request->user()->can('manageLegal'),
+            403
+        );
+
         $data = $request->validated();
         $oldPath = $legal->file_uri;
         if ($request->hasFile('file')) {
@@ -53,22 +63,65 @@ class LegalRecordController extends Controller
         return redirect()->route('legal.index')->with('status', 'Legal record updated.');
     }
 
-    public function review(Request $request, LegalRecord $legal): RedirectResponse
-    {
-        abort_unless($request->user()->can('reviewLegal'), 403);
+    public function review(
+        Request $request,
+        LegalRecord $legal
+    ): RedirectResponse {
+        abort_unless(
+            $request->user()->can('reviewLegal'),
+            403
+        );
 
         $data = $request->validate([
-            'review_status' => ['required', 'in:not_reviewed,in_review,reviewed,action_required'],
-            'legal_notes' => ['nullable', 'string'],
+            'review_status' => [
+                'required',
+                'in:not_reviewed,in_review,reviewed,action_required',
+            ],
+
+            'legal_notes' => [
+                'nullable',
+                'string',
+            ],
         ]);
-        $legal->update($data);
+
+        $legal->update([
+            'review_status' =>
+                $data['review_status'],
+
+            'legal_notes' =>
+                $data['legal_notes']
+                ?? $legal->legal_notes,
+        ]);
 
         AuditLog::create([
-            'actor_email' => $request->user()->email, 'actor_role' => $request->user()->app_role,
-            'action' => 'update', 'module' => 'legal', 'record_label' => "Legal • {$legal->title}",
-            'record_id' => $legal->id, 'details' => "Review: {$data['review_status']}", 'created_at' => now(),
+            'actor_email' =>
+                $request->user()->email,
+
+            'actor_role' =>
+                $request->user()->app_role,
+
+            'action' =>
+                'update',
+
+            'module' =>
+                'legal',
+
+            'record_label' =>
+                "Legal • {$legal->title}",
+
+            'record_id' =>
+                $legal->id,
+
+            'details' =>
+                "Review: {$data['review_status']}",
+
+            'created_at' =>
+                now(),
         ]);
 
-        return back()->with('status', 'Review recorded.');
+        return back()->with(
+            'status',
+            'Review recorded.'
+        );
     }
 }

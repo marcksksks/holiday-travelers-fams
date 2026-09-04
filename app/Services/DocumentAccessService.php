@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ArchiveDocument;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 
@@ -49,6 +50,96 @@ class DocumentAccessService
         return $url;
     }
 
+    public function scopeAccessible(
+        User $user,
+        Builder $query
+    ): Builder {
+        abort_unless(
+            $user->can('viewDocuments'),
+            403
+        );
+
+        /*
+         * Hide Visitor documents from users who
+         * cannot access Visitor Management.
+         */
+        if (! $user->can('viewVisitors')) {
+            $query
+                ->where(function ($q) {
+                    $q->whereNull('source_module')
+                        ->orWhere(
+                            'source_module',
+                            '!=',
+                            'visitors'
+                        );
+                })
+                ->whereNull('linked_visitor_id');
+        }
+
+        /*
+         * Hide Contract documents from users who
+         * cannot access Contract Management.
+         */
+        if (! $user->can('viewContracts')) {
+            $query
+                ->where(function ($q) {
+                    $q->whereNull('source_module')
+                        ->orWhere(
+                            'source_module',
+                            '!=',
+                            'contracts'
+                        );
+                })
+                ->whereNull('linked_contract_id');
+        }
+
+        /*
+         * Hide Legal documents from users who
+         * cannot access Legal Management.
+         */
+        if (! $user->can('viewLegal')) {
+            $query
+                ->where(function ($q) {
+                    $q->whereNull('source_module')
+                        ->orWhere(
+                            'source_module',
+                            '!=',
+                            'legal'
+                        );
+                })
+                ->whereNull('linked_legal_record_id');
+        }
+
+        /*
+         * Confidential records require the
+         * confidential permission unless the
+         * current user owns/uploaded the record.
+         */
+        if (! $user->can('viewConfidential')) {
+            $query->where(
+                function ($q) use ($user) {
+                    $q->whereNull(
+                        'confidentiality'
+                    )
+                        ->orWhere(
+                            'confidentiality',
+                            '!=',
+                            'confidential'
+                        )
+                        ->orWhere(
+                            'owner_email',
+                            $user->email
+                        )
+                        ->orWhere(
+                            'uploaded_by_email',
+                            $user->email
+                        );
+                }
+            );
+        }
+
+        return $query;
+    }
     public function assertCanAccess(
         User $user,
         ArchiveDocument $document

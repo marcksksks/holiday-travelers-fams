@@ -50,7 +50,7 @@ class Rbac
         'viewAppointments' => ['employee', 'receptionist', 'admin_officer', 'manager', 'sys_admin'],
         'viewLegal' => ['admin_officer', 'manager', 'legal_officer', 'sys_admin'],
         'viewContracts' => ['admin_officer', 'manager', 'legal_officer', 'sys_admin'],
-        'manageAppointments' => ['admin_officer', 'manager', 'sys_admin'],
+        'manageAppointments' => ['receptionist', 'admin_officer', 'manager', 'sys_admin'],
         'viewConfidential' => ['admin_officer', 'legal_officer', 'manager', 'sys_admin'],
         'manageRetention' => ['admin_officer', 'sys_admin'],
         'approveRetentionDisposal' => ['manager', 'sys_admin'],
