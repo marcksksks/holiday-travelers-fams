@@ -24,4 +24,9 @@ class LegalRecord extends Model
     {
         return $this->belongsTo(ArchiveDocument::class, 'document_id');
     }
+
+    public function archiveDocuments()
+    {
+        return $this->hasMany(ArchiveDocument::class, 'linked_legal_record_id');
+    }
 }

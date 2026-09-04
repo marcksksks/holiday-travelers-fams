@@ -10,11 +10,20 @@ class AppNotification extends Model
     use HasFactory;
 
     protected $fillable = [
-        'recipient_email', 'title', 'body', 'module', 'severity', 'link', 'is_read',
+        'recipient_email',
+        'title',
+        'body',
+        'module',
+        'severity',
+        'link',
+        'is_read',
+        'dedupe_key',
     ];
 
     protected function casts(): array
     {
-        return ['is_read' => 'boolean'];
+        return [
+            'is_read' => 'boolean',
+        ];
     }
 }

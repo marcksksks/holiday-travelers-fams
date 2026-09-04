@@ -8,6 +8,81 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    {{-- Appearance: Light / Dark / System --}}
+    <script>
+        (function () {
+            const storageKey = 'fams-appearance';
+            const root = document.documentElement;
+            const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+            function getMode() {
+                try {
+                    const saved = localStorage.getItem(storageKey);
+
+                    return ['light', 'dark', 'system'].includes(saved)
+                        ? saved
+                        : 'system';
+                } catch (error) {
+                    return 'system';
+                }
+            }
+
+            function applyMode(mode) {
+                const dark = mode === 'dark'
+                    || (mode === 'system' && media.matches);
+
+                root.classList.toggle('dark', dark);
+
+                root.dataset.theme = mode;
+                root.dataset.themeEffective = dark ? 'dark' : 'light';
+            }
+
+            function setMode(mode) {
+                if (! ['light', 'dark', 'system'].includes(mode)) {
+                    mode = 'system';
+                }
+
+                try {
+                    localStorage.setItem(storageKey, mode);
+                } catch (error) {
+                    // Continue using the selected theme for this page.
+                }
+
+                applyMode(mode);
+
+                window.dispatchEvent(new CustomEvent('fams-theme-change', {
+                    detail: {
+                        mode: mode,
+                        effective: root.dataset.themeEffective
+                    }
+                }));
+            }
+
+            applyMode(getMode());
+
+            if (typeof media.addEventListener === 'function') {
+                media.addEventListener('change', function () {
+                    if (getMode() === 'system') {
+                        applyMode('system');
+
+                        window.dispatchEvent(new CustomEvent('fams-theme-change', {
+                            detail: {
+                                mode: 'system',
+                                effective: root.dataset.themeEffective
+                            }
+                        }));
+                    }
+                });
+            }
+
+            window.FAMSTheme = {
+                get: getMode,
+                set: setMode,
+                apply: applyMode
+            };
+        })();
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -20,7 +95,7 @@
         'reservations.index' => ['label' => 'Reservations', 'route' => 'reservations.index', 'icon' => 'reservations'],
         'appointments.index' => ['label' => 'Appointments', 'route' => 'appointments.index', 'icon' => 'appointments'],
         'visitors.index' => ['label' => 'Visitor Desk', 'route' => 'visitors.index', 'icon' => 'visitors'],
-        'documents.index' => ['label' => 'Records Archive', 'route' => 'documents.index', 'icon' => 'documents'],
+        'documents.index' => ['label' => 'Document Management', 'route' => 'documents.index', 'icon' => 'documents'],
         'legal.index' => ['label' => 'Legal Records', 'route' => 'legal.index', 'icon' => 'legal'],
         'contracts.index' => ['label' => 'Contracts', 'route' => 'contracts.index', 'icon' => 'contracts'],
         'retention.index' => ['label' => 'Retention', 'route' => 'retention.index', 'icon' => 'retention'],
@@ -46,15 +121,31 @@
 
             <a
     href="{{ route('dashboard') }}"
-    class="block min-w-0 overflow-hidden">
+    class="flex min-w-0 items-center gap-3 overflow-hidden">
 
-    <div data-sidebar-label class="min-w-0">
+    {{-- Company Logo --}}
+    <div
+        data-sidebar-label
+        class="company-logo-shell flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full p-1.5 shadow-sm ring-1 ring-white/20">
 
-        <div class="whitespace-nowrap font-heading text-[20px] font-bold leading-tight tracking-tight text-white">
+        <img
+            src="{{ asset('images/holiday-travelers-mark.png') }}"
+            alt="Holiday Travelers logo"
+            class="h-full w-full rounded-full object-contain">
+
+    </div>
+
+
+    {{-- Company Name --}}
+    <div
+        data-sidebar-label
+        class="min-w-0">
+
+        <div class="whitespace-nowrap font-heading text-[16px] font-bold leading-tight tracking-tight text-white">
             Holiday Travelers
         </div>
 
-        <div class="mt-1 whitespace-nowrap font-heading text-[12px] font-medium tracking-wide text-secondary">
+        <div class="mt-1 whitespace-nowrap font-heading text-[10px] font-semibold tracking-wide text-secondary">
             Travel & Tours Inc.
         </div>
 
@@ -76,7 +167,7 @@
         </div>
 
         {{-- Navigation --}}
-        <nav class="flex-1 space-y-2 overflow-y-auto px-4 py-6">
+        <nav class="flex-1 space-y-2 overflow-y-auto px-4 pb-10 pt-6">
 
             <p data-sidebar-label
                class="mb-3 px-2 font-button text-[10px] font-semibold uppercase tracking-[0.18em] text-accent">
@@ -475,6 +566,36 @@
                             </p>
 
                         </div>
+
+                        @if (Route::has('settings.index'))
+
+                            <a
+                                href="{{ route('settings.index') }}"
+                                @class([
+                                    'flex items-center gap-3 px-4 py-2.5 text-sm transition',
+                                    'bg-primary/5 font-medium text-primary' => request()->routeIs('settings.*'),
+                                    'text-slate-700 hover:bg-slate-50' => ! request()->routeIs('settings.*'),
+                                ])>
+
+                                <svg
+                                    class="h-4 w-4 shrink-0"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM19.4 15a1.7 1.7 0 00.34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0015 19.4a1.7 1.7 0 00-1 .6 1.7 1.7 0 00-.4 1.1V21h-4v-.1A1.7 1.7 0 008.6 19.4a1.7 1.7 0 00-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-.6-1 1.7 1.7 0 00-1.1-.4H3v-4h.1A1.7 1.7 0 004.6 8.6a1.7 1.7 0 00-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 009 4.6a1.7 1.7 0 001-.6 1.7 1.7 0 00.4-1.1V3h4v.1A1.7 1.7 0 0015.4 4.6a1.7 1.7 0 001.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0019.4 9c.18.37.47.67.84.85.33.16.69.25 1.06.25h.1v4h-.1c-.37 0-.73.09-1.06.25-.37.18-.66.48-.84.85z" />
+
+                                </svg>
+
+                                <span>Settings</span>
+
+                            </a>
+
+                        @endif
 
                         @if (Route::has('password.change'))
 

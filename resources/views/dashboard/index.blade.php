@@ -25,7 +25,33 @@
 
 
     {{-- Statistics --}}
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    @php
+        $dashboardCardCount = 2;
+
+        if (auth()->user()->can('viewAppointments')) {
+            $dashboardCardCount++;
+        }
+
+        if (auth()->user()->can('viewVisitors')) {
+            $dashboardCardCount++;
+        }
+
+        if (auth()->user()->can('viewContracts')) {
+            $dashboardCardCount++;
+        }
+
+        if (auth()->user()->can('viewLegal')) {
+            $dashboardCardCount++;
+        }
+    @endphp
+
+    <div @class([
+        'grid grid-cols-1 gap-5 sm:grid-cols-2',
+        'lg:grid-cols-3 xl:grid-cols-6' => $dashboardCardCount >= 5,
+        'lg:grid-cols-4 xl:grid-cols-4' => $dashboardCardCount === 4,
+        'lg:grid-cols-3 xl:grid-cols-3' => $dashboardCardCount === 3,
+        'lg:grid-cols-2 xl:grid-cols-2' => $dashboardCardCount <= 2,
+    ])>
 
 
         {{-- Facilities --}}
@@ -97,15 +123,20 @@
             </div>
 
             <div class="mt-5 flex items-center gap-1 text-xs font-medium text-secondary">
-                <span>Review reservations</span>
+                <span>
+                    @can('decideReservations')
+                        Review reservations
+                    @else
+                        View reservations
+                    @endcan
+                </span>
                 <span class="transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
             </div>
 
-        </a>
+        </a>        {{-- Appointments --}}
+        @can('viewAppointments')
 
-
-        {{-- Appointments --}}
-        <a
+<a
             href="{{ route('appointments.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-accent p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
@@ -141,9 +172,10 @@
 
         </a>
 
+        @endcan        {{-- Visitors --}}
+        @can('viewVisitors')
 
-        {{-- Visitors --}}
-        <a
+<a
             href="{{ route('visitors.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-success p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
@@ -179,9 +211,10 @@
 
         </a>
 
+        @endcan        {{-- Contracts --}}
+        @can('viewContracts')
 
-        {{-- Contracts --}}
-        <a
+<a
             href="{{ route('contracts.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-warning p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
@@ -217,9 +250,10 @@
 
         </a>
 
+        @endcan        {{-- Legal --}}
+        @can('viewLegal')
 
-        {{-- Legal --}}
-        <a
+<a
             href="{{ route('legal.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-error p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
@@ -255,11 +289,246 @@
 
         </a>
 
+        @endcan
+
     </div>
 
 
+    {{-- Documents & Compliance --}}
+    @if (
+        $canViewDocuments ||
+        $canManageRetention ||
+        $canApproveDisposal
+    )
+
+        <section class="space-y-4">
+
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+
+                <div>
+
+                    <div class="mb-2 h-1 w-10 rounded-full bg-accent"></div>
+
+                    <h2 class="font-heading text-lg font-semibold text-primary">
+                        Documents & Compliance
+                    </h2>
+
+                    <p class="mt-1 text-xs text-slate-500">
+                        Records requiring document, retention, or disposition attention.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+
+                {{-- Documents Needing Review --}}
+                @if ($canViewDocuments)
+
+                    <a
+                        href="{{ route('documents.index', ['status' => 'needs_review']) }}"
+                        class="group card relative overflow-hidden border-l-4 border-l-warning p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
+
+                        <div class="flex items-start justify-between gap-4">
+
+                            <div>
+
+                                <p class="text-xs font-medium text-slate-500">
+                                    Documents Needing Review
+                                </p>
+
+                                <p class="mt-2 font-heading text-3xl font-bold text-primary">
+                                    {{ $documentNeedsReview }}
+                                </p>
+
+                                <p class="mt-2 text-xs text-slate-400">
+                                    Documents currently flagged for review.
+                                </p>
+
+                            </div>
+
+
+                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-warning/10 text-amber-600">
+
+                                <svg
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9 12h6M9 16h4M7 3h7l5 5v13H7V3zm7 0v5h5" />
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="mt-5 flex items-center gap-1 text-xs font-semibold text-amber-600">
+
+                            <span>
+                                Review documents
+                            </span>
+
+                            <span class="transition-transform group-hover:translate-x-1">
+                                &rarr;
+                            </span>
+
+                        </div>
+
+                    </a>
+
+                @endif
+
+
+                {{-- Retention Reviews --}}
+                @if ($canManageRetention)
+
+                    <a
+                        href="{{ route('retention.index', ['status' => 'review_required']) }}"
+                        class="group card relative overflow-hidden border-l-4 border-l-error p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
+
+                        <div class="flex items-start justify-between gap-4">
+
+                            <div>
+
+                                <p class="text-xs font-medium text-slate-500">
+                                    Retention Reviews Required
+                                </p>
+
+                                <p class="mt-2 font-heading text-3xl font-bold text-primary">
+                                    {{ $retentionReviewRequired }}
+                                </p>
+
+                                <p class="mt-2 text-xs text-slate-400">
+                                    Retention records requiring a decision.
+                                </p>
+
+                            </div>
+
+
+                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-error/10 text-error">
+
+                                <svg
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 9v4m0 4h.01M10.3 4.7L3.5 17a2 2 0 001.75 3h13.5a2 2 0 001.75-3L13.7 4.7a2 2 0 00-3.4 0z" />
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="mt-5 flex items-center gap-1 text-xs font-semibold text-error">
+
+                            <span>
+                                Review retention records
+                            </span>
+
+                            <span class="transition-transform group-hover:translate-x-1">
+                                &rarr;
+                            </span>
+
+                        </div>
+
+                    </a>
+
+                @endif
+
+
+                {{-- Disposal Approvals --}}
+                @if ($canApproveDisposal)
+
+                    <a
+                        href="{{ route('retention.index') }}"
+                        class="group card relative overflow-hidden border-l-4 border-l-secondary p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
+
+                        <div class="flex items-start justify-between gap-4">
+
+                            <div>
+
+                                <p class="text-xs font-medium text-slate-500">
+                                    Pending Disposal Approvals
+                                </p>
+
+                                <p class="mt-2 font-heading text-3xl font-bold text-primary">
+                                    {{ $pendingDisposalApprovals }}
+                                </p>
+
+                                <p class="mt-2 text-xs text-slate-400">
+                                    Disposal requests waiting for authorization.
+                                </p>
+
+                            </div>
+
+
+                            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+
+                                <svg
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="mt-5 flex items-center gap-1 text-xs font-semibold text-secondary">
+
+                            <span>
+                                Review disposal requests
+                            </span>
+
+                            <span class="transition-transform group-hover:translate-x-1">
+                                &rarr;
+                            </span>
+
+                        </div>
+
+                    </a>
+
+                @endif
+
+            </div>
+
+        </section>
+
+    @endif
+
+
     {{-- Dashboard panels --}}
-    <div class="grid gap-6 lg:grid-cols-2">
+    <div @class([
+        'grid gap-6',
+        'lg:grid-cols-2' => auth()->user()->can('viewAppointments'),
+        'grid-cols-1' => ! auth()->user()->can('viewAppointments'),
+    ])>
 
 
         {{-- Reservations --}}
@@ -366,6 +635,8 @@
 
 
         {{-- Appointments --}}
+        @can('viewAppointments')
+
         <section class="card overflow-hidden">
 
             <div class="flex items-center justify-between gap-4 border-b border-border px-6 py-5">
@@ -469,7 +740,9 @@
 
             </ul>
 
-        </section>
+                </section>
+
+        @endcan
 
     </div>
 

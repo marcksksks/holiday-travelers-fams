@@ -406,6 +406,80 @@
         @endcan
 
 
+        @can('approveRetentionDisposal')
+
+            @if ($pendingDisposals->isNotEmpty())
+
+                <div class="card mb-6 overflow-hidden">
+
+                    <div class="border-b border-border bg-warning/5 px-5 py-4">
+
+                        <div class="flex items-center justify-between">
+
+                            <div>
+                                <h3 class="font-heading text-base font-semibold text-primary">
+                                    Pending Disposal Approvals
+                                </h3>
+
+                                <p class="mt-1 text-xs text-slate-500">
+                                    Records awaiting authorized disposition review.
+                                </p>
+                            </div>
+
+                            <span class="badge badge-warning">
+                                {{ $pendingDisposals->count() }} Pending
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="divide-y divide-border">
+
+                        @foreach ($pendingDisposals as $pending)
+
+                            <div class="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+                                <div>
+
+                                    <p class="text-sm font-semibold text-primary">
+                                        {{ $pending->record_title }}
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-slate-500">
+                                        Requested by
+                                        {{ $pending->disposition_requested_by }}
+
+                                        @if ($pending->disposition_requested_at)
+                                            &bull;
+                                            {{ $pending->disposition_requested_at->format('M d, Y h:i A') }}
+                                        @endif
+                                    </p>
+
+                                </div>
+
+                                <a
+                                    href="{{ route('retention.disposition', $pending) }}"
+                                    class="btn-outline whitespace-nowrap">
+
+                                    Review Request
+
+                                </a>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                </div>
+
+            @endif
+
+        @endcan
+
+
         {{-- Register --}}
         <div class="min-w-0 space-y-4">
 
@@ -704,190 +778,72 @@
                                         @endif
 
                                     </td>
-
-
                                     {{-- Status --}}
                                     <td class="px-5 py-4">
 
-                                        @can('manageRetention')
+                                        <span @class([
+                                            'badge',
 
-                                            <form
-                                                method="POST"
-                                                action="{{ route('retention.update', $retention) }}"
-                                                class="min-w-[170px]">
+                                            'badge-success' =>
+                                                $retention->status === 'retained',
 
-                                                @csrf
-                                                @method('PUT')
+                                            'badge-warning' =>
+                                                $retention->status === 'review_required',
 
-                                                <input type="hidden"
-                                                       name="record_title"
-                                                       value="{{ $retention->record_title }}">
+                                            'badge-info' =>
+                                                $retention->status === 'extended',
 
-                                                <input type="hidden"
-                                                       name="record_type"
-                                                       value="{{ $retention->record_type }}">
+                                            'bg-slate-100 text-slate-600' =>
+                                                $retention->status === 'archived',
 
-                                                <input type="hidden"
-                                                       name="record_id"
-                                                       value="{{ $retention->record_id }}">
+                                            'badge-error' =>
+                                                $retention->status === 'marked_for_disposal',
+                                        ])>
 
-                                                <input type="hidden"
-                                                       name="policy_id"
-                                                       value="{{ $retention->policy_id }}">
+                                            {{ str($retention->status)->headline() }}
 
-                                                <input type="hidden"
-                                                       name="start_date"
-                                                       value="{{ $retention->start_date?->toDateString() }}">
-
-                                                <input type="hidden"
-                                                       name="review_date"
-                                                       value="{{ $retention->review_date?->toDateString() }}">
-
-                                                <input type="hidden"
-                                                       name="compliance_status"
-                                                       value="{{ $retention->compliance_status }}">
-
-                                                <input type="hidden"
-                                                       name="notes"
-                                                       value="{{ $retention->notes }}">
-
-                                                <select
-                                                    name="status"
-                                                    onchange="this.form.submit()"
-                                                    class="input py-2 text-xs">
-
-                                                    @foreach ([
-                                                        'retained',
-                                                        'review_required',
-                                                        'extended',
-                                                        'archived',
-                                                        'marked_for_disposal'
-                                                    ] as $status)
-
-                                                        <option
-                                                            value="{{ $status }}"
-                                                            @selected($retention->status === $status)>
-
-                                                            {{ str($status)->headline() }}
-
-                                                        </option>
-
-                                                    @endforeach
-
-                                                </select>
-
-                                            </form>
-
-                                        @else
-
-                                            <span class="badge bg-slate-100 text-slate-600">
-                                                {{ str($retention->status)->headline() }}
-                                            </span>
-
-                                        @endcan
+                                        </span>
 
                                     </td>
-
-
                                     {{-- Compliance --}}
                                     <td class="px-5 py-4">
 
+                                        <span @class([
+                                            'badge',
+
+                                            'badge-success' =>
+                                                $retention->compliance_status === 'compliant',
+
+                                            'badge-warning' =>
+                                                $retention->compliance_status === 'at_risk',
+
+                                            'badge-error' =>
+                                                $retention->compliance_status === 'non_compliant',
+                                        ])>
+
+                                            {{ str($retention->compliance_status)->headline() }}
+
+                                        </span>
+
+
                                         @can('manageRetention')
 
-                                            <form
-                                                method="POST"
-                                                action="{{ route('retention.update', $retention) }}"
-                                                class="min-w-[145px]">
+                                            <a
+                                                href="{{ route('retention.review', $retention) }}"
+                                                class="mt-3 inline-flex items-center text-xs font-semibold text-primary transition hover:text-secondary">
 
-                                                @csrf
-                                                @method('PUT')
+                                                @if ($retention->status === 'review_required')
+                                                    Review Record →
+                                                @else
+                                                    Manage Retention →
+                                                @endif
 
-                                                <input type="hidden"
-                                                       name="record_title"
-                                                       value="{{ $retention->record_title }}">
-
-                                                <input type="hidden"
-                                                       name="record_type"
-                                                       value="{{ $retention->record_type }}">
-
-                                                <input type="hidden"
-                                                       name="record_id"
-                                                       value="{{ $retention->record_id }}">
-
-                                                <input type="hidden"
-                                                       name="policy_id"
-                                                       value="{{ $retention->policy_id }}">
-
-                                                <input type="hidden"
-                                                       name="start_date"
-                                                       value="{{ $retention->start_date?->toDateString() }}">
-
-                                                <input type="hidden"
-                                                       name="review_date"
-                                                       value="{{ $retention->review_date?->toDateString() }}">
-
-                                                <input type="hidden"
-                                                       name="status"
-                                                       value="{{ $retention->status }}">
-
-                                                <input type="hidden"
-                                                       name="notes"
-                                                       value="{{ $retention->notes }}">
-
-                                                <select
-                                                    name="compliance_status"
-                                                    onchange="this.form.submit()"
-                                                    @class([
-                                                        'input py-2 text-xs font-semibold',
-
-                                                        'border-success/30 bg-success/5 text-success'
-                                                            => $retention->compliance_status === 'compliant',
-
-                                                        'border-warning/40 bg-warning/5 text-amber-700'
-                                                            => $retention->compliance_status === 'at_risk',
-
-                                                        'border-error/30 bg-error/5 text-error'
-                                                            => $retention->compliance_status === 'non_compliant',
-                                                    ])>
-
-                                                    @foreach ([
-                                                        'compliant',
-                                                        'at_risk',
-                                                        'non_compliant'
-                                                    ] as $status)
-
-                                                        <option
-                                                            value="{{ $status }}"
-                                                            @selected($retention->compliance_status === $status)>
-
-                                                            {{ str($status)->headline() }}
-
-                                                        </option>
-
-                                                    @endforeach
-
-                                                </select>
-
-                                            </form>
-
-                                        @else
-
-                                            <span @class([
-                                                'badge',
-                                                'badge-success' => $retention->compliance_status === 'compliant',
-                                                'badge-warning' => $retention->compliance_status === 'at_risk',
-                                                'badge-error' => $retention->compliance_status === 'non_compliant',
-                                            ])>
-
-                                                {{ str($retention->compliance_status)->headline() }}
-
-                                            </span>
+                                            </a>
 
                                         @endcan
 
                                     </td>
-
-                                </tr>
+</tr>
 
                             @empty
 

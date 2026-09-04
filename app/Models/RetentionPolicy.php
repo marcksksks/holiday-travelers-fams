@@ -10,16 +10,27 @@ class RetentionPolicy extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'record_category', 'retention_years', 'description', 'legal_basis', 'is_active',
+        'name',
+        'record_category',
+        'retention_years',
+        'description',
+        'legal_basis',
+        'is_active',
     ];
 
     protected function casts(): array
     {
-        return ['retention_years' => 'integer', 'is_active' => 'boolean'];
+        return [
+            'retention_years' => 'integer',
+            'is_active' => 'boolean',
+        ];
     }
 
     public function recordRetentions()
     {
-        return $this->hasMany(RecordRetention::class, 'policy_id');
+        return $this->hasMany(
+            RecordRetention::class,
+            'policy_id'
+        );
     }
 }

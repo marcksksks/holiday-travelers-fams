@@ -34,6 +34,7 @@ class Rbac
         'reports.index' => ['admin_officer', 'manager', 'sys_admin'],
         'audit-trail.index' => ['manager', 'sys_admin'],
         'users.index' => ['sys_admin'],
+        'settings.index' => self::ALL_ROLES,
     ];
 
     /** permission key => allowed roles (matches PERMISSIONS in rbac.js) */
@@ -52,6 +53,7 @@ class Rbac
         'manageAppointments' => ['admin_officer', 'manager', 'sys_admin'],
         'viewConfidential' => ['admin_officer', 'legal_officer', 'manager', 'sys_admin'],
         'manageRetention' => ['admin_officer', 'sys_admin'],
+        'approveRetentionDisposal' => ['manager', 'sys_admin'],
         'manageLegal' => ['admin_officer', 'legal_officer', 'sys_admin'],
         'reviewLegal' => ['legal_officer', 'sys_admin'],
         'manageContracts' => ['admin_officer', 'sys_admin'],

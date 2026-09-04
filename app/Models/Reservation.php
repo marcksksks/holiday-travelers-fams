@@ -24,4 +24,9 @@ class Reservation extends Model
     {
         return $this->belongsTo(Facility::class);
     }
+
+    public function archiveDocuments()
+    {
+        return $this->hasMany(ArchiveDocument::class, 'linked_reservation_id');
+    }
 }

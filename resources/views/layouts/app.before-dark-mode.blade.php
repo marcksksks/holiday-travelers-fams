@@ -4,16 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title><?php echo $__env->yieldContent('title', 'Dashboard'); ?> · Holiday Travelers Travel & Tours Inc.</title>
+    <title>@yield('title', 'Dashboard') · Holiday Travelers Travel & Tours Inc.</title>
 
-    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="bg-background font-body text-slate-700 antialiased">
 
-<?php
+@php
     $navItems = [
         'dashboard' => ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'dashboard'],
         'facilities.index' => ['label' => 'Facilities', 'route' => 'facilities.index', 'icon' => 'facilities'],
@@ -30,20 +30,22 @@
     ];
 
     $allowedNav = \App\Support\Rbac::navFor(auth()->user()->app_role ?? null);
-?>
+@endphp
 
 <div class="flex min-h-screen">
 
-    
+    {{-- =========================
+         SIDEBAR
+    ========================== --}}
     <aside
         data-sidebar
         class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-primary text-white transition-all duration-300 md:sticky md:top-0 md:bottom-auto md:h-screen md:self-start">
 
-        
+        {{-- Logo --}}
         <div class="flex h-20 items-center justify-between border-b border-white/10 px-5">
 
             <a
-    href="<?php echo e(route('dashboard')); ?>"
+    href="{{ route('dashboard') }}"
     class="block min-w-0 overflow-hidden">
 
     <div data-sidebar-label class="min-w-0">
@@ -60,7 +62,7 @@
 
 </a>
 
-            
+            {{-- Mobile close --}}
             <button
                 type="button"
                 data-mobile-menu
@@ -73,7 +75,7 @@
 
         </div>
 
-        
+        {{-- Navigation --}}
         <nav class="flex-1 space-y-2 overflow-y-auto px-4 py-6">
 
             <p data-sidebar-label
@@ -81,61 +83,40 @@
                 Main Menu
             </p>
 
-            <?php $__currentLoopData = $navItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            @foreach ($navItems as $key => $item)
 
-                <?php if(in_array($key, $allowedNav, true)): ?>
+                @if (in_array($key, $allowedNav, true))
 
                     <a
-                        href="<?php echo e(route($item['route'])); ?>"
+                        href="{{ route($item['route']) }}"
                         class="group flex items-center gap-3 rounded-xl px-4 py-3 font-button text-sm font-medium transition-all duration-200
-                        <?php echo e(request()->routeIs($item['route'])
+                        {{ request()->routeIs($item['route'])
                             ? 'border-l-4 border-secondary bg-white/10 text-white shadow-sm'
-                            : 'text-slate-300 hover:bg-white/5 hover:text-white'); ?>">
+                            : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
 
-                        <?php if (isset($component)) { $__componentOriginalb86967db162ccc0bceeb1ac50f169b8f = $component; } ?>
-<?php if (isset($attributes)) { $__attributesOriginalb86967db162ccc0bceeb1ac50f169b8f = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.nav-icon','data' => ['name' => $item['icon']]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
-<?php $component->withName('nav-icon'); ?>
-<?php if ($component->shouldRender()): ?>
-<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
-<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
-<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
-<?php endif; ?>
-<?php $component->withAttributes(['name' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($item['icon'])]); ?>
-<?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginalb86967db162ccc0bceeb1ac50f169b8f)): ?>
-<?php $attributes = $__attributesOriginalb86967db162ccc0bceeb1ac50f169b8f; ?>
-<?php unset($__attributesOriginalb86967db162ccc0bceeb1ac50f169b8f); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginalb86967db162ccc0bceeb1ac50f169b8f)): ?>
-<?php $component = $__componentOriginalb86967db162ccc0bceeb1ac50f169b8f; ?>
-<?php unset($__componentOriginalb86967db162ccc0bceeb1ac50f169b8f); ?>
-<?php endif; ?>
+                        <x-nav-icon :name="$item['icon']" />
 
                         <span
                             data-sidebar-label
                             class="whitespace-nowrap">
-                            <?php echo e($item['label']); ?>
-
+                            {{ $item['label'] }}
                         </span>
 
                     </a>
 
-                <?php endif; ?>
+                @endif
 
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            @endforeach
 
         </nav>
 
-        
+        {{-- User information --}}
         <div class="border-t border-white/10 bg-primary/50 px-4 py-4">
 
             <div class="flex items-center gap-3">
 
                 <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-white shadow-md">
-                    <?php echo e(strtoupper(substr(auth()->user()->full_name, 0, 1))); ?>
-
+                    {{ strtoupper(substr(auth()->user()->full_name, 0, 1)) }}
                 </div>
 
                 <div
@@ -143,13 +124,11 @@
                     class="min-w-0">
 
                     <p class="truncate font-button text-sm font-medium text-white">
-                        <?php echo e(auth()->user()->full_name); ?>
-
+                        {{ auth()->user()->full_name }}
                     </p>
 
                     <p class="truncate text-xs text-accent">
-                        <?php echo e(\App\Models\User::ROLES[auth()->user()->app_role] ?? auth()->user()->app_role); ?>
-
+                        {{ \App\Models\User::ROLES[auth()->user()->app_role] ?? auth()->user()->app_role }}
                     </p>
 
                 </div>
@@ -161,16 +140,18 @@
     </aside>
 
 
-    
+    {{-- =========================
+         MAIN CONTENT
+    ========================== --}}
     <div class="flex min-w-0 flex-1 flex-col">
 
-        
+        {{-- Header --}}
         <header
             class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-border bg-card px-4 shadow-sm md:px-8">
 
             <div class="flex items-center gap-3">
 
-                
+                {{-- Desktop sidebar toggle --}}
                 <button
                     type="button"
                     data-sidebar-toggle
@@ -194,7 +175,7 @@
 
                 </button>
 
-                
+                {{-- Mobile menu --}}
                 <button
                     type="button"
                     data-mobile-menu
@@ -208,7 +189,7 @@
                 <div>
 
                     <h1 class="font-heading text-xl font-bold text-primary">
-                        <?php echo $__env->yieldContent('title', 'Dashboard'); ?>
+                        @yield('title', 'Dashboard')
                     </h1>
 
                     <p class="hidden text-xs text-accent sm:block">
@@ -220,10 +201,10 @@
             </div>
 
 
-            
+            {{-- Header right --}}
             <div class="flex items-center gap-3">
-                
-                <?php
+                {{-- Notifications --}}
+                @php
                     $notificationBaseQuery = \App\Models\AppNotification::where(
                         'recipient_email',
                         auth()->user()->email
@@ -237,18 +218,18 @@
                         ->orderByDesc('created_at')
                         ->limit(5)
                         ->get();
-                ?>
+                @endphp
 
-                <?php if(Route::has('notifications.index')): ?>
+                @if (Route::has('notifications.index'))
 
                     <div class="relative">
 
-                        
+                        {{-- Bell --}}
                         <button
                             type="button"
                             data-notification-button
                             class="relative rounded-lg p-2 text-slate-500 transition hover:bg-accent/10 hover:text-primary"
-                            aria-label="<?php echo e($unreadNotificationCount > 0 ? $unreadNotificationCount . ' unread notifications' : 'Notifications'); ?>"
+                            aria-label="{{ $unreadNotificationCount > 0 ? $unreadNotificationCount . ' unread notifications' : 'Notifications' }}"
                             aria-expanded="false"
                             title="Notifications">
 
@@ -266,27 +247,26 @@
 
                             </svg>
 
-                            <?php if($unreadNotificationCount > 0): ?>
+                            @if ($unreadNotificationCount > 0)
 
                                 <span
                                     class="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-secondary px-1 font-button text-[9px] font-bold leading-none text-white shadow-sm">
 
-                                    <?php echo e($unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount); ?>
-
+                                    {{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}
 
                                 </span>
 
-                            <?php endif; ?>
+                            @endif
 
                         </button>
 
 
-                        
+                        {{-- Dropdown --}}
                         <div
                             data-notification-menu
                             class="absolute right-0 z-50 mt-3 hidden w-96 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
 
-                            
+                            {{-- Header --}}
                             <div class="flex items-center justify-between border-b border-border px-5 py-4">
 
                                 <div>
@@ -295,27 +275,27 @@
                                     </h3>
 
                                     <p class="mt-0.5 text-xs text-slate-500">
-                                        <?php echo e($unreadNotificationCount); ?> unread
+                                        {{ $unreadNotificationCount }} unread
                                     </p>
                                 </div>
 
-                                <?php if($unreadNotificationCount > 0): ?>
+                                @if ($unreadNotificationCount > 0)
 
                                     <span class="rounded-full bg-secondary/10 px-2.5 py-1 text-[10px] font-semibold text-secondary">
-                                        <?php echo e($unreadNotificationCount); ?> New
+                                        {{ $unreadNotificationCount }} New
                                     </span>
 
-                                <?php endif; ?>
+                                @endif
 
                             </div>
 
 
-                            
+                            {{-- Notification items --}}
                             <div class="max-h-96 overflow-y-auto">
 
-                                <?php $__empty_1 = true; $__currentLoopData = $headerNotifications; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $notification): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                @forelse ($headerNotifications as $notification)
 
-                                    <?php
+                                    @php
                                         $severity = strtolower($notification->severity ?? 'info');
 
                                         $iconClass = match ($severity) {
@@ -324,44 +304,44 @@
                                             'error', 'danger' => 'bg-error/10 text-error',
                                             default => 'bg-accent/10 text-accent',
                                         };
-                                    ?>
+                                    @endphp
 
                                     <div
-                                        class="border-b border-border px-5 py-4 transition hover:bg-background <?php echo e(!$notification->is_read ? 'bg-accent/5' : ''); ?>">
+                                        class="border-b border-border px-5 py-4 transition hover:bg-background {{ !$notification->is_read ? 'bg-accent/5' : '' }}">
 
                                         <div class="flex gap-3">
 
-                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl <?php echo e($iconClass); ?>">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl {{ $iconClass }}">
 
-                                                <?php if($severity === 'success'): ?>
+                                                @if ($severity === 'success')
 
                                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                               d="M5 13l4 4L19 7" />
                                                     </svg>
 
-                                                <?php elseif($severity === 'warning'): ?>
+                                                @elseif ($severity === 'warning')
 
                                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                               d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
                                                     </svg>
 
-                                                <?php elseif($severity === 'error' || $severity === 'danger'): ?>
+                                                @elseif ($severity === 'error' || $severity === 'danger')
 
                                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                               d="M6 18L18 6M6 6l12 12" />
                                                     </svg>
 
-                                                <?php else: ?>
+                                                @else
 
                                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                               d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
 
-                                                <?php endif; ?>
+                                                @endif
 
                                             </div>
 
@@ -371,26 +351,23 @@
                                                 <div class="flex items-start justify-between gap-2">
 
                                                     <p class="truncate font-button text-sm font-semibold text-primary">
-                                                        <?php echo e($notification->title); ?>
-
+                                                        {{ $notification->title }}
                                                     </p>
 
-                                                    <?php if(!$notification->is_read): ?>
+                                                    @if (!$notification->is_read)
 
                                                         <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-secondary"></span>
 
-                                                    <?php endif; ?>
+                                                    @endif
 
                                                 </div>
 
                                                 <p class="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">
-                                                    <?php echo e(\Illuminate\Support\Str::limit($notification->body, 100)); ?>
-
+                                                    {{ \Illuminate\Support\Str::limit($notification->body, 100) }}
                                                 </p>
 
                                                 <p class="mt-2 text-[10px] text-slate-400">
-                                                    <?php echo e($notification->created_at->diffForHumans()); ?>
-
+                                                    {{ $notification->created_at->diffForHumans() }}
                                                 </p>
 
                                             </div>
@@ -399,7 +376,7 @@
 
                                     </div>
 
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                @empty
 
                                     <div class="px-6 py-10 text-center">
 
@@ -422,16 +399,16 @@
 
                                     </div>
 
-                                <?php endif; ?>
+                                @endforelse
 
                             </div>
 
 
-                            
+                            {{-- Footer --}}
                             <div class="bg-background px-4 py-3">
 
                                 <a
-                                    href="<?php echo e(route('notifications.index')); ?>"
+                                    href="{{ route('notifications.index') }}"
                                     class="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-button text-xs font-semibold text-primary transition hover:bg-accent/10">
 
                                     View all notifications
@@ -449,11 +426,11 @@
 
                     </div>
 
-                <?php endif; ?>
+                @endif
 
 
 
-                
+                {{-- Profile --}}
                 <div class="relative">
 
                     <button
@@ -464,28 +441,25 @@
                         <div class="hidden text-right sm:block">
 
                             <p class="font-button text-sm font-medium text-primary">
-                                <?php echo e(auth()->user()->full_name); ?>
-
+                                {{ auth()->user()->full_name }}
                             </p>
 
                             <p class="text-xs text-accent">
-                                <?php echo e(\App\Models\User::ROLES[auth()->user()->app_role] ?? auth()->user()->app_role); ?>
-
+                                {{ \App\Models\User::ROLES[auth()->user()->app_role] ?? auth()->user()->app_role }}
                             </p>
 
                         </div>
 
                         <div class="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-sm">
 
-                            <?php echo e(strtoupper(substr(auth()->user()->full_name, 0, 1))); ?>
-
+                            {{ strtoupper(substr(auth()->user()->full_name, 0, 1)) }}
 
                         </div>
 
                     </button>
 
 
-                    
+                    {{-- Profile dropdown --}}
                     <div
                         data-profile-menu
                         class="absolute right-0 mt-2 hidden w-52 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
@@ -493,30 +467,58 @@
                         <div class="border-b border-slate-100 px-4 py-3">
 
                             <p class="text-sm font-medium text-slate-900">
-                                <?php echo e(auth()->user()->full_name); ?>
-
+                                {{ auth()->user()->full_name }}
                             </p>
 
                             <p class="truncate text-xs text-accent">
-                                <?php echo e(auth()->user()->email); ?>
-
+                                {{ auth()->user()->email }}
                             </p>
 
                         </div>
 
-                        <?php if(Route::has('password.change')): ?>
+                        @if (Route::has('settings.index'))
 
                             <a
-                                href="<?php echo e(route('password.change')); ?>"
+                                href="{{ route('settings.index') }}"
+                                @class([
+                                    'flex items-center gap-3 px-4 py-2.5 text-sm transition',
+                                    'bg-primary/5 font-medium text-primary' => request()->routeIs('settings.*'),
+                                    'text-slate-700 hover:bg-slate-50' => ! request()->routeIs('settings.*'),
+                                ])>
+
+                                <svg
+                                    class="h-4 w-4 shrink-0"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM19.4 15a1.7 1.7 0 00.34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0015 19.4a1.7 1.7 0 00-1 .6 1.7 1.7 0 00-.4 1.1V21h-4v-.1A1.7 1.7 0 008.6 19.4a1.7 1.7 0 00-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-.6-1 1.7 1.7 0 00-1.1-.4H3v-4h.1A1.7 1.7 0 004.6 8.6a1.7 1.7 0 00-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 009 4.6a1.7 1.7 0 001-.6 1.7 1.7 0 00.4-1.1V3h4v.1A1.7 1.7 0 0015.4 4.6a1.7 1.7 0 001.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0019.4 9c.18.37.47.67.84.85.33.16.69.25 1.06.25h.1v4h-.1c-.37 0-.73.09-1.06.25-.37.18-.66.48-.84.85z" />
+
+                                </svg>
+
+                                <span>Settings</span>
+
+                            </a>
+
+                        @endif
+
+                        @if (Route::has('password.change'))
+
+                            <a
+                                href="{{ route('password.change') }}"
                                 class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
                                 Change Password
                             </a>
 
-                        <?php endif; ?>
+                        @endif
 
-                        <form method="POST" action="<?php echo e(route('logout')); ?>">
+                        <form method="POST" action="{{ route('logout') }}">
 
-                            <?php echo csrf_field(); ?>
+                            @csrf
 
                             <button
                                 type="submit"
@@ -535,26 +537,25 @@
         </header>
 
 
-        
+        {{-- Mobile overlay --}}
         <div
             data-sidebar-overlay
             class="fixed inset-0 z-40 hidden bg-slate-950/50 md:hidden">
         </div>
 
 
-        
+        {{-- Page content --}}
         <main class="flex-1 bg-background p-4 md:p-8 lg:p-10">
 
-            
-            <?php if(session('status')): ?>
+            {{-- Success --}}
+            @if (session('status'))
 
                 <div
                     data-toast
                     class="mb-5 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm">
 
                     <span>
-                        <?php echo e(session('status')); ?>
-
+                        {{ session('status') }}
                     </span>
 
                     <button
@@ -568,11 +569,11 @@
 
                 </div>
 
-            <?php endif; ?>
+            @endif
 
 
-            
-            <?php if($errors->any()): ?>
+            {{-- Validation errors --}}
+            @if ($errors->any())
 
                 <div
                     data-toast
@@ -597,20 +598,20 @@
 
                     <ul class="mt-2 list-inside list-disc">
 
-                        <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        @foreach ($errors->all() as $error)
 
-                            <li><?php echo e($error); ?></li>
+                            <li>{{ $error }}</li>
 
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        @endforeach
 
                     </ul>
 
                 </div>
 
-            <?php endif; ?>
+            @endif
 
 
-            <?php echo $__env->yieldContent('content'); ?>
+            @yield('content')
 
         </main>
 
@@ -627,4 +628,3 @@
 
 
 
-<?php /**PATH C:\Users\marcj\Documents\fams-laravel-backup\resources\views/layouts/app.blade.php ENDPATH**/ ?>

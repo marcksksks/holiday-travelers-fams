@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -210,4 +210,275 @@
 
 ::-webkit-scrollbar-thumb:hover {
     background: #6FA9E6;
+}
+
+/* Sidebar scrolls independently without showing its scrollbar */
+[data-sidebar] nav {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+[data-sidebar] nav::-webkit-scrollbar {
+    display: none;
+}
+/* =========================================================
+   APPEARANCE SYSTEM
+   Light: Sky & Sunset
+   Dark: Night Sky & Sunset
+========================================================= */
+
+html {
+    color-scheme: light;
+}
+
+html.dark {
+    color-scheme: dark;
+    background-color: #0B1220;
+}
+
+html.dark body {
+    background-color: #0B1220;
+    color: #CBD5E1;
+}
+
+/* Primary page surfaces */
+html.dark .bg-background {
+    background-color: #0B1220 !important;
+}
+
+html.dark .bg-background\/60 {
+    background-color: rgba(11, 18, 32, 0.82) !important;
+}
+
+html.dark .bg-background\/40 {
+    background-color: rgba(11, 18, 32, 0.65) !important;
+}
+
+html.dark .bg-card,
+html.dark .bg-white {
+    background-color: #111827 !important;
+}
+
+/* Cards */
+html.dark .card {
+    border-color: #263449;
+    background-color: #111827;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.28);
+}
+
+/* Typography */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6,
+html.dark .text-primary,
+html.dark .page-title,
+html.dark .section-title,
+html.dark .label {
+    color: #EAF2FF !important;
+}
+
+html.dark .text-slate-900 {
+    color: #F8FAFC !important;
+}
+
+html.dark .text-slate-800 {
+    color: #E2E8F0 !important;
+}
+
+html.dark .text-slate-700 {
+    color: #CBD5E1 !important;
+}
+
+html.dark .text-slate-600 {
+    color: #B6C2D2 !important;
+}
+
+html.dark .text-slate-500 {
+    color: #94A3B8 !important;
+}
+
+html.dark .text-slate-400 {
+    color: #7C8CA1 !important;
+}
+
+/* Borders */
+html.dark .border-border,
+html.dark .border-slate-100,
+html.dark .border-slate-200 {
+    border-color: #263449 !important;
+}
+
+html.dark .divide-border > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+    border-color: #263449 !important;
+}
+
+/* Slate backgrounds */
+html.dark .bg-slate-50 {
+    background-color: #151E2E !important;
+}
+
+html.dark .bg-slate-100 {
+    background-color: #1B2638 !important;
+}
+
+/* Form controls */
+html.dark .input {
+    border-color: #334155;
+    background-color: #0F172A;
+    color: #E2E8F0;
+}
+
+html.dark .input::placeholder {
+    color: #64748B;
+}
+
+html.dark .input:focus {
+    border-color: #6FA9E6;
+    --tw-ring-color: rgba(111, 169, 230, 0.22);
+}
+
+html.dark select.input {
+    background-color: #0F172A;
+    color: #E2E8F0;
+}
+
+/* Buttons */
+html.dark .btn-outline {
+    border-color: #334155;
+    background-color: #172033;
+    color: #EAF2FF;
+}
+
+html.dark .btn-outline:hover {
+    border-color: #6FA9E6;
+    background-color: rgba(111, 169, 230, 0.10);
+}
+
+/* Tables */
+html.dark .table-shell {
+    border-color: #263449;
+    background-color: #111827;
+}
+
+html.dark .table-header {
+    background-color: #151E2E;
+    color: #94A3B8;
+}
+
+html.dark .table-row {
+    border-color: #263449;
+}
+
+html.dark .table-row:hover {
+    background-color: rgba(111, 169, 230, 0.07);
+}
+
+/* Common table row hover classes used throughout FAMS */
+html.dark .hover\:bg-sky-50\/40:hover,
+html.dark .hover\:bg-sky-50\/50:hover,
+html.dark .hover\:bg-sky-50:hover {
+    background-color: rgba(111, 169, 230, 0.07) !important;
+}
+
+html.dark .hover\:bg-slate-50:hover {
+    background-color: #172033 !important;
+}
+
+/* Dropdowns / menus */
+html.dark [data-profile-menu],
+html.dark [data-notification-menu] {
+    border-color: #263449;
+    background-color: #111827;
+}
+
+/* Keep sidebar's Deep Navy identity */
+html.dark [data-sidebar] {
+    background-color: #102F59;
+}
+
+/* Focus rings */
+html.dark * {
+    --tw-ring-offset-color: #0B1220;
+}
+
+/* Scrollbar */
+html.dark ::-webkit-scrollbar-track {
+    background: #0B1220;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+    background: #334155;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+    background: #6FA9E6;
+}
+
+/* Theme selection cards */
+.theme-choice {
+    border: 1px solid #E5E7EB;
+    background: #FFFFFF;
+    transition:
+        border-color 180ms ease,
+        background-color 180ms ease,
+        transform 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.theme-choice:hover {
+    border-color: #6FA9E6;
+    transform: translateY(-1px);
+}
+
+.theme-choice.is-active {
+    border-color: #F59B45;
+    background-color: rgba(245, 155, 69, 0.06);
+    box-shadow: 0 0 0 2px rgba(245, 155, 69, 0.15);
+}
+
+html.dark .theme-choice {
+    border-color: #334155;
+    background-color: #0F172A;
+}
+
+html.dark .theme-choice:hover {
+    border-color: #6FA9E6;
+    background-color: #151E2E;
+}
+
+html.dark .theme-choice.is-active {
+    border-color: #F59B45;
+    background-color: rgba(245, 155, 69, 0.10);
+    box-shadow: 0 0 0 2px rgba(245, 155, 69, 0.18);
+}
+
+/* Cleaner shadows in dark mode */
+html.dark .shadow-card {
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.30) !important;
+}
+
+html.dark .shadow-soft {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.38) !important;
+}
+/* =========================================================
+   COMPANY LOGO
+   Keep logo background white in both Light and Dark modes
+========================================================= */
+
+.company-logo-shell {
+    background-color: #FFFFFF !important;
+    border-radius: 9999px;
+}
+
+html.dark .company-logo-shell {
+    background-color: #FFFFFF !important;
+}
+
+.company-logo-shell img {
+    border-radius: 9999px;
 }

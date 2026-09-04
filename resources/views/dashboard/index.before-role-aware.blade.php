@@ -1,17 +1,19 @@
-<?php $__env->startSection('title', 'Dashboard'); ?>
+@extends('layouts.app')
 
-<?php $__env->startSection('content'); ?>
+@section('title', 'Dashboard')
+
+@section('content')
 
 <div class="space-y-8">
 
-    
+    {{-- Welcome --}}
     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 
         <div>
             <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
 
             <h2 class="font-heading text-2xl font-bold tracking-tight text-primary">
-                Welcome back, <?php echo e(auth()->user()->full_name); ?>!
+                Welcome back, {{ auth()->user()->full_name }}!
             </h2>
 
             <p class="mt-1 text-sm text-slate-500">
@@ -22,13 +24,13 @@
     </div>
 
 
-    
+    {{-- Statistics --}}
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 
 
-        
+        {{-- Facilities --}}
         <a
-            href="<?php echo e(route('facilities.index')); ?>"
+            href="{{ route('facilities.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-primary p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
             <div class="flex items-start justify-between gap-3">
@@ -39,8 +41,7 @@
                     </p>
 
                     <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                        <?php echo e($facilityCount); ?>
-
+                        {{ $facilityCount }}
                     </p>
                 </div>
 
@@ -65,9 +66,9 @@
         </a>
 
 
-        
+        {{-- Reservations --}}
         <a
-            href="<?php echo e(route('reservations.index')); ?>"
+            href="{{ route('reservations.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-secondary p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
             <div class="flex items-start justify-between gap-3">
@@ -78,8 +79,7 @@
                     </p>
 
                     <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                        <?php echo e($pendingReservations); ?>
-
+                        {{ $pendingReservations }}
                     </p>
                 </div>
 
@@ -104,9 +104,9 @@
         </a>
 
 
-        
+        {{-- Appointments --}}
         <a
-            href="<?php echo e(route('appointments.index')); ?>"
+            href="{{ route('appointments.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-accent p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
             <div class="flex items-start justify-between gap-3">
@@ -117,8 +117,7 @@
                     </p>
 
                     <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                        <?php echo e($todaysAppointments); ?>
-
+                        {{ $todaysAppointments }}
                     </p>
                 </div>
 
@@ -143,9 +142,9 @@
         </a>
 
 
-        
+        {{-- Visitors --}}
         <a
-            href="<?php echo e(route('visitors.index')); ?>"
+            href="{{ route('visitors.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-success p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
             <div class="flex items-start justify-between gap-3">
@@ -156,8 +155,7 @@
                     </p>
 
                     <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                        <?php echo e($checkedInVisitors); ?>
-
+                        {{ $checkedInVisitors }}
                     </p>
                 </div>
 
@@ -182,9 +180,9 @@
         </a>
 
 
-        
+        {{-- Contracts --}}
         <a
-            href="<?php echo e(route('contracts.index')); ?>"
+            href="{{ route('contracts.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-warning p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
             <div class="flex items-start justify-between gap-3">
@@ -195,8 +193,7 @@
                     </p>
 
                     <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                        <?php echo e($contractsExpiringSoon); ?>
-
+                        {{ $contractsExpiringSoon }}
                     </p>
                 </div>
 
@@ -221,9 +218,9 @@
         </a>
 
 
-        
+        {{-- Legal --}}
         <a
-            href="<?php echo e(route('legal.index')); ?>"
+            href="{{ route('legal.index') }}"
             class="group card relative overflow-hidden border-b-4 border-b-error p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
 
             <div class="flex items-start justify-between gap-3">
@@ -234,8 +231,7 @@
                     </p>
 
                     <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                        <?php echo e($legalActionRequired); ?>
-
+                        {{ $legalActionRequired }}
                     </p>
                 </div>
 
@@ -262,11 +258,11 @@
     </div>
 
 
-    
+    {{-- Dashboard panels --}}
     <div class="grid gap-6 lg:grid-cols-2">
 
 
-        
+        {{-- Reservations --}}
         <section class="card overflow-hidden">
 
             <div class="flex items-center justify-between gap-4 border-b border-border px-6 py-5">
@@ -297,7 +293,7 @@
                 </div>
 
                 <a
-                    href="<?php echo e(route('reservations.index')); ?>"
+                    href="{{ route('reservations.index') }}"
                     class="group flex shrink-0 items-center gap-1 text-xs font-medium text-primary hover:text-secondary">
 
                     View all
@@ -313,23 +309,20 @@
 
             <ul class="divide-y divide-border">
 
-                <?php $__empty_1 = true; $__currentLoopData = $upcomingReservations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $reservation): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                @forelse ($upcomingReservations as $reservation)
 
                     <li class="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-background">
 
                         <div class="min-w-0">
 
                             <p class="truncate font-button text-sm font-medium text-primary">
-                                <?php echo e($reservation->facility_name); ?>
-
+                                {{ $reservation->facility_name }}
                             </p>
 
                             <p class="mt-1 text-xs text-slate-500">
-                                <?php echo e($reservation->date->format('M d, Y')); ?>
-
+                                {{ $reservation->date->format('M d, Y') }}
                                 &middot;
-                                <?php echo e($reservation->start_time); ?>&ndash;<?php echo e($reservation->end_time); ?>
-
+                                {{ $reservation->start_time }}&ndash;{{ $reservation->end_time }}
                             </p>
 
                         </div>
@@ -340,7 +333,7 @@
 
                     </li>
 
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                @empty
 
                     <li class="px-6 py-10">
 
@@ -365,14 +358,14 @@
 
                     </li>
 
-                <?php endif; ?>
+                @endforelse
 
             </ul>
 
         </section>
 
 
-        
+        {{-- Appointments --}}
         <section class="card overflow-hidden">
 
             <div class="flex items-center justify-between gap-4 border-b border-border px-6 py-5">
@@ -403,7 +396,7 @@
                 </div>
 
                 <a
-                    href="<?php echo e(route('appointments.index')); ?>"
+                    href="{{ route('appointments.index') }}"
                     class="group flex shrink-0 items-center gap-1 text-xs font-medium text-primary hover:text-accent">
 
                     View all
@@ -419,39 +412,35 @@
 
             <ul class="divide-y divide-border">
 
-                <?php $__empty_1 = true; $__currentLoopData = $recentAppointments; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $appointment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                @forelse ($recentAppointments as $appointment)
 
                     <li class="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-background">
 
                         <div class="min-w-0">
 
                             <p class="truncate font-button text-sm font-medium text-primary">
-                                <?php echo e($appointment->visitor_name); ?>
-
+                                {{ $appointment->visitor_name }}
                             </p>
 
                             <p class="mt-1 text-xs text-slate-500">
 
-                                <?php echo e($appointment->start_time); ?>
+                                {{ $appointment->start_time }}
 
-
-                                <?php if($appointment->host_name): ?>
-                                    &middot; Host: <?php echo e($appointment->host_name); ?>
-
-                                <?php endif; ?>
+                                @if($appointment->host_name)
+                                    &middot; Host: {{ $appointment->host_name }}
+                                @endif
 
                             </p>
 
                         </div>
 
                         <span class="badge badge-info shrink-0">
-                            <?php echo e(ucfirst($appointment->status)); ?>
-
+                            {{ ucfirst($appointment->status) }}
                         </span>
 
                     </li>
 
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                @empty
 
                     <li class="px-6 py-10">
 
@@ -476,7 +465,7 @@
 
                     </li>
 
-                <?php endif; ?>
+                @endforelse
 
             </ul>
 
@@ -486,5 +475,4 @@
 
 </div>
 
-<?php $__env->stopSection(); ?>
-<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\marcj\Documents\fams-laravel-backup\resources\views/dashboard/index.blade.php ENDPATH**/ ?>
+@endsection

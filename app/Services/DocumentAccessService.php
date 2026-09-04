@@ -7,61 +7,164 @@ use App\Models\User;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 
-/** Port of base44/functions/documentAccess/entry.ts */
 class DocumentAccessService
 {
-    private const GENERAL = ['employee', 'receptionist', 'admin_officer', 'manager', 'legal_officer', 'sys_admin'];
-    private const RESTRICTED = ['admin_officer', 'manager', 'legal_officer', 'sys_admin'];
-    private const CONFIDENTIAL = ['admin_officer', 'legal_officer', 'sys_admin'];
+    public function __construct(
+        private AuditService $audit
+    ) {}
 
-    public function __construct(private AuditService $audit) {}
-
-    /**
-     * Authorises access to a privately-stored document, then returns a
-     * short-lived (5 minute) signed URL — same TTL as the original.
-     */
-    public function signedUrl(User $user, ArchiveDocument $doc): string
-    {
-        if (! $doc->file_uri) {
-            throw ValidationException::withMessages(['file_uri' => 'No file attached to this record.']);
+    public function signedUrl(
+        User $user,
+        ArchiveDocument $document
+    ): string {
+        if (! $document->file_uri) {
+            throw ValidationException::withMessages([
+                'file_uri' =>
+                    'No file attached to this record.',
+            ]);
         }
 
-        $this->assertCanAccess($user, $doc);
-        $role = $user->app_role;
-        $isOwner = $doc->owner_email === $user->email || $doc->uploaded_by_email === $user->email;
-        $level = $doc->confidentiality ?: 'general';
+        $this->assertCanAccess(
+            $user,
+            $document
+        );
 
-        $allowed = match ($level) {
-            'general' => in_array($role, self::GENERAL, true),
-            'restricted' => in_array($role, self::RESTRICTED, true) || $isOwner,
-            default => in_array($role, self::CONFIDENTIAL, true) || $isOwner, // confidential
-        };
+        $url = URL::temporarySignedRoute(
+            'documents.download',
+            now()->addMinutes(5),
+            [
+                'document' => $document->id,
+            ]
+        );
 
-        if (! $allowed) {
-            $this->audit->log($user, 'update', 'documents', "Denied access • {$doc->title}", (string) $doc->id, "Confidentiality: {$level}");
-            throw ValidationException::withMessages(['confidentiality' => 'You are not authorised to open this document.'])->status(403);
-        }
-
-        $url = URL::temporarySignedRoute('documents.download', now()->addMinutes(5), ['document' => $doc->id]);
-
-        $this->audit->log($user, 'update', 'documents', "Opened • {$doc->title}", (string) $doc->id, 'Version '.($doc->version ?: 1));
+        $this->audit->log(
+            $user,
+            'access',
+            'documents',
+            "Opened - {$document->title}",
+            (string) $document->id,
+            'Version '.($document->version ?: 1)
+        );
 
         return $url;
     }
 
-    public function assertCanAccess(User $user, ArchiveDocument $doc): void
-    {
-        $role = $user->app_role;
-        $isOwner = $doc->owner_email === $user->email || $doc->uploaded_by_email === $user->email;
-        $level = $doc->confidentiality ?: 'general';
-        $allowed = match ($level) {
-            'general' => in_array($role, self::GENERAL, true),
-            'restricted' => in_array($role, self::RESTRICTED, true) || $isOwner,
-            default => in_array($role, self::CONFIDENTIAL, true) || $isOwner,
-        };
-        if (! $allowed) {
-            $this->audit->log($user, 'access_denied', 'documents', "Denied access • {$doc->title}", (string) $doc->id, "Confidentiality: {$level}");
-            throw ValidationException::withMessages(['confidentiality' => 'You are not authorised to open this document.'])->status(403);
+    public function assertCanAccess(
+        User $user,
+        ArchiveDocument $document
+    ): void {
+        /*
+         * A valid signed URL alone must not grant
+         * access to somebody who cannot use
+         * Document Management.
+         */
+        if (! $user->can('viewDocuments')) {
+            $this->deny(
+                $user,
+                $document,
+                'Document Management access required.'
+            );
         }
+
+        /*
+         * Source-module RBAC.
+         *
+         * This applies to both:
+         * - automatically generated records
+         * - manually uploaded documents linked
+         *   to another system record
+         */
+        $requirements = [];
+
+        if (
+            $document->source_module === 'visitors' ||
+            $document->linked_visitor_id
+        ) {
+            $requirements[] = 'viewVisitors';
+        }
+
+        if (
+            $document->source_module === 'contracts' ||
+            $document->linked_contract_id
+        ) {
+            $requirements[] = 'viewContracts';
+        }
+
+        if (
+            $document->source_module === 'legal' ||
+            $document->linked_legal_record_id
+        ) {
+            $requirements[] = 'viewLegal';
+        }
+
+        foreach (
+            array_unique($requirements)
+            as $permission
+        ) {
+            if (! $user->can($permission)) {
+                $this->deny(
+                    $user,
+                    $document,
+                    'You are not authorised to access records from this source module.'
+                );
+            }
+        }
+
+        /*
+         * Confidentiality check.
+         */
+        $level =
+            $document->confidentiality
+            ?: 'general';
+
+        $isOwner =
+            $document->owner_email === $user->email ||
+            $document->uploaded_by_email === $user->email;
+
+        $allowed = match ($level) {
+            'general' => true,
+
+            /*
+             * All users who can enter Document
+             * Management may access restricted
+             * records unless source-module RBAC
+             * blocked them above.
+             */
+            'restricted' => true,
+
+            'confidential' =>
+                $user->can('viewConfidential') ||
+                $isOwner,
+
+            default => false,
+        };
+
+        if (! $allowed) {
+            $this->deny(
+                $user,
+                $document,
+                "Confidentiality: {$level}"
+            );
+        }
+    }
+
+    private function deny(
+        User $user,
+        ArchiveDocument $document,
+        string $reason
+    ): never {
+        $this->audit->log(
+            $user,
+            'access_denied',
+            'documents',
+            "Denied access - {$document->title}",
+            (string) $document->id,
+            $reason
+        );
+
+        throw ValidationException::withMessages([
+            'document' =>
+                'You are not authorised to access this document.',
+        ])->status(403);
     }
 }

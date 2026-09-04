@@ -30,4 +30,9 @@ class Visitor extends Model
     {
         return $this->belongsTo(Appointment::class);
     }
+
+    public function archiveDocuments()
+    {
+        return $this->hasMany(ArchiveDocument::class, 'linked_visitor_id');
+    }
 }
