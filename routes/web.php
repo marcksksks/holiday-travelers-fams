@@ -84,8 +84,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/visitors/{visitor}/check-out', [VisitorController::class, 'checkOut'])->name('visitors.check-out');
         Route::post('/visitors/{visitor}/decline', [VisitorController::class, 'decline'])->name('visitors.decline');
         Route::post('/visitors/{visitor}/sync-calendar', [VisitorController::class, 'syncCalendar'])->name('visitors.sync-calendar');
-        Route::post('/visitors/ai-assist', [VisitorController::class, 'aiAssist'])->name('visitors.ai-assist');
     });
+
+    Route::middleware('role:receptionist,admin_officer,manager,sys_admin')
+        ->post('/visitors/ai-assist', [VisitorController::class, 'aiAssist'])
+        ->name('visitors.ai-assist');
 
     // Records & Archive
     Route::middleware('role:admin_officer,manager,legal_officer,sys_admin')->group(function () {

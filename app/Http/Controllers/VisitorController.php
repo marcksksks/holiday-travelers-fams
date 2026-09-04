@@ -85,6 +85,8 @@ class VisitorController extends Controller
 
     public function aiAssist(Request $request): JsonResponse
     {
+        abort_unless($request->user()->can('useAiAssist'), 403);
+
         $data = $request->validate([
             'mode' => ['required', 'in:classify,extract,summary,appointment_check'],
             'text' => ['nullable', 'string', 'max:2000'],

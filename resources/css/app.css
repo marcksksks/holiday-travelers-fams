@@ -482,3 +482,55 @@ html.dark .company-logo-shell {
 .company-logo-shell img {
     border-radius: 9999px;
 }
+
+/* =========================================================
+   DARK MODE — SUCCESS / ERROR FEEDBACK
+   ========================================================= */
+
+html.dark .bg-emerald-50 {
+    @apply bg-success/10;
+}
+
+html.dark .border-emerald-200 {
+    @apply border-success/30;
+}
+
+html.dark .text-emerald-800,
+html.dark .text-emerald-600 {
+    @apply text-success;
+}
+
+html.dark .hover\:text-emerald-900:hover {
+    @apply text-success;
+}
+
+
+html.dark .bg-red-50 {
+    @apply bg-error/10;
+}
+
+html.dark .border-red-200 {
+    @apply border-error/30;
+}
+
+html.dark .text-red-800,
+html.dark .text-red-600 {
+    @apply text-error;
+}
+
+html.dark .hover\:text-red-900:hover {
+    @apply text-error;
+}
+
+html.dark .hover\:bg-red-50:hover {
+    @apply bg-error/10;
+}
+
+
+/*
+ * Keep the notification count border visually
+ * attached to the dark header instead of bright white.
+ */
+html.dark [data-notification-button] .border-white {
+    border-color: rgb(15 23 42);
+}

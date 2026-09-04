@@ -37,8 +37,12 @@
     </div>
 
 
-    <div class="grid gap-6 xl:grid-cols-[370px_minmax(0,1fr)]">
+    <div @class([
+        'grid gap-6',
+        'xl:grid-cols-[370px_minmax(0,1fr)]' => auth()->user()->can('manageAppointments'),
+    ])>
 
+        @can('manageAppointments')
         {{-- Schedule Form --}}
         <div>
 
@@ -422,6 +426,7 @@
             </div>
 
         </div>
+        @endcan
 
 
         {{-- Appointment Records --}}
@@ -657,7 +662,7 @@
                                     {{-- Actions --}}
                                     <td class="px-5 py-4 text-right">
 
-                                        @if (! in_array($appointment->status, ['cancelled', 'completed']))
+                                        @if (auth()->user()->can('manageAppointments') && ! in_array($appointment->status, ['cancelled', 'completed']))
 
                                             <form
                                                 method="POST"

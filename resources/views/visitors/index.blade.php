@@ -37,6 +37,7 @@
     </div>
 
 
+    @can('useAiAssist')
     {{-- AI Visitor Assistant --}}
     @php
         $aiProviderConfigured =
@@ -384,6 +385,7 @@
                 </div>
 
 
+                @can('operateVisitorDesk')
                 {{-- Apply --}}
                 <div
                     data-ai-apply-wrap
@@ -417,17 +419,23 @@
                     </p>
 
                 </div>
+                @endcan
 
             </div>
 
         </div>
 
     </section>
+    @endcan
 
 
     {{-- Main Layout --}}
-    <div class="grid gap-6 xl:grid-cols-[370px_minmax(0,1fr)]">
+    <div @class([
+        'grid gap-6',
+        'xl:grid-cols-[370px_minmax(0,1fr)]' => auth()->user()->can('operateVisitorDesk'),
+    ])>
 
+        @can('operateVisitorDesk')
         {{-- Log Visitor --}}
         <div>
 
@@ -719,6 +727,7 @@
             </div>
 
         </div>
+        @endcan
 
 
         {{-- Visitor Records --}}
@@ -1022,6 +1031,37 @@
                                                             </svg>
 
                                                             Check In
+
+                                                        </button>
+
+                                                    </form>
+
+                                                    <form
+                                                        method="POST"
+                                                        action="{{ route('visitors.decline', $visitor) }}"
+                                                        onsubmit="return confirm('Decline this visitor?');">
+
+                                                        @csrf
+
+                                                        <button
+                                                            type="submit"
+                                                            class="inline-flex items-center gap-1.5 rounded-lg bg-error/10 px-3 py-2 font-button text-xs font-semibold text-error transition hover:bg-error hover:text-white">
+
+                                                            <svg
+                                                                class="h-3.5 w-3.5"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                viewBox="0 0 24 24">
+
+                                                                <path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M6 18L18 6M6 6l12 12" />
+
+                                                            </svg>
+
+                                                            Decline
 
                                                         </button>
 
