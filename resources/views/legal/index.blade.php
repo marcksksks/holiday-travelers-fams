@@ -565,6 +565,33 @@
 
                                                 @endif
 
+
+                                                @can('manageLegal')
+
+                                                    <a
+                                                        href="{{ route('legal.edit', $record) }}"
+                                                        class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary transition hover:text-secondary">
+
+                                                        Edit Record
+
+                                                        <svg
+                                                            class="h-3 w-3"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.4-9.4a2 2 0 112.8 2.8L11.8 13H9v-2.8l6.6-6.6z" />
+
+                                                        </svg>
+
+                                                    </a>
+
+                                                @endcan
+
                                             </div>
 
                                         </div>

@@ -104,11 +104,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/documents/{document}/request-link', [DocumentController::class, 'requestLink'])->name('documents.request-link');
 
         Route::get('/legal', [LegalRecordController::class, 'index'])->name('legal.index');
+        Route::get('/legal/{legal}/edit', [LegalRecordController::class, 'edit'])->name('legal.edit');
         Route::post('/legal', [LegalRecordController::class, 'store'])->name('legal.store');
         Route::put('/legal/{legal}', [LegalRecordController::class, 'update'])->name('legal.update');
         Route::post('/legal/{legal}/review', [LegalRecordController::class, 'review'])->name('legal.review');
 
         Route::get('/contracts', [ContractController::class, 'index'])->name('contracts.index');
+        Route::get('/contracts/{contract}/edit', [ContractController::class, 'edit'])->name('contracts.edit');
         Route::post('/contracts', [ContractController::class, 'store'])->name('contracts.store');
         Route::put('/contracts/{contract}', [ContractController::class, 'update'])->name('contracts.update');
         Route::post('/contracts/{contract}/submit-review', [ContractController::class, 'submitForReview'])->name('contracts.submit-review');

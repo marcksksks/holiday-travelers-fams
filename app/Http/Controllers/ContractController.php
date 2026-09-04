@@ -21,6 +21,16 @@ class ContractController extends Controller
         return view('contracts.index', compact('contracts'));
     }
 
+    public function edit(Request $request, Contract $contract)
+    {
+        abort_unless(
+            $request->user()->can('manageContracts'),
+            403
+        );
+
+        return view('contracts.edit', compact('contract'));
+    }
+
     public function store(ContractRequest $request): RedirectResponse
     {
         abort_unless(
@@ -100,6 +110,11 @@ class ContractController extends Controller
 
     public function renew(Request $request, Contract $contract): RedirectResponse
     {
+        abort_unless(
+            $request->user()->can('manageContracts'),
+            403
+        );
+
         $data = $request->validate([
             'new_end_date' => ['required', 'date', 'after:today'],
             'comments' => ['nullable', 'string'],

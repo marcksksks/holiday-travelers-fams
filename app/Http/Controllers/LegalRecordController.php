@@ -18,6 +18,16 @@ class LegalRecordController extends Controller
         return view('legal.index', compact('records'));
     }
 
+    public function edit(Request $request, LegalRecord $legal)
+    {
+        abort_unless(
+            $request->user()->can('manageLegal'),
+            403
+        );
+
+        return view('legal.edit', compact('legal'));
+    }
+
     public function store(LegalRecordRequest $request): RedirectResponse
     {
         abort_unless(

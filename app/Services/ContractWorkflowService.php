@@ -124,7 +124,11 @@ class ContractWorkflowService
 
     public function renew(User $user, Contract $contract, string $newEndDate, ?string $comments = null): Contract
     {
-        $this->authorize($user, [User::ROLE_ADMIN_OFFICER, User::ROLE_MANAGER, User::ROLE_SYS_ADMIN], 'You are not authorised to renew contracts.');
+        if (! $user->can('manageContracts')) {
+            throw ValidationException::withMessages([
+                'app_role' => 'You are not authorised to renew contracts.',
+            ])->status(403);
+        }
         if (! in_array($contract->status, ['active', 'expired', 'renewed'], true)) {
             throw ValidationException::withMessages(['status' => 'Only active, expired, or renewed contracts can be renewed.']);
         }

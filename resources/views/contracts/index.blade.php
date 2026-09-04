@@ -5,11 +5,7 @@
 @section('content')
 
 @php
-    $canRenewContracts = auth()->user()->hasRole([
-        \App\Models\User::ROLE_ADMIN_OFFICER,
-        \App\Models\User::ROLE_MANAGER,
-        \App\Models\User::ROLE_SYS_ADMIN,
-    ]);
+    $canRenewContracts = auth()->user()->can('manageContracts');
 @endphp
 
 <div class="space-y-6">
@@ -740,6 +736,15 @@
                     <div class="flex flex-wrap items-end gap-2 border-t border-border px-5 py-4">
 
                         @can('manageContracts')
+
+                            <a
+                                href="{{ route('contracts.edit', $contract) }}"
+                                class="btn-outline text-xs">
+
+                                Edit Contract
+
+                            </a>
+
 
                             @if (in_array($contract->status, ['draft', 'renewed']))
 

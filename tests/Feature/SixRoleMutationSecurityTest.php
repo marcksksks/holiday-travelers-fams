@@ -750,4 +750,148 @@ class SixRoleMutationSecurityTest extends TestCase
             }
         }
     }
+
+    public function test_legal_edit_page_matches_role_matrix(): void
+    {
+        $allowed = [
+            User::ROLE_ADMIN_OFFICER,
+            User::ROLE_LEGAL_OFFICER,
+            User::ROLE_SYS_ADMIN,
+        ];
+
+        foreach ($this->roles() as $role) {
+            $actor = $this->user($role);
+
+            $legal = LegalRecord::create([
+                'title' => "Editable Legal {$role}",
+                'record_type' => 'permit',
+                'status' => 'active',
+            ]);
+
+            $response = $this
+                ->actingAs($actor)
+                ->get(
+                    "/legal/{$legal->id}/edit"
+                );
+
+            if ($this->allowed($role, $allowed)) {
+                $response->assertOk();
+                $response->assertSee('Edit Legal Record');
+            } else {
+                $response->assertForbidden();
+            }
+        }
+    }
+
+    public function test_contract_edit_page_matches_role_matrix(): void
+    {
+        $allowed = [
+            User::ROLE_ADMIN_OFFICER,
+            User::ROLE_SYS_ADMIN,
+        ];
+
+        foreach ($this->roles() as $role) {
+            $actor = $this->user($role);
+
+            $contract = Contract::create([
+                'title' => "Editable Contract {$role}",
+                'contract_type' => 'service',
+                'status' => 'draft',
+                'legal_review_status' => 'not_submitted',
+                'approval_status' => 'not_submitted',
+            ]);
+
+            $response = $this
+                ->actingAs($actor)
+                ->get(
+                    "/contracts/{$contract->id}/edit"
+                );
+
+            if ($this->allowed($role, $allowed)) {
+                $response->assertOk();
+                $response->assertSee('Edit Contract');
+            } else {
+                $response->assertForbidden();
+            }
+        }
+    }
+
+    public function test_contract_renewal_matches_manage_contracts_matrix(): void
+    {
+        $allowed = [
+            User::ROLE_ADMIN_OFFICER,
+            User::ROLE_SYS_ADMIN,
+        ];
+
+        foreach ($this->roles() as $role) {
+            $actor = $this->user($role);
+
+            $contract = Contract::create([
+                'title' => "Renewal Contract {$role}",
+                'contract_type' => 'service',
+                'status' => 'active',
+                'start_date' => now()->subMonth()->toDateString(),
+                'end_date' => now()->addMonth()->toDateString(),
+                'legal_review_status' => 'approved',
+                'approval_status' => 'approved',
+            ]);
+
+            $newEndDate = now()
+                ->addMonths(6)
+                ->toDateString();
+
+            $response = $this
+                ->actingAs($actor)
+                ->post(
+                    "/contracts/{$contract->id}/renew",
+                    [
+                        'new_end_date' => $newEndDate,
+                        'comments' => 'Renewal RBAC regression test.',
+                    ]
+                );
+
+            $contract->refresh();
+
+            if ($this->allowed($role, $allowed)) {
+                $response->assertStatus(302);
+
+                $this->assertSame(
+                    'renewed',
+                    $contract->status
+                );
+
+                $this->assertSame(
+                    'pending',
+                    $contract->legal_review_status
+                );
+
+                $this->assertSame(
+                    'not_submitted',
+                    $contract->approval_status
+                );
+
+                $this->assertSame(
+                    $newEndDate,
+                    $contract->end_date->toDateString()
+                );
+            } else {
+                $response->assertForbidden();
+
+                $this->assertSame(
+                    'active',
+                    $contract->status
+                );
+
+                $this->assertSame(
+                    'approved',
+                    $contract->legal_review_status
+                );
+
+                $this->assertSame(
+                    'approved',
+                    $contract->approval_status
+                );
+            }
+        }
+    }
 }
