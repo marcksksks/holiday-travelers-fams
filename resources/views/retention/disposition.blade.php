@@ -119,6 +119,7 @@
                 </div>
 
 
+                @if ($retention->disposition_requested_by !== auth()->user()->email)
                 <form
                     method="POST"
                     action="{{ route('retention.disposition.approve', $retention) }}"
@@ -175,6 +176,22 @@
                     </button>
 
                 </form>
+
+                @else
+
+                    <div class="rounded-xl border border-warning/30 bg-warning/5 p-5">
+
+                        <p class="font-button text-sm font-semibold text-amber-700">
+                            Separation of Duties
+                        </p>
+
+                        <p class="mt-1 text-xs leading-5 text-slate-500">
+                            You submitted this disposal request, so another authorized approver must approve or reject it.
+                        </p>
+
+                    </div>
+
+                @endif
 
             </div>
 

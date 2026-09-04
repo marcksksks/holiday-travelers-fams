@@ -856,33 +856,37 @@
 
                                                     </a>
 
-                                                    @if (! $document->is_system_generated)
+                                                    @can('manageDocuments')
 
-                                                        <a
-                                                            href="{{ route('documents.edit', $document) }}#edit-metadata"
-                                                            class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-background">
+                                                        @if (! $document->is_system_generated)
 
-                                                            Edit Metadata
+                                                            <a
+                                                                href="{{ route('documents.edit', $document) }}#edit-metadata"
+                                                                class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-background">
 
-                                                        </a>
+                                                                Edit Metadata
 
-                                                        <a
-                                                            href="{{ route('documents.edit', $document) }}#move-document"
-                                                            class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-background">
+                                                            </a>
 
-                                                            Move to Folder
+                                                            <a
+                                                                href="{{ route('documents.edit', $document) }}#move-document"
+                                                                class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-background">
 
-                                                        </a>
+                                                                Move to Folder
 
-                                                        <a
-                                                            href="{{ route('documents.edit', $document) }}#upload-version"
-                                                            class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-background">
+                                                            </a>
 
-                                                            Upload New Version
+                                                            <a
+                                                                href="{{ route('documents.edit', $document) }}#upload-version"
+                                                                class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-background">
 
-                                                        </a>
+                                                                Upload New Version
 
-                                                    @endif
+                                                            </a>
+
+                                                        @endif
+
+                                                    @endcan
 
 
                                                     @if ($document->file_uri)
