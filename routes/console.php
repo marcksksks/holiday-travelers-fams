@@ -44,3 +44,85 @@ Artisan::command(
 Schedule::command('retention:review')
     ->dailyAt('00:10')
     ->withoutOverlapping();
+
+
+Artisan::command(
+    'contracts:check-expiry',
+    function () {
+
+        $result = app(
+            \App\Services\ContractExpiryService::class
+        )->run();
+
+        $this->info(
+            'Contract expiry check completed.'
+        );
+
+        $this->line(
+            'Active contracts checked: ' .
+            $result['contracts_checked']
+        );
+
+        $this->line(
+            'Notification targets processed: ' .
+            $result['alerts_processed']
+        );
+
+        $this->line(
+            'Contracts marked expired: ' .
+            $result['contracts_expired']
+        );
+    }
+)->purpose(
+    'Check active contracts for upcoming expiry dates and expired contracts.'
+);
+
+
+Schedule::command(
+    'contracts:check-expiry'
+)
+    ->dailyAt('00:20')
+    ->withoutOverlapping();
+
+Artisan::command(
+    'legal:check-deadlines',
+    function () {
+
+        $result = app(
+            \App\Services\LegalDeadlineService::class
+        )->run();
+
+        $this->info(
+            'Legal deadline check completed.'
+        );
+
+        $this->line(
+            'Active legal records checked: ' .
+            $result['records_checked']
+        );
+
+        $this->line(
+            'Notification targets processed: ' .
+            $result['alerts_processed']
+        );
+
+        $this->line(
+            'Records marked Action Required: ' .
+            $result['action_required']
+        );
+
+        $this->line(
+            'Records marked Expired: ' .
+            $result['expired']
+        );
+    }
+)->purpose(
+    'Check legal records for approaching and passed expiration dates.'
+);
+
+
+Schedule::command(
+    'legal:check-deadlines'
+)
+    ->dailyAt('00:30')
+    ->withoutOverlapping();

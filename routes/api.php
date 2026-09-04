@@ -35,7 +35,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('documents', ArchiveDocumentApiController::class)->only(['index', 'show', 'store']);
     Route::post('documents/{document}/request-link', [ArchiveDocumentApiController::class, 'requestLink']);
 
-    Route::apiResource('legal-records', LegalRecordApiController::class)->parameters(['legal-records' => 'legal']);
+    Route::apiResource(
+        'legal-records',
+        LegalRecordApiController::class
+    )
+        ->only([
+            'index',
+            'show',
+            'store',
+            'update',
+        ])
+        ->parameters([
+            'legal-records' => 'legal',
+        ]);
 
     Route::apiResource('contracts', ContractApiController::class)->only(['index', 'show', 'store', 'update']);
     Route::post('contracts/{contract}/submit-review', [ContractApiController::class, 'submitForReview']);

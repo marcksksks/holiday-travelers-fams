@@ -23,3 +23,6 @@ database.sqlite
 /backups/
 
 /backups/
+
+/storage/framework/
+/storage/logs/*.log
