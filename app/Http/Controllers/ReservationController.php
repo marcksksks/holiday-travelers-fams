@@ -19,18 +19,156 @@ class ReservationController extends Controller
 
     public function index(Request $request)
     {
-        $query = Reservation::with('facility')->orderByDesc('date')->orderByDesc('start_time');
+        $canDecide =
+            $request->user()->can('decideReservations');
 
-        // Non-decision-makers only see their own requests, mirroring the
-        // original UI where "My Requests" vs "Pending Decisions" are scoped by role.
-        if (! $request->user()->can('decideReservations')) {
-            $query->where('requester_email', $request->user()->email);
+        $baseQuery = Reservation::query();
+
+        if (! $canDecide) {
+            $baseQuery->where(
+                'requester_email',
+                $request->user()->email
+            );
         }
 
-        $reservations = $query->paginate(15)->withQueryString();
-        $facilities = Facility::where('status', 'available')->orderBy('name')->get();
+        $counts = [
+            'total' =>
+                (clone $baseQuery)->count(),
 
-        return view('reservations.index', compact('reservations', 'facilities'));
+            'pending' =>
+                (clone $baseQuery)
+                    ->where('status', 'pending')
+                    ->count(),
+
+            'approved' =>
+                (clone $baseQuery)
+                    ->where('status', 'approved')
+                    ->count(),
+
+            'rejected' =>
+                (clone $baseQuery)
+                    ->where('status', 'rejected')
+                    ->count(),
+
+            'cancelled' =>
+                (clone $baseQuery)
+                    ->where('status', 'cancelled')
+                    ->count(),
+
+            'completed' =>
+                (clone $baseQuery)
+                    ->where('status', 'completed')
+                    ->count(),
+        ];
+
+        $filterFacilityIds =
+            (clone $baseQuery)
+                ->whereNotNull('facility_id')
+                ->distinct()
+                ->pluck('facility_id');
+
+        $filterFacilities = Facility::query()
+            ->whereIn('id', $filterFacilityIds)
+            ->orderBy('name')
+            ->get();
+
+        $query = clone $baseQuery;
+
+        if ($request->filled('search')) {
+            $search = trim(
+                (string) $request->input('search')
+            );
+
+            $searchLike =
+                '%'.strtolower($search).'%';
+
+            $query->where(
+                function ($reservationQuery) use (
+                    $searchLike
+                ) {
+                    $reservationQuery
+                        ->whereRaw(
+                            'LOWER(facility_name) LIKE ?',
+                            [$searchLike]
+                        )
+                        ->orWhereRaw(
+                            'LOWER(requester_name) LIKE ?',
+                            [$searchLike]
+                        )
+                        ->orWhereRaw(
+                            'LOWER(requester_email) LIKE ?',
+                            [$searchLike]
+                        )
+                        ->orWhereRaw(
+                            'LOWER(COALESCE(purpose, ?)) LIKE ?',
+                            ['', $searchLike]
+                        );
+                }
+            );
+        }
+
+        if ($request->filled('status')) {
+            $request->validate([
+                'status' => [
+                    'in:pending,approved,rejected,cancelled,completed',
+                ],
+            ]);
+
+            $query->where(
+                'status',
+                $request->input('status')
+            );
+        }
+
+        if ($request->filled('facility')) {
+            $request->validate([
+                'facility' => [
+                    'integer',
+                    'exists:facilities,id',
+                ],
+            ]);
+
+            $query->where(
+                'facility_id',
+                $request->integer('facility')
+            );
+        }
+
+        if ($request->filled('date')) {
+            $request->validate([
+                'date' => [
+                    'date',
+                ],
+            ]);
+
+            $query->whereDate(
+                'date',
+                $request->input('date')
+            );
+        }
+
+        $reservations = $query
+            ->with('facility')
+            ->orderByDesc('date')
+            ->orderByDesc('start_time')
+            ->paginate(15)
+            ->withQueryString();
+
+        $facilities = Facility::query()
+            ->where('status', 'available')
+            ->orderBy('name')
+            ->get();
+
+        return view(
+            'reservations.index',
+            compact(
+                'reservations',
+                'facilities',
+                'filterFacilities',
+                'counts',
+                'canDecide'
+            )
+        );
     }
 
     public function store(ReservationRequest $request): RedirectResponse
@@ -38,6 +176,24 @@ class ReservationController extends Controller
         $this->reservations->submit($request->user(), $request->validated());
 
         return redirect()->route('reservations.index')->with('status', 'Reservation request submitted.');
+    }
+
+    public function update(
+        ReservationRequest $request,
+        Reservation $reservation
+    ): RedirectResponse {
+        $this->reservations->resubmit(
+            $request->user(),
+            $reservation,
+            $request->validated()
+        );
+
+        return redirect()
+            ->route('reservations.index')
+            ->with(
+                'status',
+                'Reservation updated and resubmitted for approval.'
+            );
     }
 
     public function decide(Request $request, Reservation $reservation): RedirectResponse

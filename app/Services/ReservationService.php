@@ -57,6 +57,132 @@ class ReservationService
         });
     }
 
+    /**
+     * Allow the reservation owner to revise a pending or rejected request
+     * and submit it for approval again.
+     */
+    public function resubmit(User $user, Reservation $reservation, array $data): Reservation
+    {
+        if ($reservation->requester_email !== $user->email) {
+            throw ValidationException::withMessages([
+                'reservation' => 'You may only edit your own reservation request.',
+            ])->status(403);
+        }
+
+        if (! in_array($reservation->status, ['pending', 'rejected'], true)) {
+            throw ValidationException::withMessages([
+                'status' => 'Only pending or rejected reservations can be edited and resubmitted.',
+            ]);
+        }
+
+        $reservation = DB::transaction(function () use ($user, $reservation, $data) {
+            $reservation = Reservation::query()
+                ->lockForUpdate()
+                ->findOrFail($reservation->id);
+
+            if ($reservation->requester_email !== $user->email) {
+                throw ValidationException::withMessages([
+                    'reservation' => 'You may only edit your own reservation request.',
+                ])->status(403);
+            }
+
+            if (! in_array($reservation->status, ['pending', 'rejected'], true)) {
+                throw ValidationException::withMessages([
+                    'status' => 'Only pending or rejected reservations can be edited and resubmitted.',
+                ]);
+            }
+
+            if ((int) $data['facility_id'] !== (int) $reservation->facility_id) {
+                throw ValidationException::withMessages([
+                    'facility_id' => 'The facility cannot be changed when editing a reservation. Start a new reservation to choose another facility.',
+                ]);
+            }
+
+            $facility = Facility::query()
+                ->lockForUpdate()
+                ->findOrFail($reservation->facility_id);
+
+            if ($facility->status !== 'available') {
+                throw ValidationException::withMessages([
+                    'facility_id' => 'This facility is currently not available for booking.',
+                ]);
+            }
+
+            if ($data['date'] < now()->toDateString()) {
+                throw ValidationException::withMessages([
+                    'date' => 'Reservation date cannot be in the past.',
+                ]);
+            }
+
+            if ($this->toMinutes($data['end_time']) <= $this->toMinutes($data['start_time'])) {
+                throw ValidationException::withMessages([
+                    'end_time' => 'End time must be after the start time.',
+                ]);
+            }
+
+            if ($facility->capacity !== null && $data['attendees'] > $facility->capacity) {
+                throw ValidationException::withMessages([
+                    'attendees' => "The facility capacity is {$facility->capacity}.",
+                ]);
+            }
+
+            $clash = $this->findClash(
+                $facility->id,
+                $data['date'],
+                $data['start_time'],
+                $data['end_time'],
+                ['pending', 'approved'],
+                excludeId: $reservation->id
+            );
+
+            if ($clash) {
+                throw ValidationException::withMessages([
+                    'start_time' => "Time conflict: {$facility->name} is already booked {$clash->start_time}–{$clash->end_time} ({$clash->status}).",
+                ]);
+            }
+
+            $reservation->update([
+                'facility_name' => $facility->name,
+                'date' => $data['date'],
+                'start_time' => $data['start_time'],
+                'end_time' => $data['end_time'],
+                'attendees' => $data['attendees'],
+                'purpose' => $data['purpose'],
+                'status' => 'pending',
+                'decision_by_email' => null,
+                'decision_at' => null,
+                'decision_note' => null,
+            ]);
+
+            return $reservation;
+        });
+
+        $officers = $this->notifications
+            ->usersByRole(User::ROLE_ADMIN_OFFICER);
+
+        $this->notifications->notify(
+            $officers->map(fn ($officer) => [
+                'recipient_email' => $officer->email,
+                'title' => 'Facility reservation resubmitted',
+                'body' => "{$user->full_name} resubmitted {$reservation->facility_name} on {$reservation->date->toDateString()}, {$reservation->start_time}–{$reservation->end_time}.",
+                'module' => 'facilities',
+                'severity' => 'info',
+                'link' => '/reservations',
+            ])->all()
+        );
+
+        $this->audit->log(
+            $user,
+            'update',
+            'facilities',
+            "Reservation • {$reservation->facility_name} {$reservation->date->toDateString()}",
+            (string) $reservation->id,
+            "Resubmitted for approval • {$reservation->start_time}–{$reservation->end_time}"
+        );
+
+        return $reservation->refresh();
+    }
+
     /** Port of base44/functions/decideReservation/entry.ts */
     public function decide(User $user, Reservation $reservation, string $decision, ?string $note = null): Reservation
     {

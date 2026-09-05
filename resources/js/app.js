@@ -1,6 +1,140 @@
 import './bootstrap';
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // FAMS POPOVER MOTION HELPERS
+    const famsReducedMotion =
+        window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        ).matches;
+
+    const famsPopoverTimers =
+        new WeakMap();
+
+
+    const showFamsPopover = (element) => {
+
+        if (!element) {
+            return;
+        }
+
+        const previousTimer =
+            famsPopoverTimers.get(element);
+
+        if (previousTimer) {
+            window.clearTimeout(
+                previousTimer
+            );
+        }
+
+        element.classList.remove(
+            'hidden',
+            'fams-popover-exit'
+        );
+
+
+        if (famsReducedMotion) {
+            return;
+        }
+
+
+        element.classList.remove(
+            'fams-popover-enter'
+        );
+
+        void element.offsetWidth;
+
+        element.classList.add(
+            'fams-popover-enter'
+        );
+    };
+
+
+    const hideFamsPopover = (element) => {
+
+        if (
+            !element
+            ||
+            element.classList.contains(
+                'hidden'
+            )
+        ) {
+            return;
+        }
+
+
+        const previousTimer =
+            famsPopoverTimers.get(element);
+
+        if (previousTimer) {
+            window.clearTimeout(
+                previousTimer
+            );
+        }
+
+
+        const finish = () => {
+
+            element.classList.add(
+                'hidden'
+            );
+
+            element.classList.remove(
+                'fams-popover-enter',
+                'fams-popover-exit'
+            );
+        };
+
+
+        if (famsReducedMotion) {
+
+            finish();
+            return;
+        }
+
+
+        element.classList.remove(
+            'fams-popover-enter'
+        );
+
+        element.classList.add(
+            'fams-popover-exit'
+        );
+
+
+        const timer =
+            window.setTimeout(
+                finish,
+                150
+            );
+
+        famsPopoverTimers.set(
+            element,
+            timer
+        );
+    };
+
+
+    const toggleFamsPopover = (element) => {
+
+        const shouldOpen =
+            element.classList.contains(
+                'hidden'
+            )
+            ||
+            element.classList.contains(
+                'fams-popover-exit'
+            );
+
+        if (shouldOpen) {
+            showFamsPopover(element);
+        } else {
+            hideFamsPopover(element);
+        }
+
+        return shouldOpen;
+    };
+
     // ==========================================
     // DESKTOP SIDEBAR HIDE / SHOW
     // ==========================================
@@ -8,7 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.querySelector('[data-sidebar]');
     const sidebarToggles = document.querySelectorAll('[data-sidebar-toggle]');
 
-    let sidebarHidden = false;
+    const sidebarStorageKey = 'fams-sidebar-hidden';
+
+    let sidebarHidden =
+        localStorage.getItem(sidebarStorageKey) === 'true';
 
     const updateDesktopSidebar = () => {
 
@@ -63,12 +200,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             sidebarHidden = !sidebarHidden;
 
+            localStorage.setItem(
+                sidebarStorageKey,
+                String(sidebarHidden)
+            );
+
             updateDesktopSidebar();
 
         });
 
     });
 
+
+
+    updateDesktopSidebar();
 
 
     // ==========================================
@@ -138,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             event.stopPropagation();
 
-            profileMenu.classList.toggle('hidden');
+            toggleFamsPopover(profileMenu);
 
         });
 
@@ -149,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 !profileButton.contains(event.target)
             ) {
 
-                profileMenu.classList.add('hidden');
+                hideFamsPopover(profileMenu);
 
             }
 
@@ -159,44 +304,122 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ==========================================
-    // DISMISS ALERTS
+    // TOAST NOTIFICATIONS
     // ==========================================
 
-    document.querySelectorAll('[data-dismiss]').forEach((button) => {
+    const reducedToastMotion =
+        window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        ).matches;
 
-        button.addEventListener('click', () => {
 
-            const toast = button.closest('[data-toast]');
+    const closeToast = (toast) => {
 
-            if (toast) {
-                toast.remove();
+        if (
+            !toast
+            ||
+            toast.dataset.closing === 'true'
+        ) {
+            return;
+        }
+
+        toast.dataset.closing = 'true';
+
+
+        const removeToast = () => {
+            toast.remove();
+        };
+
+
+        if (reducedToastMotion) {
+
+            removeToast();
+            return;
+        }
+
+
+        toast.classList.remove(
+            'fams-toast-enter'
+        );
+
+        toast.classList.add(
+            'fams-toast-leave'
+        );
+
+
+        window.setTimeout(
+            removeToast,
+            240
+        );
+    };
+
+
+    document
+        .querySelectorAll('[data-toast]')
+        .forEach((toast) => {
+
+            if (!reducedToastMotion) {
+
+                window.requestAnimationFrame(
+                    () => {
+                        toast.classList.add(
+                            'fams-toast-enter'
+                        );
+                    }
+                );
             }
 
+
+            const dismissButton =
+                toast.querySelector(
+                    '[data-dismiss]'
+                );
+
+
+            dismissButton?.addEventListener(
+                'click',
+                () => closeToast(toast)
+            );
+
+
+            // Validation errors remain visible.
+            if (
+                toast.hasAttribute(
+                    'data-toast-persistent'
+                )
+            ) {
+                return;
+            }
+
+
+            let timer =
+                window.setTimeout(
+                    () => closeToast(toast),
+                    4000
+                );
+
+
+            // Give the user more time if they hover it.
+            toast.addEventListener(
+                'mouseenter',
+                () => {
+                    window.clearTimeout(timer);
+                }
+            );
+
+
+            toast.addEventListener(
+                'mouseleave',
+                () => {
+
+                    timer =
+                        window.setTimeout(
+                            () => closeToast(toast),
+                            1800
+                        );
+                }
+            );
         });
-
-    });
-
-
-    // ==========================================
-    // AUTO-HIDE ALERTS
-    // ==========================================
-
-    document.querySelectorAll('[data-toast]').forEach((toast) => {
-
-        setTimeout(() => {
-
-            toast.style.transition = 'opacity 300ms ease';
-            toast.style.opacity = '0';
-
-            setTimeout(() => {
-
-                toast.remove();
-
-            }, 300);
-
-        }, 5000);
-
-    });
 
 });
 
@@ -208,62 +431,189 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 
     const notificationButton =
-        document.querySelector('[data-notification-button]');
+        document.querySelector(
+            '[data-notification-button]'
+        );
 
     const notificationMenu =
-        document.querySelector('[data-notification-menu]');
+        document.querySelector(
+            '[data-notification-menu]'
+        );
 
-    if (!notificationButton || !notificationMenu) {
+
+    if (
+        !notificationButton
+        ||
+        !notificationMenu
+    ) {
         return;
     }
 
-    const closeNotifications = () => {
 
-        notificationMenu.classList.add('hidden');
-
-        notificationButton.setAttribute(
-            'aria-expanded',
-            'false'
-        );
-
-    };
-
-    notificationButton.addEventListener('click', (event) => {
-
-        event.stopPropagation();
-
-        const willOpen =
-            notificationMenu.classList.contains('hidden');
-
-        notificationMenu.classList.toggle('hidden');
-
-        notificationButton.setAttribute(
-            'aria-expanded',
-            String(willOpen)
-        );
-
-    });
+    const reducedMotion =
+        window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+        ).matches;
 
 
-    notificationMenu.addEventListener('click', (event) => {
-        event.stopPropagation();
-    });
+    let closeTimer = null;
 
 
-    document.addEventListener('click', () => {
-        closeNotifications();
-    });
+    const showNotifications = () => {
 
-
-    document.addEventListener('keydown', (event) => {
-
-        if (event.key === 'Escape') {
-            closeNotifications();
+        if (closeTimer) {
+            window.clearTimeout(closeTimer);
+            closeTimer = null;
         }
 
-    });
 
+        notificationMenu.classList.remove(
+            'hidden',
+            'fams-popover-exit'
+        );
+
+
+        if (!reducedMotion) {
+
+            notificationMenu.classList.remove(
+                'fams-popover-enter'
+            );
+
+            void notificationMenu.offsetWidth;
+
+            notificationMenu.classList.add(
+                'fams-popover-enter'
+            );
+        }
+
+
+        notificationButton.setAttribute(
+            'aria-expanded',
+            'true'
+        );
+    };
+
+
+    const hideNotifications = () => {
+
+        if (
+            notificationMenu.classList.contains(
+                'hidden'
+            )
+        ) {
+            notificationButton.setAttribute(
+                'aria-expanded',
+                'false'
+            );
+
+            return;
+        }
+
+
+        const finishClose = () => {
+
+            notificationMenu.classList.add(
+                'hidden'
+            );
+
+            notificationMenu.classList.remove(
+                'fams-popover-enter',
+                'fams-popover-exit'
+            );
+
+            notificationButton.setAttribute(
+                'aria-expanded',
+                'false'
+            );
+        };
+
+
+        if (reducedMotion) {
+
+            finishClose();
+            return;
+        }
+
+
+        notificationMenu.classList.remove(
+            'fams-popover-enter'
+        );
+
+        notificationMenu.classList.add(
+            'fams-popover-exit'
+        );
+
+
+        closeTimer =
+            window.setTimeout(
+                finishClose,
+                150
+            );
+    };
+
+
+    notificationButton.addEventListener(
+        'click',
+        (event) => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            const isClosed =
+                notificationMenu.classList.contains(
+                    'hidden'
+                )
+                ||
+                notificationMenu.classList.contains(
+                    'fams-popover-exit'
+                );
+
+
+            if (isClosed) {
+
+                showNotifications();
+
+            } else {
+
+                hideNotifications();
+            }
+        }
+    );
+
+
+    notificationMenu.addEventListener(
+        'click',
+        (event) => {
+
+            event.stopPropagation();
+        }
+    );
+
+
+    document.addEventListener(
+        'click',
+        () => {
+
+            hideNotifications();
+        }
+    );
+
+
+    document.addEventListener(
+        'keydown',
+        (event) => {
+
+            if (event.key === 'Escape') {
+
+                hideNotifications();
+
+                notificationButton.focus();
+            }
+        }
+    );
 });
+
 
 
 // ==========================================
@@ -1034,4 +1384,122 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
+});
+
+
+// =====================================================
+// FAMS FORM SUBMIT FEEDBACK
+// =====================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const forms =
+        document.querySelectorAll(
+            '[data-submit-loading]'
+        );
+
+
+    forms.forEach((form) => {
+
+        let submitting = false;
+
+
+        form.addEventListener('submit', (event) => {
+
+            if (submitting) {
+
+                event.preventDefault();
+                return;
+            }
+
+
+            submitting = true;
+
+
+            const buttons =
+                form.querySelectorAll(
+                    'button[type="submit"]'
+                );
+
+
+            buttons.forEach((button) => {
+
+                button.dataset.originalHtml =
+                    button.innerHTML;
+
+                button.disabled = true;
+
+                button.setAttribute(
+                    'aria-busy',
+                    'true'
+                );
+
+                button.classList.add(
+                    'cursor-wait',
+                    'opacity-75'
+                );
+
+
+                const loadingText =
+                    form.dataset.loadingText
+                    || 'Processing...';
+
+
+                button.innerHTML = `
+                    <span
+                        class="fams-submit-spinner"
+                        aria-hidden="true">
+                    </span>
+
+                    <span>
+                        ${loadingText}
+                    </span>
+                `;
+            });
+        });
+
+
+        // Restore buttons if browser returns through
+        // back/forward cache.
+        window.addEventListener(
+            'pageshow',
+            (event) => {
+
+                if (!event.persisted) {
+                    return;
+                }
+
+
+                submitting = false;
+
+
+                const buttons =
+                    form.querySelectorAll(
+                        'button[type="submit"]'
+                    );
+
+
+                buttons.forEach((button) => {
+
+                    if (
+                        button.dataset.originalHtml
+                    ) {
+                        button.innerHTML =
+                            button.dataset.originalHtml;
+                    }
+
+                    button.disabled = false;
+
+                    button.removeAttribute(
+                        'aria-busy'
+                    );
+
+                    button.classList.remove(
+                        'cursor-wait',
+                        'opacity-75'
+                    );
+                });
+            }
+        );
+    });
 });

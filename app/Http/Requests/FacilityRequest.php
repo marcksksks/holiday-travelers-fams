@@ -18,7 +18,7 @@ class FacilityRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'location' => ['nullable', 'string', 'max:255'],
             'capacity' => ['nullable', 'integer', 'min:0'],
-            'facility_type' => ['required', 'in:conference_room,meeting_room,training_room,function_room,other'],
+            'facility_type' => ['required', 'in:conference_room,meeting_room,training_room,function_room,vehicle,other'],
             'status' => ['required', 'in:available,maintenance,unavailable,archived'],
             'equipment' => ['nullable', 'array'],
             'equipment.*' => ['string'],

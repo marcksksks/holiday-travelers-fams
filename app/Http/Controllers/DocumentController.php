@@ -495,6 +495,424 @@ class DocumentController extends Controller
             );
     }
 
+    public function bulkAction(
+        Request $request
+    ): RedirectResponse {
+        abort_unless(
+            $request->user()->can('manageDocuments'),
+            403
+        );
+
+        $data = $request->validate([
+            'action' => [
+                'required',
+                'in:archive,restore',
+            ],
+
+            'document_ids' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+
+            'document_ids.*' => [
+                'required',
+                'integer',
+                'distinct',
+                'exists:archive_documents,id',
+            ],
+
+            'container_id' => [
+                'nullable',
+                'integer',
+                'exists:document_containers,id',
+            ],
+        ]);
+
+        $documentIds = collect(
+            $data['document_ids']
+        )
+            ->map(
+                fn ($id) => (int) $id
+            )
+            ->unique()
+            ->values();
+
+        $documents = $this
+            ->visibleDocumentsQuery($request)
+            ->whereIn(
+                'id',
+                $documentIds
+            )
+            ->with('container')
+            ->get()
+            ->keyBy('id');
+
+        abort_unless(
+            $documents->count()
+                === $documentIds->count(),
+            403,
+            'One or more selected documents are not accessible.'
+        );
+
+        $newContainer = null;
+
+        if (
+            $data['action'] === 'move'
+            && ! empty($data['container_id'])
+        ) {
+            $newContainer =
+                DocumentContainer::findOrFail(
+                    $data['container_id']
+                );
+
+            $this->assertContainerVisible(
+                $request,
+                $newContainer
+            );
+        }
+
+        $updated = 0;
+        $skipped = 0;
+
+        \Illuminate\Support\Facades\DB::transaction(
+            function () use (
+                $request,
+                $data,
+                $documentIds,
+                $documents,
+                $newContainer,
+                &$updated,
+                &$skipped
+            ) {
+                foreach ($documentIds as $documentId) {
+                    $document =
+                        $documents->get($documentId);
+
+                    if (! $document) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    $history =
+                        $document->history ?? [];
+
+                    $oldStatus =
+                        $document->status;
+
+                    $auditAction = null;
+                    $auditDetails = null;
+
+                    switch ($data['action']) {
+                        case 'move':
+                            if (
+                                $document
+                                    ->is_system_generated
+                            ) {
+                                $skipped++;
+                                continue 2;
+                            }
+
+                            $oldContainerName =
+                                $document
+                                    ->container?->name
+                                ?? 'Unfiled';
+
+                            $newContainerName =
+                                $newContainer?->name
+                                ?? 'Unfiled';
+
+                            if (
+                                $document->container_id
+                                === $newContainer?->id
+                            ) {
+                                $skipped++;
+                                continue 2;
+                            }
+
+                            $history[] = [
+                                'version' =>
+                                    $document->version
+                                    ?? 1,
+
+                                'action' => 'move',
+
+                                'by' =>
+                                    $request
+                                        ->user()
+                                        ->email,
+
+                                'at' =>
+                                    now()
+                                        ->toISOString(),
+
+                                'note' =>
+                                    "Bulk moved from {$oldContainerName} to {$newContainerName}.",
+                            ];
+
+                            $document->update([
+                                'container_id' =>
+                                    $newContainer?->id,
+
+                                'history' =>
+                                    $history,
+                            ]);
+
+                            $auditAction = 'move';
+
+                            $auditDetails =
+                                "Bulk action: {$oldContainerName} -> {$newContainerName}";
+
+                            break;
+
+
+                        case 'needs_review':
+                            if (
+                                $document
+                                    ->is_system_generated
+                                || $document->status
+                                    === 'archived'
+                                || $document->status
+                                    === 'needs_review'
+                            ) {
+                                $skipped++;
+                                continue 2;
+                            }
+
+                            $history[] = [
+                                'version' =>
+                                    $document->version
+                                    ?? 1,
+
+                                'action' =>
+                                    'status_change',
+
+                                'by' =>
+                                    $request
+                                        ->user()
+                                        ->email,
+
+                                'at' =>
+                                    now()
+                                        ->toISOString(),
+
+                                'note' =>
+                                    "Bulk status change from {$oldStatus} to needs_review.",
+                            ];
+
+                            $document->update([
+                                'status' =>
+                                    'needs_review',
+
+                                'history' =>
+                                    $history,
+                            ]);
+
+                            $auditAction =
+                                'update';
+
+                            $auditDetails =
+                                "Bulk status change: {$oldStatus} -> needs_review";
+
+                            break;
+
+
+                        case 'active':
+                            if (
+                                $document
+                                    ->is_system_generated
+                                || $document->status
+                                    === 'archived'
+                                || $document->status
+                                    === 'active'
+                            ) {
+                                $skipped++;
+                                continue 2;
+                            }
+
+                            $history[] = [
+                                'version' =>
+                                    $document->version
+                                    ?? 1,
+
+                                'action' =>
+                                    'status_change',
+
+                                'by' =>
+                                    $request
+                                        ->user()
+                                        ->email,
+
+                                'at' =>
+                                    now()
+                                        ->toISOString(),
+
+                                'note' =>
+                                    "Bulk status change from {$oldStatus} to active.",
+                            ];
+
+                            $document->update([
+                                'status' =>
+                                    'active',
+
+                                'history' =>
+                                    $history,
+                            ]);
+
+                            $auditAction =
+                                'update';
+
+                            $auditDetails =
+                                "Bulk status change: {$oldStatus} -> active";
+
+                            break;
+
+
+                        case 'archive':
+                            if (
+                                $document->status
+                                === 'archived'
+                            ) {
+                                $skipped++;
+                                continue 2;
+                            }
+
+                            $history[] = [
+                                'version' =>
+                                    $document->version
+                                    ?? 1,
+
+                                'action' =>
+                                    'archive',
+
+                                'by' =>
+                                    $request
+                                        ->user()
+                                        ->email,
+
+                                'at' =>
+                                    now()
+                                        ->toISOString(),
+
+                                'note' =>
+                                    'Document archived via bulk action.',
+                            ];
+
+                            $document->update([
+                                'status' =>
+                                    'archived',
+
+                                'history' =>
+                                    $history,
+                            ]);
+
+                            $auditAction =
+                                'archive';
+
+                            $auditDetails =
+                                'Bulk archive action.';
+
+                            break;
+
+
+                        case 'restore':
+                            if (
+                                $document->status
+                                !== 'archived'
+                            ) {
+                                $skipped++;
+                                continue 2;
+                            }
+
+                            $history[] = [
+                                'version' =>
+                                    $document->version
+                                    ?? 1,
+
+                                'action' =>
+                                    'restore',
+
+                                'by' =>
+                                    $request
+                                        ->user()
+                                        ->email,
+
+                                'at' =>
+                                    now()
+                                        ->toISOString(),
+
+                                'note' =>
+                                    'Document restored via bulk action.',
+                            ];
+
+                            $document->update([
+                                'status' =>
+                                    'active',
+
+                                'history' =>
+                                    $history,
+                            ]);
+
+                            $auditAction =
+                                'restore';
+
+                            $auditDetails =
+                                'Bulk restore action.';
+
+                            break;
+                    }
+
+                    AuditLog::create([
+                        'actor_email' =>
+                            $request
+                                ->user()
+                                ->email,
+
+                        'actor_role' =>
+                            $request
+                                ->user()
+                                ->app_role,
+
+                        'action' =>
+                            $auditAction,
+
+                        'module' =>
+                            'documents',
+
+                        'record_label' =>
+                            "Document - {$document->title}",
+
+                        'record_id' =>
+                            $document->id,
+
+                        'details' =>
+                            $auditDetails,
+
+                        'created_at' =>
+                            now(),
+                    ]);
+
+                    $updated++;
+                }
+            }
+        );
+
+        $message =
+            "{$updated} document"
+            .($updated === 1 ? '' : 's')
+            .' updated.';
+
+        if ($skipped > 0) {
+            $message .=
+                " {$skipped} skipped because the selected action was not applicable.";
+        }
+
+        return back()->with(
+            'status',
+            $message
+        );
+    }
+
     public function move(
         Request $request,
         ArchiveDocument $document

@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('facilities', FacilityApiController::class);
 
-    Route::apiResource('reservations', ReservationApiController::class)->only(['index', 'show', 'store', 'destroy']);
+    Route::apiResource('reservations', ReservationApiController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::post('reservations/{reservation}/decide', [ReservationApiController::class, 'decide']);
 
     Route::apiResource('appointments', AppointmentApiController::class);

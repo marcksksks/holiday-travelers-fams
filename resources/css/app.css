@@ -534,3 +534,695 @@ html.dark .hover\:bg-red-50:hover {
 html.dark [data-notification-button] .border-white {
     border-color: rgb(15 23 42);
 }
+
+
+/* =========================================================
+   FAMS MOTION SYSTEM
+   Professional, subtle application-wide animation
+========================================================= */
+
+/* === FAMS MOTION SYSTEM === */
+
+:root {
+    --motion-fast: 140ms;
+    --motion-normal: 220ms;
+    --motion-slow: 320ms;
+
+    --motion-ease:
+        cubic-bezier(0.4, 0, 0.2, 1);
+
+    --motion-enter:
+        cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+
+/* =========================================================
+   SMOOTH SCROLL
+========================================================= */
+
+html {
+    scroll-behavior: smooth;
+}
+
+
+/* =========================================================
+   PAGE ENTRANCE
+========================================================= */
+
+[data-main-content] {
+    animation:
+        fams-page-enter
+        var(--motion-slow)
+        var(--motion-enter)
+        both;
+}
+
+@keyframes fams-page-enter {
+
+    from {
+        opacity: 0;
+        transform: translateY(7px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+[data-sidebar],
+[data-main-content] {
+    transition-property:
+        width,
+        transform,
+        margin,
+        opacity;
+
+    transition-duration:
+        var(--motion-slow);
+
+    transition-timing-function:
+        var(--motion-enter);
+}
+
+
+[data-sidebar] nav a {
+    transition:
+        background-color var(--motion-normal) var(--motion-ease),
+        color var(--motion-normal) var(--motion-ease),
+        transform var(--motion-normal) var(--motion-enter),
+        box-shadow var(--motion-normal) var(--motion-ease);
+}
+
+
+[data-sidebar] nav a:hover {
+    transform: translateX(2px);
+}
+
+
+[data-sidebar-label] {
+    transition:
+        opacity var(--motion-normal) var(--motion-ease),
+        transform var(--motion-normal) var(--motion-enter);
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+button,
+.btn-primary,
+.btn-outline,
+a.btn-primary,
+a.btn-outline {
+    transition:
+        background-color var(--motion-fast) var(--motion-ease),
+        border-color var(--motion-fast) var(--motion-ease),
+        color var(--motion-fast) var(--motion-ease),
+        box-shadow var(--motion-normal) var(--motion-ease),
+        transform var(--motion-fast) var(--motion-enter),
+        opacity var(--motion-fast) var(--motion-ease);
+}
+
+
+button:not(:disabled):active,
+.btn-primary:active,
+.btn-outline:active {
+    transform: scale(0.975);
+}
+
+
+button:disabled {
+    transition:
+        opacity var(--motion-fast) var(--motion-ease);
+}
+
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+.card {
+    transition:
+        transform var(--motion-normal) var(--motion-enter),
+        box-shadow var(--motion-normal) var(--motion-ease),
+        border-color var(--motion-normal) var(--motion-ease),
+        background-color var(--motion-normal) var(--motion-ease);
+}
+
+
+.card:hover {
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+input,
+select,
+textarea,
+.input {
+    transition:
+        border-color var(--motion-fast) var(--motion-ease),
+        box-shadow var(--motion-normal) var(--motion-ease),
+        background-color var(--motion-normal) var(--motion-ease);
+}
+
+
+input:focus,
+select:focus,
+textarea:focus,
+.input:focus {
+    transition-duration:
+        var(--motion-fast);
+}
+
+
+/* =========================================================
+   TABLES
+========================================================= */
+
+tbody tr {
+    transition:
+        background-color var(--motion-fast) var(--motion-ease),
+        box-shadow var(--motion-fast) var(--motion-ease);
+}
+
+
+tbody tr td {
+    transition:
+        color var(--motion-fast) var(--motion-ease),
+        background-color var(--motion-fast) var(--motion-ease);
+}
+
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.badge {
+    transition:
+        background-color var(--motion-normal) var(--motion-ease),
+        color var(--motion-normal) var(--motion-ease),
+        border-color var(--motion-normal) var(--motion-ease),
+        transform var(--motion-normal) var(--motion-enter);
+}
+
+
+/* =========================================================
+   DETAILS / DROPDOWNS
+========================================================= */
+
+details[open] > :not(summary) {
+    animation:
+        fams-dropdown-enter
+        180ms
+        var(--motion-enter)
+        both;
+}
+
+
+@keyframes fams-dropdown-enter {
+
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================================================
+   RESERVATION MODALS
+========================================================= */
+
+[data-reservation-create-modal]:not(.hidden)
+[data-reservation-create-backdrop],
+
+[data-reservation-edit-modal]:not(.hidden)
+[data-reservation-edit-backdrop] {
+    animation:
+        fams-backdrop-enter
+        180ms
+        ease-out
+        both;
+}
+
+
+[data-reservation-create-modal]:not(.hidden)
+> .relative
+> div,
+
+[data-reservation-edit-modal]:not(.hidden)
+> .relative
+> div {
+    animation:
+        fams-modal-enter
+        260ms
+        var(--motion-enter)
+        both;
+}
+
+
+/* =========================================================
+   FACILITY MODALS
+========================================================= */
+
+[data-facility-create-modal]:not(.hidden)
+[data-facility-create-backdrop],
+
+[data-facility-edit-modal]:not(.hidden)
+[data-facility-edit-backdrop] {
+    animation:
+        fams-backdrop-enter
+        180ms
+        ease-out
+        both;
+}
+
+
+[data-facility-create-modal]:not(.hidden)
+> .relative
+> div,
+
+[data-facility-edit-modal]:not(.hidden)
+> .relative
+> div {
+    animation:
+        fams-modal-enter
+        260ms
+        var(--motion-enter)
+        both;
+}
+
+
+/* =========================================================
+   MODAL ANIMATIONS
+========================================================= */
+
+@keyframes fams-backdrop-enter {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+@keyframes fams-modal-enter {
+
+    from {
+        opacity: 0;
+        transform:
+            translateY(12px)
+            scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+/* =========================================================
+   STATUS / ALERT MESSAGES
+========================================================= */
+
+[role="alert"] {
+    animation:
+        fams-alert-enter
+        260ms
+        var(--motion-enter)
+        both;
+}
+
+
+@keyframes fams-alert-enter {
+
+    from {
+        opacity: 0;
+        transform: translateY(-7px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================================================
+   FOCUS
+========================================================= */
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+    transition:
+        outline-color var(--motion-fast) var(--motion-ease),
+        box-shadow var(--motion-fast) var(--motion-ease);
+}
+
+
+/* =========================================================
+   ACCESSIBILITY — REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+
+/* =========================================================
+   FAMS SMOOTH CLOSE MOTION
+========================================================= */
+
+/* === FAMS SMOOTH CLOSE MOTION === */
+
+
+/* ---------------------------------------------------------
+   MODAL EXIT
+--------------------------------------------------------- */
+
+[data-reservation-create-modal].fams-modal-closing
+[data-reservation-create-backdrop],
+
+[data-reservation-edit-modal].fams-modal-closing
+[data-reservation-edit-backdrop],
+
+[data-facility-create-modal].fams-modal-closing
+[data-facility-create-backdrop],
+
+[data-facility-edit-modal].fams-modal-closing
+[data-facility-edit-backdrop] {
+
+    animation:
+        fams-backdrop-exit
+        160ms
+        ease-in
+        both;
+}
+
+
+[data-reservation-create-modal].fams-modal-closing
+> .relative
+> div,
+
+[data-reservation-edit-modal].fams-modal-closing
+> .relative
+> div,
+
+[data-facility-create-modal].fams-modal-closing
+> .relative
+> div,
+
+[data-facility-edit-modal].fams-modal-closing
+> .relative
+> div {
+
+    animation:
+        fams-modal-exit
+        180ms
+        cubic-bezier(0.4, 0, 1, 1)
+        both;
+}
+
+
+@keyframes fams-backdrop-exit {
+
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+
+@keyframes fams-modal-exit {
+
+    from {
+        opacity: 1;
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform:
+            translateY(7px)
+            scale(0.985);
+    }
+}
+
+
+/* ---------------------------------------------------------
+   PROFILE + NOTIFICATION POPOVERS
+--------------------------------------------------------- */
+
+.fams-popover-enter {
+    transform-origin: top right;
+
+    animation:
+        fams-popover-enter
+        180ms
+        cubic-bezier(0.16, 1, 0.3, 1)
+        both;
+}
+
+
+.fams-popover-exit {
+    transform-origin: top right;
+    pointer-events: none;
+
+    animation:
+        fams-popover-exit
+        140ms
+        ease-in
+        both;
+}
+
+
+@keyframes fams-popover-enter {
+
+    from {
+        opacity: 0;
+        transform:
+            translateY(-5px)
+            scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+@keyframes fams-popover-exit {
+
+    from {
+        opacity: 1;
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform:
+            translateY(-4px)
+            scale(0.985);
+    }
+}
+
+
+/* =========================================================
+   FAMS SUBMIT FEEDBACK
+========================================================= */
+
+/* === FAMS SUBMIT FEEDBACK === */
+
+.fams-submit-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 9999px;
+
+    animation:
+        fams-submit-spin
+        650ms
+        linear
+        infinite;
+}
+
+
+@keyframes fams-submit-spin {
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+    .fams-submit-spinner {
+        animation-duration: 1.5s;
+    }
+}
+
+
+/* =========================================================
+   FAMS TOAST MOTION
+========================================================= */
+
+/* === FAMS TOAST MOTION === */
+
+[data-toast-floating] {
+    position: fixed;
+    top: 5rem;
+    right: 1.25rem;
+    z-index: 100;
+
+    width: min(
+        24rem,
+        calc(100vw - 2rem)
+    );
+}
+
+
+.fams-toast {
+    opacity: 0;
+
+    transform:
+        translateX(18px)
+        translateY(-4px)
+        scale(0.985);
+}
+
+
+.fams-toast-enter {
+    animation:
+        fams-toast-enter
+        320ms
+        cubic-bezier(0.16, 1, 0.3, 1)
+        both;
+}
+
+
+.fams-toast-leave {
+    animation:
+        fams-toast-leave
+        220ms
+        cubic-bezier(0.4, 0, 1, 1)
+        both;
+}
+
+
+@keyframes fams-toast-enter {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateX(18px)
+            translateY(-4px)
+            scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateX(0)
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+@keyframes fams-toast-leave {
+
+    from {
+        opacity: 1;
+
+        transform:
+            translateX(0)
+            translateY(0)
+            scale(1);
+    }
+
+    to {
+        opacity: 0;
+
+        transform:
+            translateX(14px)
+            translateY(-3px)
+            scale(0.985);
+    }
+}
+
+
+@media (max-width: 640px) {
+
+    [data-toast-floating] {
+        top: 4.5rem;
+        left: 1rem;
+        right: 1rem;
+
+        width: auto;
+    }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+    .fams-toast,
+    .fams-toast-enter,
+    .fams-toast-leave {
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
+}

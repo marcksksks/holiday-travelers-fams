@@ -65,6 +65,7 @@ Route::middleware('auth')->group(function () {
     // Reservations — submit + admin/manager decision.
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
     Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+    Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.resubmit');
     Route::post('/reservations/{reservation}/decide', [ReservationController::class, 'decide'])->name('reservations.decide');
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.cancel');
 
@@ -93,6 +94,7 @@ Route::middleware('auth')->group(function () {
     // Records & Archive
     Route::middleware('role:admin_officer,manager,legal_officer,sys_admin')->group(function () {
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+        Route::post('/documents/bulk-action', [DocumentController::class, 'bulkAction'])->name('documents.bulk-action');
         Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
         Route::get('/documents/{document}/edit', [DocumentController::class, 'edit'])->name('documents.edit');
         Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
@@ -177,5 +179,10 @@ Route::middleware('auth')->group(function () {
     // In-app notifications (bell dropdown)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+
+    Route::get(
+        '/notifications/{notification}/open',
+        [NotificationController::class, 'open']
+    )->name('notifications.open');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 });

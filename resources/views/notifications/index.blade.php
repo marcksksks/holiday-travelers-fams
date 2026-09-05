@@ -4,25 +4,45 @@
 
 @section('content')
 
-<div class="mx-auto max-w-5xl space-y-6">
+<div class="mx-auto max-w-6xl space-y-5">
 
-    {{-- Page Header --}}
+    {{-- =====================================================
+         PAGE HEADER
+    ====================================================== --}}
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
         <div>
+
             <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
 
-            <h2 class="font-heading text-2xl font-bold text-primary">
-                Notifications
-            </h2>
+            <div class="flex flex-wrap items-center gap-3">
 
-            <p class="mt-1 text-sm text-slate-500">
-                Stay updated with recent activity across the system.
+                <h2 class="font-heading text-2xl font-bold text-primary">
+                    Notifications
+                </h2>
+
+                @if ($unreadCount > 0)
+
+                    <span class="rounded-full bg-secondary/10 px-2.5 py-1 font-button text-[11px] font-semibold text-secondary">
+
+                        {{ number_format($unreadCount) }}
+                        unread
+
+                    </span>
+
+                @endif
+
+            </div>
+
+
+            <p class="mt-1 max-w-2xl text-sm text-slate-500">
+                Review alerts, approvals, requests, and recent system activity.
             </p>
+
         </div>
 
 
-        @if ($notifications->where('is_read', false)->count() > 0)
+        @if ($unreadCount > 0)
 
             <form
                 method="POST"
@@ -32,7 +52,7 @@
 
                 <button
                     type="submit"
-                    class="btn-outline">
+                    class="btn-outline whitespace-nowrap">
 
                     <svg
                         class="h-4 w-4"
@@ -59,151 +79,364 @@
     </div>
 
 
-    {{-- Summary --}}
-    <div class="grid gap-4 sm:grid-cols-3">
 
-        <div class="card p-5">
-
-            <p class="text-xs font-medium text-slate-500">
-                Total Notifications
-            </p>
-
-            <p class="mt-2 font-heading text-2xl font-bold text-primary">
-                {{ $notifications->count() }}
-            </p>
-
-        </div>
-
-
-        <div class="card border-b-4 border-b-secondary p-5">
-
-            <p class="text-xs font-medium text-slate-500">
-                Unread
-            </p>
-
-            <p class="mt-2 font-heading text-2xl font-bold text-secondary">
-                {{ $notifications->where('is_read', false)->count() }}
-            </p>
-
-        </div>
-
-
-        <div class="card border-b-4 border-b-success p-5">
-
-            <p class="text-xs font-medium text-slate-500">
-                Read
-            </p>
-
-            <p class="mt-2 font-heading text-2xl font-bold text-success">
-                {{ $notifications->where('is_read', true)->count() }}
-            </p>
-
-        </div>
-
-    </div>
-
-
-    {{-- Notifications List --}}
+    {{-- =====================================================
+         NOTIFICATION CENTER
+    ====================================================== --}}
     <div class="card overflow-hidden">
 
-        <div class="border-b border-border px-6 py-5">
+        {{-- Search --}}
+        <div class="border-b border-border px-4 py-4 sm:px-6">
 
-            <h3 class="font-heading text-base font-semibold text-primary">
-                Recent Notifications
-            </h3>
+            <form
+                method="GET"
+                action="{{ route('notifications.index') }}"
+                class="flex flex-col gap-2 sm:flex-row sm:items-center">
 
-            <p class="mt-1 text-xs text-slate-500">
-                Latest system alerts and activity
-            </p>
+                <input
+                    type="hidden"
+                    name="status"
+                    value="{{ $status }}">
+
+
+                <div class="relative min-w-0 flex-1">
+
+                    <div
+                        class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
+
+                        </svg>
+
+                    </div>
+
+
+                    <input
+                        type="search"
+                        name="q"
+                        value="{{ $search }}"
+                        maxlength="120"
+                        autocomplete="off"
+                        placeholder="Search notifications..."
+                        aria-label="Search notifications"
+                        class="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-10 text-sm text-primary outline-none transition placeholder:text-slate-400 focus:border-accent focus:bg-card focus:ring-2 focus:ring-accent/10">
+
+
+                    @if ($search !== '')
+
+                        <a
+                            href="{{ route('notifications.index', ['status' => $status]) }}"
+                            aria-label="Clear notification search"
+                            title="Clear search"
+                            class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition hover:text-primary">
+
+                            <svg
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+
+                            </svg>
+
+                        </a>
+
+                    @endif
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn-primary justify-center whitespace-nowrap px-4">
+
+                    Search
+
+                </button>
+
+            </form>
+
+
+            @if ($search !== '')
+
+                <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+
+                    <span>
+                        Search results for
+                    </span>
+
+                    <span class="rounded-lg bg-accent/10 px-2 py-1 font-medium text-primary">
+                        “{{ $search }}”
+                    </span>
+
+                    <span>
+                        · {{ number_format($notifications->total()) }}
+                        {{ $notifications->total() === 1 ? 'result' : 'results' }}
+                    </span>
+
+                </div>
+
+            @endif
+
+        </div>
+
+        {{-- Toolbar --}}
+        <div class="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+
+            @php
+
+                $filters = [
+                    'all' => [
+                        'label' => 'All',
+                        'count' => $totalCount,
+                    ],
+
+                    'unread' => [
+                        'label' => 'Unread',
+                        'count' => $unreadCount,
+                    ],
+
+                    'read' => [
+                        'label' => 'Read',
+                        'count' => $readCount,
+                    ],
+                ];
+
+            @endphp
+
+
+            {{-- Filter tabs --}}
+            <div
+                class="inline-flex w-fit rounded-xl bg-background p-1"
+                role="navigation"
+                aria-label="Notification filters">
+
+                @foreach ($filters as $key => $filter)
+
+                    <a
+                        href="{{ route('notifications.index', array_filter([
+                            'status' => $key,
+                            'q' => $search,
+                        ])) }}"
+                        @if ($status === $key)
+                            aria-current="page"
+                        @endif
+                        class="flex items-center gap-2 rounded-lg px-3.5 py-2 font-button text-xs font-semibold transition
+                        {{ $status === $key
+                            ? 'bg-card text-primary shadow-sm ring-1 ring-border'
+                            : 'text-slate-500 hover:text-primary'
+                        }}">
+
+                        <span>
+                            {{ $filter['label'] }}
+                        </span>
+
+
+                        <span
+                            class="rounded-full px-1.5 py-0.5 text-[10px]
+                            {{ $status === $key
+                                ? 'bg-primary/10 text-primary'
+                                : 'bg-slate-200/70 text-slate-500'
+                            }}">
+
+                            {{ number_format($filter['count']) }}
+
+                        </span>
+
+                    </a>
+
+                @endforeach
+
+            </div>
+
+
+            {{-- Results information --}}
+            @if ($notifications->total() > 0)
+
+                <p class="text-xs text-slate-400">
+
+                    Showing
+
+                    <span class="font-medium text-slate-600">
+                        {{ number_format($notifications->firstItem()) }}
+                    </span>
+
+                    –
+
+                    <span class="font-medium text-slate-600">
+                        {{ number_format($notifications->lastItem()) }}
+                    </span>
+
+                    of
+
+                    <span class="font-medium text-slate-600">
+                        {{ number_format($notifications->total()) }}
+                    </span>
+
+                </p>
+
+            @endif
 
         </div>
 
 
+
+        {{-- =================================================
+             LIST
+        ================================================== --}}
         <div class="divide-y divide-border">
 
             @forelse ($notifications as $notification)
 
                 @php
 
-                    $severity = strtolower($notification->severity ?? 'info');
+                    $severity =
+                        strtolower(
+                            $notification->severity
+                            ?? 'info'
+                        );
+
 
                     $styles = match ($severity) {
+
                         'success' => [
-                            'wrap' => 'bg-success/5',
-                            'icon' => 'bg-success/10 text-success',
+                            'icon' =>
+                                'bg-success/10 text-success',
                         ],
 
                         'warning' => [
-                            'wrap' => 'bg-warning/5',
-                            'icon' => 'bg-warning/10 text-amber-600',
+                            'icon' =>
+                                'bg-warning/10 text-amber-600',
                         ],
 
                         'error', 'danger' => [
-                            'wrap' => 'bg-error/5',
-                            'icon' => 'bg-error/10 text-error',
+                            'icon' =>
+                                'bg-error/10 text-error',
                         ],
 
                         default => [
-                            'wrap' => 'bg-accent/5',
-                            'icon' => 'bg-accent/10 text-accent',
+                            'icon' =>
+                                'bg-accent/10 text-accent',
                         ],
                     };
+
+
+                    $moduleLabel =
+                        $notification->module
+                            ? ucwords(
+                                str_replace(
+                                    ['_', '-'],
+                                    ' ',
+                                    $notification->module
+                                )
+                            )
+                            : null;
 
                 @endphp
 
 
-                <div class="relative px-6 py-5 transition hover:bg-background {{ !$notification->is_read ? $styles['wrap'] : '' }}">
+                <a
+                    href="{{ route('notifications.open', $notification) }}"
+                    aria-label="Open notification: {{ $notification->title }}"
+                    class="group relative block px-4 py-4 transition duration-200 hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent sm:px-6 sm:py-5
+                    {{ !$notification->is_read
+                        ? 'bg-accent/[0.04]'
+                        : 'bg-card'
+                    }}">
 
+                    {{-- Unread indicator --}}
                     @if (!$notification->is_read)
 
-                        <span class="absolute left-0 top-0 h-full w-1 bg-secondary"></span>
+                        <span
+                            class="absolute inset-y-0 left-0 w-1 bg-secondary">
+                        </span>
 
                     @endif
 
 
-                    <div class="flex gap-4">
+                    <div class="flex gap-3 sm:gap-4">
 
-                        {{-- Icon --}}
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $styles['icon'] }}">
+                        {{-- Severity icon --}}
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl {{ $styles['icon'] }} sm:h-11 sm:w-11">
 
                             @if ($severity === 'success')
 
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
                                     <path
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
                                         stroke-width="2"
                                         d="M5 13l4 4L19 7" />
+
                                 </svg>
 
                             @elseif ($severity === 'warning')
 
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
                                     <path
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
                                         stroke-width="2"
                                         d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+
                                 </svg>
 
                             @elseif ($severity === 'error' || $severity === 'danger')
 
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
                                     <path
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
                                         stroke-width="2"
                                         d="M6 18L18 6M6 6l12 12" />
+
                                 </svg>
 
                             @else
 
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg
+                                    class="h-5 w-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
                                     <path
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
                                         stroke-width="2"
                                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
                                 </svg>
 
                             @endif
@@ -211,24 +444,33 @@
                         </div>
 
 
-                        {{-- Content --}}
+
+                        {{-- Notification content --}}
                         <div class="min-w-0 flex-1">
 
-                            <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div class="flex items-start justify-between gap-4">
 
-                                <div class="min-w-0">
+                                <div class="min-w-0 flex-1">
 
                                     <div class="flex flex-wrap items-center gap-2">
 
-                                        <h4 class="font-button text-sm font-semibold text-primary">
+                                        <h3
+                                            class="font-button text-sm font-semibold
+                                            {{ !$notification->is_read
+                                                ? 'text-primary'
+                                                : 'text-slate-700'
+                                            }}">
+
                                             {{ $notification->title }}
-                                        </h4>
+
+                                        </h3>
 
 
                                         @if (!$notification->is_read)
 
-                                            <span class="rounded-full bg-secondary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary">
-                                                New
+                                            <span
+                                                class="h-2 w-2 rounded-full bg-secondary"
+                                                aria-label="Unread">
                                             </span>
 
                                         @endif
@@ -236,22 +478,39 @@
                                     </div>
 
 
-                                    <p class="mt-1 text-sm leading-relaxed text-slate-600">
+                                    <p class="mt-1 max-w-3xl text-sm leading-relaxed text-slate-500">
+
                                         {{ $notification->body }}
+
                                     </p>
 
 
-                                    <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                                    <div class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-400">
 
                                         <span>
+                                            {{ $notification->created_at->diffForHumans() }}
+                                        </span>
+
+
+                                        <span class="hidden sm:inline">
+                                            •
+                                        </span>
+
+
+                                        <span class="hidden sm:inline">
                                             {{ $notification->created_at->format('M d, Y · h:i A') }}
                                         </span>
 
 
-                                        @if ($notification->module)
+                                        @if ($moduleLabel)
 
-                                            <span class="rounded-full bg-primary/5 px-2 py-1 font-medium text-primary">
-                                                {{ ucfirst($notification->module) }}
+                                            <span>
+                                                •
+                                            </span>
+
+
+                                            <span class="font-medium text-slate-500">
+                                                {{ $moduleLabel }}
                                             </span>
 
                                         @endif
@@ -261,41 +520,24 @@
                                 </div>
 
 
-                                {{-- Actions --}}
-                                <div class="flex shrink-0 items-center gap-2">
 
-                                    @if ($notification->link)
+                                {{-- Chevron --}}
+                                <div
+                                    class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-300 transition duration-200 group-hover:bg-accent/10 group-hover:text-accent">
 
-                                        <a
-                                            href="{{ $notification->link }}"
-                                            class="btn-outline px-3 py-2 text-xs">
+                                    <svg
+                                        class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24">
 
-                                            View
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
 
-                                        </a>
-
-                                    @endif
-
-
-                                    @if (!$notification->is_read)
-
-                                        <form
-                                            method="POST"
-                                            action="{{ route('notifications.read', $notification) }}">
-
-                                            @csrf
-
-                                            <button
-                                                type="submit"
-                                                class="rounded-lg px-3 py-2 text-xs font-medium text-accent transition hover:bg-accent/10 hover:text-primary">
-
-                                                Mark as read
-
-                                            </button>
-
-                                        </form>
-
-                                    @endif
+                                    </svg>
 
                                 </div>
 
@@ -305,15 +547,21 @@
 
                     </div>
 
-                </div>
+                </a>
+
 
             @empty
 
+                {{-- Empty state --}}
                 <div class="px-6 py-16 text-center">
 
-                    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 text-accent">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent">
 
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg
+                            class="h-6 w-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
 
                             <path
                                 stroke-linecap="round"
@@ -325,12 +573,50 @@
 
                     </div>
 
-                    <h3 class="font-heading text-base font-semibold text-primary">
-                        You're all caught up
+
+                    <h3 class="mt-4 font-heading text-base font-semibold text-primary">
+
+                        @if ($search !== '')
+
+                            No matching notifications
+
+                        @elseif ($status === 'unread')
+
+                            You're all caught up
+
+                        @elseif ($status === 'read')
+
+                            No read notifications
+
+                        @else
+
+                            No notifications yet
+
+                        @endif
+
                     </h3>
 
-                    <p class="mt-1 text-sm text-slate-500">
-                        No notifications are available right now.
+
+                    <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">
+
+                        @if ($search !== '')
+
+                            Try another keyword or clear the current search to view all notifications.
+
+                        @elseif ($status === 'unread')
+
+                            There are no unread notifications requiring your attention.
+
+                        @elseif ($status === 'read')
+
+                            Notifications you open will appear here.
+
+                        @else
+
+                            New system activity and alerts will appear here when available.
+
+                        @endif
+
                     </p>
 
                 </div>
@@ -338,6 +624,19 @@
             @endforelse
 
         </div>
+
+
+
+        {{-- Pagination --}}
+        @if ($notifications->hasPages())
+
+            <div class="border-t border-border px-4 py-4 sm:px-6">
+
+                {{ $notifications->links() }}
+
+            </div>
+
+        @endif
 
     </div>
 

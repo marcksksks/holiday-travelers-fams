@@ -25,7 +25,7 @@
 
         @can('manageDocuments')
             <a
-                href="#upload-document"
+                href="#upload-document" data-document-upload-open
                 class="btn-primary inline-flex items-center justify-center gap-2">
 
                 <span class="text-lg leading-none">+</span>
@@ -196,454 +196,1347 @@
         {{-- Documents --}}
         <main class="min-w-0 space-y-5">
 
-            {{-- Breadcrumb / current location --}}
-            <div class="card px-5 py-4">
+            {{-- Current document location --}}
+            <div class="card overflow-hidden">
 
-                <div class="flex flex-wrap items-center gap-2 text-sm">
+                <div class="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
-                    <a
-                        href="{{ route('documents.index') }}"
-                        class="font-medium text-primary hover:text-secondary">
-                        Document Management
-                    </a>
+                    <div class="min-w-0">
 
-                    @foreach ($breadcrumbs as $breadcrumb)
+                        <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
 
-                        <span class="text-slate-300">/</span>
+                            <a
+                                href="{{ route('documents.index') }}"
+                                class="font-medium text-primary transition hover:text-secondary">
+
+                                Document Management
+
+                            </a>
+
+                            @foreach ($breadcrumbs as $breadcrumb)
+
+                                <svg
+                                    class="h-3.5 w-3.5 shrink-0 text-slate-300"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+
+                                </svg>
+
+                                <a
+                                    href="{{ route('documents.index', ['container' => $breadcrumb->id]) }}"
+                                    class="max-w-[180px] truncate font-medium text-slate-500 transition hover:text-primary">
+
+                                    {{ $breadcrumb->name }}
+
+                                </a>
+
+                            @endforeach
+
+                        </div>
+
+
+                        <div class="mt-2 flex flex-wrap items-center gap-3">
+
+                            <h2 class="font-heading text-lg font-semibold text-primary">
+
+                                @if ($selectedContainer)
+
+                                    {{ $selectedContainer->name }}
+
+                                @elseif (request('status') === 'archived')
+
+                                    Archived Documents
+
+                                @elseif (request('status') === 'needs_review')
+
+                                    Documents Needing Review
+
+                                @elseif (request('status') === 'active')
+
+                                    Active Documents
+
+                                @elseif (request('status') === 'superseded')
+
+                                    Superseded Documents
+
+                                @else
+
+                                    All Documents
+
+                                @endif
+
+                            </h2>
+
+                            <span class="rounded-full bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary">
+                                {{ number_format($documents->total()) }}
+                            </span>
+
+                        </div>
+
+
+                        <p class="mt-1 text-xs text-slate-500">
+
+                            @if ($documents->total() > 0)
+
+                                Showing
+                                {{ number_format($documents->firstItem()) }}
+                                –
+                                {{ number_format($documents->lastItem()) }}
+                                of
+                                {{ number_format($documents->total()) }}
+                                documents
+
+                            @else
+
+                                No documents in the current view
+
+                            @endif
+
+                        </p>
+
+                    </div>
+
+
+                    @if (
+                        request()->filled('search')
+                        || request()->filled('category')
+                        || request()->filled('status')
+                    )
 
                         <a
-                            href="{{ route('documents.index', ['container' => $breadcrumb->id]) }}"
-                            class="font-medium text-slate-600 hover:text-primary">
+                            href="{{ route(
+                                'documents.index',
+                                $selectedContainer
+                                    ? ['container' => $selectedContainer->id]
+                                    : []
+                            ) }}"
+                            class="inline-flex items-center gap-1.5 self-start rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 transition hover:bg-background hover:text-primary sm:self-auto">
 
-                            {{ $breadcrumb->name }}
+                            <svg
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+
+                            </svg>
+
+                            Clear filters
 
                         </a>
 
-                    @endforeach
-
-                    @if (request('status') === 'archived')
-                        <span class="text-slate-300">/</span>
-                        <span class="font-medium text-slate-500">
-                            Archived Documents
-                        </span>
-                    @elseif (request('status') === 'needs_review')
-                        <span class="text-slate-300">/</span>
-                        <span class="font-medium text-slate-500">
-                            Needs Review
-                        </span>
                     @endif
 
                 </div>
 
             </div>
 
-
-            {{-- Filters --}}
+            {{-- Search and filters --}}
             <form
                 method="GET"
                 action="{{ route('documents.index') }}"
-                class="card grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_180px_160px_auto]">
+                class="card p-4">
 
                 @if ($selectedContainer)
+
                     <input
                         type="hidden"
                         name="container"
                         value="{{ $selectedContainer->id }}">
+
                 @endif
 
-                <input
-                    type="search"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Search documents..."
-                    class="input">
 
-                <select name="category" class="input">
-                    <option value="">All Categories</option>
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
 
-                    @foreach ([
-                        'administrative',
-                        'contract',
-                        'legal',
-                        'permit',
-                        'license',
-                        'compliance',
-                        'partnership',
-                        'financial',
-                        'operational',
-                        'other'
-                    ] as $category)
+                    <div class="relative min-w-0 flex-1">
 
-                        <option
-                            value="{{ $category }}"
-                            @selected(request('category') === $category)>
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
 
-                            {{ str($category)->headline() }}
+                            <svg
+                                class="h-4 w-4 text-slate-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
 
-                        </option>
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
 
-                    @endforeach
-                </select>
+                            </svg>
 
-                <select name="status" class="input">
-                    <option value="">All Statuses</option>
-                    <option value="active" @selected(request('status') === 'active')>Active</option>
-                    <option value="needs_review" @selected(request('status') === 'needs_review')>Needs Review</option>
-                    <option value="archived" @selected(request('status') === 'archived')>Archived</option>
-                    <option value="superseded" @selected(request('status') === 'superseded')>Superseded</option>
-                </select>
+                        </div>
 
-                <button type="submit" class="btn-primary">
-                    Search
-                </button>
+                        <input
+                            type="search"
+                            name="search"
+                            value="{{ request('search') }}"
+                            placeholder="Search by title, filename, reference, or related record..."
+                            class="input pl-10">
 
-            </form>
+                    </div>
 
 
-            {{-- Upload --}}
-            @can('manageDocuments')
+                    <div class="flex flex-col gap-2 sm:flex-row">
 
-                <details id="upload-document" class="card overflow-hidden">
+                        <details class="group relative">
 
-                    <summary class="cursor-pointer list-none px-5 py-4">
+                            <summary
+                                class="btn-outline flex cursor-pointer list-none items-center justify-center gap-2">
 
-                        <div class="flex items-center justify-between gap-3">
+                                <svg
+                                    class="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
 
-                            <div>
-                                <h2 class="font-heading text-sm font-semibold text-primary">
-                                    Upload a Document
-                                </h2>
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M3 4h18l-7 9v6l-4 2v-8L3 4z" />
 
-                                <p class="mt-1 text-xs text-slate-500">
-                                    Add a manually uploaded document to the selected container.
-                                </p>
+                                </svg>
+
+                                Filters
+
+                                @if (
+                                    request()->filled('category')
+                                    || request()->filled('status')
+                                )
+
+                                    <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-bold text-white">
+
+                                        {{
+                                            (request()->filled('category') ? 1 : 0)
+                                            +
+                                            (request()->filled('status') ? 1 : 0)
+                                        }}
+
+                                    </span>
+
+                                @endif
+
+
+                                <svg
+                                    class="h-3.5 w-3.5 transition group-open:rotate-180"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+
+                                </svg>
+
+                            </summary>
+
+
+                            <div class="relative z-30 mt-2 w-full rounded-xl border border-border bg-card p-4 shadow-soft sm:absolute sm:right-0 sm:w-80">
+
+                                <div class="space-y-4">
+
+                                    <div>
+
+                                        <label class="label">
+                                            Category
+                                        </label>
+
+                                        <select
+                                            name="category"
+                                            class="input">
+
+                                            <option value="">
+                                                All Categories
+                                            </option>
+
+                                            @foreach ([
+                                                'administrative',
+                                                'contract',
+                                                'legal',
+                                                'permit',
+                                                'license',
+                                                'compliance',
+                                                'partnership',
+                                                'financial',
+                                                'operational',
+                                            ] as $category)
+
+                                                <option
+                                                    value="{{ $category }}"
+                                                    @selected(request('category') === $category)>
+
+                                                    {{ str($category)->headline() }}
+
+                                                </option>
+
+                                            @endforeach
+
+                                        </select>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <label class="label">
+                                            Status
+                                        </label>
+
+                                        <select
+                                            name="status"
+                                            class="input">
+
+                                            <option value="">
+                                                All Statuses
+                                            </option>
+
+                                            <option
+                                                value="active"
+                                                @selected(request('status') === 'active')>
+
+                                                Active
+
+                                            </option>
+
+                                            <option
+                                                value="needs_review"
+                                                @selected(request('status') === 'needs_review')>
+
+                                                Needs Review
+
+                                            </option>
+
+                                            <option
+                                                value="archived"
+                                                @selected(request('status') === 'archived')>
+
+                                                Archived
+
+                                            </option>
+
+                                            <option
+                                                value="superseded"
+                                                @selected(request('status') === 'superseded')>
+
+                                                Superseded
+
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+
+                                    <button
+                                        type="submit"
+                                        class="btn-secondary w-full justify-center">
+
+                                        Apply Filters
+
+                                    </button>
+
+                                </div>
+
                             </div>
 
-                            <span class="text-xl font-medium text-secondary">
-                                +
+                        </details>
+
+
+                        <button
+                            type="submit"
+                            class="btn-primary justify-center">
+
+                            Search
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                @if (
+                    request()->filled('search')
+                    || request()->filled('category')
+                    || request()->filled('status')
+                )
+
+                    <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+
+                        <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                            Active filters
+                        </span>
+
+
+                        @if (request()->filled('search'))
+
+                            <span class="inline-flex max-w-xs items-center truncate rounded-full bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary">
+                                Search: “{{ request('search') }}”
                             </span>
-
-                        </div>
-
-                    </summary>
-
-
-                    <form
-                        method="POST"
-                        action="{{ route('documents.store') }}"
-                        enctype="multipart/form-data"
-                        class="space-y-5 border-t border-border p-5">
-
-                        @csrf
-
-                        <div class="grid gap-4 md:grid-cols-2">
-
-                            <div>
-                                <label class="label">Document Title *</label>
-
-                                <input
-                                    name="title"
-                                    value="{{ old('title') }}"
-                                    required
-                                    class="input">
-                            </div>
-
-
-                            <div>
-                                <label class="label">Container</label>
-
-                                <select name="container_id" class="input">
-
-                                    <option value="">
-                                        Unfiled
-                                    </option>
-
-                                    @foreach ($allContainers as $container)
-
-                                        <option
-                                            value="{{ $container->id }}"
-                                            @selected(
-                                                (string) old(
-                                                    'container_id',
-                                                    $selectedContainer?->id
-                                                ) === (string) $container->id
-                                            )>
-
-                                            {{ str_replace('/', ' / ', $container->path) }}
-
-                                        </option>
-
-                                    @endforeach
-
-                                </select>
-                            </div>
-
-
-                            <div>
-                                <label class="label">Category *</label>
-
-                                <select name="category" class="input">
-
-                                    @foreach ([
-                                        'administrative',
-                                        'contract',
-                                        'legal',
-                                        'permit',
-                                        'license',
-                                        'compliance',
-                                        'partnership',
-                                        'financial',
-                                        'operational',
-                                        'other'
-                                    ] as $category)
-
-                                        <option
-                                            value="{{ $category }}"
-                                            @selected(old('category', 'administrative') === $category)>
-
-                                            {{ str($category)->headline() }}
-
-                                        </option>
-
-                                    @endforeach
-
-                                </select>
-                            </div>
-
-
-                            <div>
-                                <label class="label">Confidentiality *</label>
-
-                                <select name="confidentiality" class="input">
-                                    <option value="general">General</option>
-                                    <option value="restricted">Restricted</option>
-                                    <option value="confidential">Confidential</option>
-                                </select>
-                            </div>
-
-
-                            <div>
-                                <label class="label">Department</label>
-
-                                <input
-                                    name="department"
-                                    value="{{ old('department') }}"
-                                    class="input">
-                            </div>
-
-
-                            <div>
-                                <label class="label">Owner Email</label>
-
-                                <input
-                                    type="email"
-                                    name="owner_email"
-                                    value="{{ old('owner_email') }}"
-                                    class="input">
-                            </div>
-
-
-                            <div>
-                                <label class="label">Document Date</label>
-
-                                <input
-                                    type="date"
-                                    name="document_date"
-                                    value="{{ old('document_date') }}"
-                                    class="input">
-                            </div>
-
-
-                            <div>
-                                <label class="label">Expiration Date</label>
-
-                                <input
-                                    type="date"
-                                    name="expiration_date"
-                                    value="{{ old('expiration_date') }}"
-                                    class="input">
-                            </div>
-
-
-                            <div>
-                                <label class="label">Status</label>
-
-                                <select name="status" class="input">
-                                    <option value="active">Active</option>
-                                    <option value="needs_review">Needs Review</option>
-                                    <option value="archived">Archived</option>
-                                    <option value="superseded">Superseded</option>
-                                </select>
-                            </div>
-
-
-                            <div>
-                                <label class="label">File</label>
-
-                                <input
-                                    type="file"
-                                    name="file"
-                                    class="input">
-                            </div>
-
-                        </div>
-
-
-                        {{-- Related record --}}
-                        <div class="rounded-xl border border-border bg-background/50 p-4">
-
-                            <p class="font-heading text-sm font-semibold text-primary">
-                                Related System Record
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-500">
-                                Optional. Link this file to an existing system record.
-                            </p>
-
-
-                            <div class="mt-4 grid gap-4 md:grid-cols-2">
-
-                                <div>
-                                    <label class="label">Related Module</label>
-
-                                    <select
-                                        id="related_type"
-                                        name="related_type"
-                                        class="input">
-
-                                        <option value="">None</option>
-
-                                        @if ($contracts->isNotEmpty())
-                                            <option value="contract">Contract</option>
-                                        @endif
-
-                                        @if ($legalRecords->isNotEmpty())
-                                            <option value="legal">Legal Record</option>
-                                        @endif
-
-                                        @if ($reservations->isNotEmpty())
-                                            <option value="reservation">Facility Reservation</option>
-                                        @endif
-
-                                        @if ($visitors->isNotEmpty())
-                                            <option value="visitor">Visitor Record</option>
-                                        @endif
-
-                                    </select>
-                                </div>
-
-
-                                <div>
-                                    <label class="label">Related Record</label>
-
-                                    <select
-                                        id="related_id"
-                                        name="related_id"
-                                        class="input"
-                                        disabled>
-
-                                        <option value="">Select a record</option>
-
-                                        @foreach ($contracts as $contract)
-                                            <option
-                                                value="{{ $contract->id }}"
-                                                data-related-type="contract">
-
-                                                {{ $contract->contract_number ?: 'Contract #'.$contract->id }}
-                                                - {{ $contract->title }}
-
-                                            </option>
-                                        @endforeach
-
-
-                                        @foreach ($legalRecords as $legalRecord)
-                                            <option
-                                                value="{{ $legalRecord->id }}"
-                                                data-related-type="legal">
-
-                                                {{ $legalRecord->reference_number ?: 'Legal #'.$legalRecord->id }}
-                                                - {{ $legalRecord->title }}
-
-                                            </option>
-                                        @endforeach
-
-
-                                        @foreach ($reservations as $reservation)
-                                            <option
-                                                value="{{ $reservation->id }}"
-                                                data-related-type="reservation">
-
-                                                #{{ $reservation->id }}
-                                                - {{ $reservation->facility_name }}
-                                                - {{ $reservation->date?->format('M d, Y') }}
-
-                                            </option>
-                                        @endforeach
-
-
-                                        @foreach ($visitors as $visitor)
-                                            <option
-                                                value="{{ $visitor->id }}"
-                                                data-related-type="visitor">
-
-                                                #{{ $visitor->id }}
-                                                - {{ $visitor->full_name }}
-
-                                            </option>
-                                        @endforeach
-
-                                    </select>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        <div>
-                            <label class="label">Description</label>
-
-                            <textarea
-                                name="description"
-                                rows="3"
-                                class="input">{{ old('description') }}</textarea>
-                        </div>
-
-
-                        @if ($errors->any())
-
-                            <div class="rounded-xl border border-error/20 bg-error/5 p-4">
-
-                                <p class="text-sm font-semibold text-error">
-                                    Please correct the following:
-                                </p>
-
-                                <ul class="mt-2 list-disc space-y-1 pl-5 text-xs text-error">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-
-                            </div>
 
                         @endif
 
 
-                        <div class="flex justify-end">
+                        @if (request()->filled('category'))
 
-                            <button type="submit" class="btn-primary">
-                                Add to Document Management
+                            <span class="inline-flex items-center rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-primary">
+                                {{ str(request('category'))->headline() }}
+                            </span>
+
+                        @endif
+
+
+                        @if (request()->filled('status'))
+
+                            <span class="inline-flex items-center rounded-full bg-secondary/10 px-2.5 py-1 text-xs font-medium text-secondary">
+                                {{ str(request('status'))->headline() }}
+                            </span>
+
+                        @endif
+
+                    </div>
+
+                @endif
+
+            </form>
+
+            {{-- Upload document modal --}}
+            @can('manageDocuments')
+
+                <div
+                    id="upload-document"
+                    data-document-upload-modal
+                    @if ($errors->any() && old('category') !== null)
+                        data-open-on-error="true"
+                    @endif
+                    class="fixed inset-0 z-[80] hidden"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="upload-document-title">
+
+                    {{-- Backdrop --}}
+                    <div
+                        data-document-upload-backdrop
+                        class="absolute inset-0 bg-slate-950/55 backdrop-blur-sm">
+                    </div>
+
+
+                    {{-- Modal positioning --}}
+                    <div class="relative flex min-h-full items-center justify-center p-3 sm:p-6">
+
+                        <div
+                            data-document-upload-panel
+                            class="flex max-h-[calc(100vh-1.5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:max-h-[calc(100vh-3rem)]">
+
+                            {{-- Modal header --}}
+                            <div class="flex shrink-0 items-start justify-between gap-4 border-b border-border px-5 py-4 sm:px-6">
+
+                                <div class="flex min-w-0 items-start gap-3">
+
+                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+
+                                        <svg
+                                            class="h-5 w-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24">
+
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 16V4m0 0L7 9m5-5l5 5M5 20h14" />
+
+                                        </svg>
+
+                                    </div>
+
+
+                                    <div class="min-w-0">
+
+                                        <h2
+                                            id="upload-document-title"
+                                            class="font-heading text-lg font-semibold text-primary">
+
+                                            Upload Document
+
+                                        </h2>
+
+                                        <p class="mt-1 text-xs leading-relaxed text-slate-500 sm:text-sm">
+                                            Add a manually uploaded record to Document Management.
+                                        </p>
+
+                                        @if ($selectedContainer)
+
+                                            <div class="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-primary">
+
+                                                <svg
+                                                    class="h-3.5 w-3.5 shrink-0"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 7h6l2 2h10v10H3V7z" />
+
+                                                </svg>
+
+                                                <span class="truncate">
+                                                    {{ str_replace('/', ' / ', $selectedContainer->path) }}
+                                                </span>
+
+                                            </div>
+
+                                        @endif
+
+                                    </div>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    data-document-upload-close
+                                    aria-label="Close upload document dialog"
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-background hover:text-primary">
+
+                                    <svg
+                                        class="h-5 w-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24">
+
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+
+                                    </svg>
+
+                                </button>
+
+                            </div>
+
+
+                            <form
+                                method="POST"
+                                action="{{ route('documents.store') }}"
+                                enctype="multipart/form-data"
+                                class="flex min-h-0 flex-1 flex-col">
+
+                                @csrf
+
+
+                                {{-- Scrollable form body --}}
+                                <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+
+                                    <div class="space-y-6">
+
+                                        @if ($errors->any() && old('category') !== null)
+
+                                            <div class="rounded-xl border border-error/20 bg-error/5 p-4">
+
+                                                <div class="flex items-start gap-3">
+
+                                                    <div class="mt-0.5 text-error">
+
+                                                        <svg
+                                                            class="h-5 w-5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 9v3m0 4h.01M10.3 3.6L2.5 17a2 2 0 001.7 3h15.6a2 2 0 001.7-3L13.7 3.6a2 2 0 00-3.4 0z" />
+
+                                                        </svg>
+
+                                                    </div>
+
+                                                    <div>
+
+                                                        <p class="text-sm font-semibold text-error">
+                                                            Please correct the following:
+                                                        </p>
+
+                                                        <ul class="mt-2 list-disc space-y-1 pl-5 text-xs text-error">
+
+                                                            @foreach ($errors->all() as $error)
+
+                                                                <li>{{ $error }}</li>
+
+                                                            @endforeach
+
+                                                        </ul>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        @endif
+
+
+                                        {{-- Basic document information --}}
+                                        <section>
+
+                                            <div class="mb-4">
+
+                                                <h3 class="font-heading text-sm font-semibold text-primary">
+                                                    Document Information
+                                                </h3>
+
+                                                <p class="mt-1 text-xs text-slate-500">
+                                                    Enter the basic filing information for this document.
+                                                </p>
+
+                                            </div>
+
+
+                                            <div class="grid gap-4 md:grid-cols-2">
+
+                                                <div class="md:col-span-2">
+
+                                                    <label class="label">
+                                                        Document Title
+                                                        <span class="text-error">*</span>
+                                                    </label>
+
+                                                    <input
+                                                        name="title"
+                                                        value="{{ old('title') }}"
+                                                        placeholder="Enter a descriptive document title"
+                                                        required
+                                                        autofocus
+                                                        class="input">
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        Container
+                                                    </label>
+
+                                                    <select
+                                                        name="container_id"
+                                                        class="input">
+
+                                                        <option value="">
+                                                            Unfiled
+                                                        </option>
+
+                                                        @foreach ($allContainers as $container)
+
+                                                            <option
+                                                                value="{{ $container->id }}"
+                                                                @selected(
+                                                                    (string) old(
+                                                                        'container_id',
+                                                                        $selectedContainer?->id
+                                                                    ) === (string) $container->id
+                                                                )>
+
+                                                                {{ str_replace('/', ' / ', $container->path) }}
+
+                                                            </option>
+
+                                                        @endforeach
+
+                                                    </select>
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        Category
+                                                        <span class="text-error">*</span>
+                                                    </label>
+
+                                                    <select
+                                                        name="category"
+                                                        required
+                                                        class="input">
+
+                                                        @foreach ([
+                                                            'administrative',
+                                                            'contract',
+                                                            'legal',
+                                                            'permit',
+                                                            'license',
+                                                            'compliance',
+                                                            'partnership',
+                                                            'financial',
+                                                            'operational',
+                                                            'other'
+                                                        ] as $category)
+
+                                                            <option
+                                                                value="{{ $category }}"
+                                                                @selected(old('category', 'administrative') === $category)>
+
+                                                                {{ str($category)->headline() }}
+
+                                                            </option>
+
+                                                        @endforeach
+
+                                                    </select>
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        Confidentiality
+                                                        <span class="text-error">*</span>
+                                                    </label>
+
+                                                    <select
+                                                        name="confidentiality"
+                                                        required
+                                                        class="input">
+
+                                                        <option
+                                                            value="general"
+                                                            @selected(old('confidentiality', 'general') === 'general')>
+
+                                                            General
+
+                                                        </option>
+
+                                                        <option
+                                                            value="restricted"
+                                                            @selected(old('confidentiality') === 'restricted')>
+
+                                                            Restricted
+
+                                                        </option>
+
+                                                        <option
+                                                            value="confidential"
+                                                            @selected(old('confidentiality') === 'confidential')>
+
+                                                            Confidential
+
+                                                        </option>
+
+                                                    </select>
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        Status
+                                                    </label>
+
+                                                    <select
+                                                        name="status"
+                                                        class="input">
+
+                                                        <option
+                                                            value="active"
+                                                            @selected(old('status', 'active') === 'active')>
+
+                                                            Active
+
+                                                        </option>
+
+                                                        <option
+                                                            value="needs_review"
+                                                            @selected(old('status') === 'needs_review')>
+
+                                                            Needs Review
+
+                                                        </option>
+
+                                                        <option
+                                                            value="archived"
+                                                            @selected(old('status') === 'archived')>
+
+                                                            Archived
+
+                                                        </option>
+
+                                                        <option
+                                                            value="superseded"
+                                                            @selected(old('status') === 'superseded')>
+
+                                                            Superseded
+
+                                                        </option>
+
+                                                    </select>
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        Department
+                                                    </label>
+
+                                                    <input
+                                                        name="department"
+                                                        value="{{ old('department') }}"
+                                                        placeholder="e.g. Administration"
+                                                        class="input">
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        Owner Email
+                                                    </label>
+
+                                                    <input
+                                                        type="email"
+                                                        name="owner_email"
+                                                        value="{{ old('owner_email') }}"
+                                                        placeholder="name@example.com"
+                                                        class="input">
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        Document Date
+                                                    </label>
+
+                                                    <input
+                                                        type="date"
+                                                        name="document_date"
+                                                        value="{{ old('document_date') }}"
+                                                        class="input">
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        Expiration Date
+                                                    </label>
+
+                                                    <input
+                                                        type="date"
+                                                        name="expiration_date"
+                                                        value="{{ old('expiration_date') }}"
+                                                        class="input">
+
+                                                </div>
+
+                                            </div>
+
+                                        </section>
+
+
+                                        <div class="border-t border-border"></div>
+
+
+                                        {{-- Related record --}}
+                                        <section>
+
+                                            <div class="mb-4">
+
+                                                <h3 class="font-heading text-sm font-semibold text-primary">
+                                                    Related System Record
+                                                </h3>
+
+                                                <p class="mt-1 text-xs text-slate-500">
+                                                    Optional. Connect this file to an existing contract, legal record, reservation, or visitor.
+                                                </p>
+
+                                            </div>
+
+
+                                            <div class="rounded-xl border border-border bg-background/50 p-4">
+
+                                                <div class="grid gap-4 md:grid-cols-2">
+
+                                                    <div>
+
+                                                        <label class="label">
+                                                            Related Module
+                                                        </label>
+
+                                                        <select
+                                                            id="related_type"
+                                                            name="related_type"
+                                                            class="input">
+
+                                                            <option value="">
+                                                                None
+                                                            </option>
+
+                                                            @if ($contracts->isNotEmpty())
+
+                                                                <option
+                                                                    value="contract"
+                                                                    @selected(old('related_type') === 'contract')>
+
+                                                                    Contract
+
+                                                                </option>
+
+                                                            @endif
+
+                                                            @if ($legalRecords->isNotEmpty())
+
+                                                                <option
+                                                                    value="legal"
+                                                                    @selected(old('related_type') === 'legal')>
+
+                                                                    Legal Record
+
+                                                                </option>
+
+                                                            @endif
+
+                                                            @if ($reservations->isNotEmpty())
+
+                                                                <option
+                                                                    value="reservation"
+                                                                    @selected(old('related_type') === 'reservation')>
+
+                                                                    Facility Reservation
+
+                                                                </option>
+
+                                                            @endif
+
+                                                            @if ($visitors->isNotEmpty())
+
+                                                                <option
+                                                                    value="visitor"
+                                                                    @selected(old('related_type') === 'visitor')>
+
+                                                                    Visitor Record
+
+                                                                </option>
+
+                                                            @endif
+
+                                                        </select>
+
+                                                    </div>
+
+
+                                                    <div>
+
+                                                        <label class="label">
+                                                            Related Record
+                                                        </label>
+
+                                                        <select
+                                                            id="related_id"
+                                                            name="related_id"
+                                                            class="input"
+                                                            disabled>
+
+                                                            <option value="">
+                                                                Select a record
+                                                            </option>
+
+
+                                                            @foreach ($contracts as $contract)
+
+                                                                <option
+                                                                    value="{{ $contract->id }}"
+                                                                    data-related-type="contract"
+                                                                    @selected(
+                                                                        old('related_type') === 'contract'
+                                                                        && (string) old('related_id') === (string) $contract->id
+                                                                    )>
+
+                                                                    {{ $contract->contract_number ?: 'Contract #'.$contract->id }}
+                                                                    - {{ $contract->title }}
+
+                                                                </option>
+
+                                                            @endforeach
+
+
+                                                            @foreach ($legalRecords as $legalRecord)
+
+                                                                <option
+                                                                    value="{{ $legalRecord->id }}"
+                                                                    data-related-type="legal"
+                                                                    @selected(
+                                                                        old('related_type') === 'legal'
+                                                                        && (string) old('related_id') === (string) $legalRecord->id
+                                                                    )>
+
+                                                                    {{ $legalRecord->reference_number ?: 'Legal #'.$legalRecord->id }}
+                                                                    - {{ $legalRecord->title }}
+
+                                                                </option>
+
+                                                            @endforeach
+
+
+                                                            @foreach ($reservations as $reservation)
+
+                                                                <option
+                                                                    value="{{ $reservation->id }}"
+                                                                    data-related-type="reservation"
+                                                                    @selected(
+                                                                        old('related_type') === 'reservation'
+                                                                        && (string) old('related_id') === (string) $reservation->id
+                                                                    )>
+
+                                                                    #{{ $reservation->id }}
+                                                                    - {{ $reservation->facility_name }}
+                                                                    - {{ $reservation->date?->format('M d, Y') }}
+
+                                                                </option>
+
+                                                            @endforeach
+
+
+                                                            @foreach ($visitors as $visitor)
+
+                                                                <option
+                                                                    value="{{ $visitor->id }}"
+                                                                    data-related-type="visitor"
+                                                                    @selected(
+                                                                        old('related_type') === 'visitor'
+                                                                        && (string) old('related_id') === (string) $visitor->id
+                                                                    )>
+
+                                                                    #{{ $visitor->id }}
+                                                                    - {{ $visitor->full_name }}
+
+                                                                </option>
+
+                                                            @endforeach
+
+                                                        </select>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </section>
+
+
+                                        <div class="border-t border-border"></div>
+
+
+                                        {{-- File and description --}}
+                                        <section>
+
+                                            <div class="mb-4">
+
+                                                <h3 class="font-heading text-sm font-semibold text-primary">
+                                                    File & Description
+                                                </h3>
+
+                                                <p class="mt-1 text-xs text-slate-500">
+                                                    Attach the document file and add any useful filing notes.
+                                                </p>
+
+                                            </div>
+
+
+                                            <div class="space-y-4">
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        File
+                                                    </label>
+
+                                                    <div class="rounded-xl border border-dashed border-border bg-background/40 p-4">
+
+                                                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+
+                                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+
+                                                                <svg
+                                                                    class="h-5 w-5"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+
+                                                                    <path
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M12 4v12m0-12L7 9m5-5l5 5M5 20h14" />
+
+                                                                </svg>
+
+                                                            </div>
+
+                                                            <div class="min-w-0 flex-1">
+
+                                                                <input
+                                                                    type="file"
+                                                                    name="file"
+                                                                    class="block w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-primary hover:file:bg-primary/15">
+
+                                                                <p class="mt-2 text-xs text-slate-400">
+                                                                    Choose the document file you want to store.
+                                                                </p>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+
+                                                <div>
+
+                                                    <label class="label">
+                                                        Description
+                                                    </label>
+
+                                                    <textarea
+                                                        name="description"
+                                                        rows="4"
+                                                        placeholder="Add notes or a short description of this document..."
+                                                        class="input resize-y">{{ old('description') }}</textarea>
+
+                                                </div>
+
+                                            </div>
+
+                                        </section>
+
+                                    </div>
+
+                                </div>
+
+
+                                {{-- Modal footer --}}
+                                <div class="flex shrink-0 flex-col-reverse gap-2 border-t border-border bg-background/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+
+                                    <p class="text-xs text-slate-400">
+                                        Fields marked with
+                                        <span class="text-error">*</span>
+                                        are required.
+                                    </p>
+
+
+                                    <div class="flex flex-col-reverse gap-2 sm:flex-row">
+
+                                        <button
+                                            type="button"
+                                            data-document-upload-close
+                                            class="btn-outline justify-center">
+
+                                            Cancel
+
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            class="btn-primary justify-center">
+
+                                            <svg
+                                                class="h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24">
+
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M12 16V4m0 0L7 9m5-5l5 5M5 20h14" />
+
+                                            </svg>
+
+                                            Upload Document
+
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @endcan
+
+            @can('manageDocuments')
+
+                <form
+                    id="document-bulk-form"
+                    method="POST"
+                    action="{{ route('documents.bulk-action') }}"
+                    data-document-bulk-toolbar
+                    class="hidden overflow-hidden rounded-xl border border-accent/25 bg-accent/5 shadow-sm">
+
+                    @csrf
+
+                    <input
+                        type="hidden"
+                        name="action"
+                        data-document-bulk-action>
+
+
+                    <div class="flex flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+
+                        <div class="flex min-w-0 items-center gap-3">
+
+                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
+
+                                <svg
+                                    class="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+
+                                </svg>
+
+                            </div>
+
+
+                            <div>
+
+                                <p
+                                    data-document-bulk-count
+                                    class="font-button text-sm font-semibold text-primary">
+
+                                    0 documents selected
+
+                                </p>
+
+                                <p
+                                    data-document-bulk-summary
+                                    class="mt-0.5 text-xs text-slate-500">
+
+                                    Select documents to manage their archive status.
+
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+
+                            <button
+                                type="button"
+                                data-document-bulk-archive
+                                class="inline-flex items-center justify-center gap-2 rounded-lg border border-error/20 bg-error/5 px-4 py-2.5 text-sm font-semibold text-error transition hover:bg-error/10 disabled:cursor-not-allowed disabled:opacity-40">
+
+                                <svg
+                                    class="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M5 8h14M9 12h6m-8 8h10a2 2 0 002-2V8H5v10a2 2 0 002 2zM8 4h8l1 4H7l1-4z" />
+
+                                </svg>
+
+                                Archive Selected
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                data-document-bulk-restore
+                                class="inline-flex items-center justify-center gap-2 rounded-lg border border-success/20 bg-success/5 px-4 py-2.5 text-sm font-semibold text-success transition hover:bg-success/10 disabled:cursor-not-allowed disabled:opacity-40">
+
+                                <svg
+                                    class="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M4 4v6h6M20 20v-6h-6M5.1 15a8 8 0 0013.8 1M18.9 9A8 8 0 005.1 8" />
+
+                                </svg>
+
+                                Restore Selected
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                data-document-bulk-clear
+                                class="inline-flex items-center justify-center rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-500 transition hover:bg-card hover:text-primary">
+
+                                Clear
+
                             </button>
 
                         </div>
 
-                    </form>
+                    </div>
 
-                </details>
+                </form>
 
             @endcan
-
 
             {{-- Table --}}
             <div class="table-shell">
@@ -652,9 +1545,24 @@
 
                     <table class="min-w-full text-left text-sm">
 
-                        <thead class="table-header">
+                        <thead class="table-header sticky top-0 z-10">
 
                             <tr>
+
+                                @can('manageDocuments')
+
+                                    <th class="w-12 px-5 py-4">
+
+                                        <input
+                                            type="checkbox"
+                                            data-document-select-all
+                                            aria-label="Select all documents on this page"
+                                            class="h-4 w-4 rounded border-border text-primary focus:ring-primary">
+
+                                    </th>
+
+                                @endcan
+
                                 <th class="px-5 py-4 font-medium">Document</th>
                                 <th class="px-5 py-4 font-medium">Location</th>
                                 <th class="px-5 py-4 font-medium">Related Record</th>
@@ -670,7 +1578,25 @@
 
                             @forelse ($documents as $document)
 
-                                <tr class="transition hover:bg-background/70">
+                                <tr data-document-row class="transition hover:bg-background/70">
+
+                                    @can('manageDocuments')
+
+                                        <td class="w-12 px-5 py-4 align-top">
+
+                                            <input
+                                                type="checkbox"
+                                                name="document_ids[]"
+                                                value="{{ $document->id }}"
+                                                form="document-bulk-form"
+                                                data-document-select
+                                                data-document-status="{{ $document->status }}"
+                                                aria-label="Select {{ $document->title }}"
+                                                class="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary">
+
+                                        </td>
+
+                                    @endcan
 
                                     <td class="px-5 py-4">
 
@@ -1005,7 +1931,9 @@
                             @empty
 
                                 <tr>
-                                    <td colspan="6" class="px-6 py-16">
+                                    <td
+                                        colspan="{{ auth()->user()->can('manageDocuments') ? 7 : 6 }}"
+                                        class="px-6 py-16">
 
                                         <div class="mx-auto max-w-sm text-center">
 
@@ -1232,4 +2160,497 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form =
+        document.getElementById('document-bulk-form');
+
+    if (!form) {
+        return;
+    }
+
+    const selectAll =
+        document.querySelector(
+            '[data-document-select-all]'
+        );
+
+    const checkboxes =
+        Array.from(
+            document.querySelectorAll(
+                '[data-document-select]'
+            )
+        );
+
+    const actionInput =
+        form.querySelector(
+            '[data-document-bulk-action]'
+        );
+
+    const archiveButton =
+        form.querySelector(
+            '[data-document-bulk-archive]'
+        );
+
+    const restoreButton =
+        form.querySelector(
+            '[data-document-bulk-restore]'
+        );
+
+    const clearButton =
+        form.querySelector(
+            '[data-document-bulk-clear]'
+        );
+
+    const countLabel =
+        form.querySelector(
+            '[data-document-bulk-count]'
+        );
+
+    const summaryLabel =
+        form.querySelector(
+            '[data-document-bulk-summary]'
+        );
+
+
+    const selectedDocuments = () => {
+        return checkboxes.filter(
+            (checkbox) =>
+                checkbox.checked
+        );
+    };
+
+
+    const updateState = () => {
+        const selected =
+            selectedDocuments();
+
+        const selectedCount =
+            selected.length;
+
+        const archivableCount =
+            selected.filter(
+                (checkbox) =>
+                    checkbox.dataset.documentStatus
+                        !== 'archived'
+            ).length;
+
+        const restorableCount =
+            selected.filter(
+                (checkbox) =>
+                    checkbox.dataset.documentStatus
+                        === 'archived'
+            ).length;
+
+
+        form.classList.toggle(
+            'hidden',
+            selectedCount === 0
+        );
+
+
+        if (countLabel) {
+            countLabel.textContent =
+                `${selectedCount} ${
+                    selectedCount === 1
+                        ? 'document'
+                        : 'documents'
+                } selected`;
+        }
+
+
+        if (summaryLabel) {
+            const parts = [];
+
+            if (archivableCount > 0) {
+                parts.push(
+                    `${archivableCount} can be archived`
+                );
+            }
+
+            if (restorableCount > 0) {
+                parts.push(
+                    `${restorableCount} can be restored`
+                );
+            }
+
+            summaryLabel.textContent =
+                parts.join(' · ');
+        }
+
+
+        if (archiveButton) {
+            archiveButton.disabled =
+                archivableCount === 0;
+        }
+
+        if (restoreButton) {
+            restoreButton.disabled =
+                restorableCount === 0;
+        }
+
+
+        if (selectAll) {
+            selectAll.checked =
+                checkboxes.length > 0
+                && selectedCount
+                    === checkboxes.length;
+
+            selectAll.indeterminate =
+                selectedCount > 0
+                && selectedCount
+                    < checkboxes.length;
+        }
+
+
+        checkboxes.forEach(
+            (checkbox) => {
+                const row =
+                    checkbox.closest(
+                        '[data-document-row]'
+                    );
+
+                if (!row) {
+                    return;
+                }
+
+                row.classList.toggle(
+                    'bg-accent/5',
+                    checkbox.checked
+                );
+            }
+        );
+    };
+
+
+    const clearSelection = () => {
+        checkboxes.forEach(
+            (checkbox) => {
+                checkbox.checked = false;
+            }
+        );
+
+        if (selectAll) {
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+        }
+
+        if (actionInput) {
+            actionInput.value = '';
+        }
+
+        updateState();
+    };
+
+
+    const runBulkAction = (action) => {
+        const selected =
+            selectedDocuments();
+
+        if (selected.length === 0) {
+            return;
+        }
+
+        let applicableCount = 0;
+
+        if (action === 'archive') {
+            applicableCount =
+                selected.filter(
+                    (checkbox) =>
+                        checkbox.dataset.documentStatus
+                            !== 'archived'
+                ).length;
+        }
+
+        if (action === 'restore') {
+            applicableCount =
+                selected.filter(
+                    (checkbox) =>
+                        checkbox.dataset.documentStatus
+                            === 'archived'
+                ).length;
+        }
+
+        if (applicableCount === 0) {
+            return;
+        }
+
+
+        const message =
+            action === 'archive'
+                ? `Archive ${applicableCount} selected document(s)? They will remain stored and can be restored later.`
+                : `Restore ${applicableCount} archived document(s) to the active library?`;
+
+
+        if (!window.confirm(message)) {
+            return;
+        }
+
+
+        actionInput.value = action;
+
+        form.requestSubmit();
+    };
+
+
+    selectAll?.addEventListener(
+        'change',
+        () => {
+            checkboxes.forEach(
+                (checkbox) => {
+                    checkbox.checked =
+                        selectAll.checked;
+                }
+            );
+
+            updateState();
+        }
+    );
+
+
+    checkboxes.forEach(
+        (checkbox) => {
+            checkbox.addEventListener(
+                'change',
+                updateState
+            );
+        }
+    );
+
+
+    archiveButton?.addEventListener(
+        'click',
+        () => {
+            runBulkAction('archive');
+        }
+    );
+
+
+    restoreButton?.addEventListener(
+        'click',
+        () => {
+            runBulkAction('restore');
+        }
+    );
+
+
+    clearButton?.addEventListener(
+        'click',
+        clearSelection
+    );
+
+
+    document.addEventListener(
+        'keydown',
+        (event) => {
+            if (
+                event.key === 'Escape'
+                && selectedDocuments().length > 0
+            ) {
+                clearSelection();
+            }
+        }
+    );
+
+
+    updateState();
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const uploadModal =
+        document.querySelector(
+            '[data-document-upload-modal]'
+        );
+
+    if (!uploadModal) {
+        return;
+    }
+
+    const openButtons =
+        document.querySelectorAll(
+            '[data-document-upload-open]'
+        );
+
+    const closeButtons =
+        uploadModal.querySelectorAll(
+            '[data-document-upload-close]'
+        );
+
+    const backdrop =
+        uploadModal.querySelector(
+            '[data-document-upload-backdrop]'
+        );
+
+    const panel =
+        uploadModal.querySelector(
+            '[data-document-upload-panel]'
+        );
+
+    let previouslyFocused = null;
+    let previousBodyOverflow = '';
+
+
+    const getFocusableElements = () => {
+        return Array.from(
+            uploadModal.querySelectorAll(
+                'button:not([disabled]), ' +
+                'input:not([disabled]), ' +
+                'select:not([disabled]), ' +
+                'textarea:not([disabled]), ' +
+                'a[href]'
+            )
+        ).filter(
+            (element) =>
+                element.offsetParent !== null
+        );
+    };
+
+
+    const openUploadModal = () => {
+        previouslyFocused =
+            document.activeElement;
+
+        previousBodyOverflow =
+            document.body.style.overflow;
+
+        uploadModal.classList.remove(
+            'hidden'
+        );
+
+        document.body.style.overflow =
+            'hidden';
+
+        window.requestAnimationFrame(
+            () => {
+                const titleInput =
+                    uploadModal.querySelector(
+                        'input[name="title"]'
+                    );
+
+                titleInput?.focus();
+            }
+        );
+    };
+
+
+    const closeUploadModal = () => {
+        uploadModal.classList.add(
+            'hidden'
+        );
+
+        document.body.style.overflow =
+            previousBodyOverflow;
+
+        if (
+            previouslyFocused
+            && typeof previouslyFocused.focus
+                === 'function'
+        ) {
+            previouslyFocused.focus();
+        }
+    };
+
+
+    openButtons.forEach(
+        (button) => {
+            button.addEventListener(
+                'click',
+                (event) => {
+                    event.preventDefault();
+                    openUploadModal();
+                }
+            );
+        }
+    );
+
+
+    closeButtons.forEach(
+        (button) => {
+            button.addEventListener(
+                'click',
+                closeUploadModal
+            );
+        }
+    );
+
+
+    backdrop?.addEventListener(
+        'click',
+        closeUploadModal
+    );
+
+
+    panel?.addEventListener(
+        'click',
+        (event) => {
+            event.stopPropagation();
+        }
+    );
+
+
+    document.addEventListener(
+        'keydown',
+        (event) => {
+            if (
+                uploadModal.classList.contains(
+                    'hidden'
+                )
+            ) {
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closeUploadModal();
+                return;
+            }
+
+            if (event.key !== 'Tab') {
+                return;
+            }
+
+            const focusable =
+                getFocusableElements();
+
+            if (focusable.length === 0) {
+                return;
+            }
+
+            const first =
+                focusable[0];
+
+            const last =
+                focusable[
+                    focusable.length - 1
+                ];
+
+            if (
+                event.shiftKey
+                && document.activeElement
+                    === first
+            ) {
+                event.preventDefault();
+                last.focus();
+            } else if (
+                !event.shiftKey
+                && document.activeElement
+                    === last
+            ) {
+                event.preventDefault();
+                first.focus();
+            }
+        }
+    );
+
+
+    if (
+        uploadModal.dataset.openOnError
+            === 'true'
+    ) {
+        openUploadModal();
+    }
+});
+</script>
+
 @endsection

@@ -45,6 +45,19 @@ class ReservationApiController extends Controller
         return (new ReservationResource($reservation))->response()->setStatusCode(201);
     }
 
+    public function update(
+        ReservationRequest $request,
+        Reservation $reservation
+    ) {
+        $reservation = $this->service->resubmit(
+            $request->user(),
+            $reservation,
+            $request->validated()
+        );
+
+        return new ReservationResource($reservation);
+    }
+
     public function decide(Request $request, Reservation $reservation)
     {
         abort_unless($request->user()->can('decideReservations'), 403);

@@ -91,8 +91,7 @@
 @php
     $navItems = [
         'dashboard' => ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'dashboard'],
-        'facilities.index' => ['label' => 'Facilities', 'route' => 'facilities.index', 'icon' => 'facilities'],
-        'reservations.index' => ['label' => 'Reservations', 'route' => 'reservations.index', 'icon' => 'reservations'],
+        'facilities.index' => ['label' => 'Facilities Reservation', 'route' => 'facilities.index', 'icon' => 'facilities'],
         'appointments.index' => ['label' => 'Appointments', 'route' => 'appointments.index', 'icon' => 'appointments'],
         'visitors.index' => ['label' => 'Visitor Desk', 'route' => 'visitors.index', 'icon' => 'visitors'],
         'documents.index' => ['label' => 'Document Management', 'route' => 'documents.index', 'icon' => 'documents'],
@@ -358,25 +357,41 @@
                             class="absolute right-0 z-50 mt-3 hidden w-96 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
 
                             {{-- Header --}}
-                            <div class="flex items-center justify-between border-b border-border px-5 py-4">
+                            <div class="border-b border-border px-5 py-4">
 
-                                <div>
+                                <div class="flex items-center gap-2">
+
                                     <h3 class="font-heading text-sm font-semibold text-primary">
                                         Notifications
                                     </h3>
 
-                                    <p class="mt-0.5 text-xs text-slate-500">
-                                        {{ $unreadNotificationCount }} unread
-                                    </p>
+
+                                    @if ($unreadNotificationCount > 0)
+
+                                        <span
+                                            class="h-2 w-2 rounded-full bg-secondary"
+                                            aria-hidden="true">
+                                        </span>
+
+                                    @endif
+
                                 </div>
 
-                                @if ($unreadNotificationCount > 0)
 
-                                    <span class="rounded-full bg-secondary/10 px-2.5 py-1 text-[10px] font-semibold text-secondary">
-                                        {{ $unreadNotificationCount }} New
-                                    </span>
+                                <p class="mt-0.5 text-xs text-slate-500">
 
-                                @endif
+                                    @if ($unreadNotificationCount > 0)
+
+                                        {{ number_format($unreadNotificationCount) }}
+                                        unread
+
+                                    @else
+
+                                        You're all caught up
+
+                                    @endif
+
+                                </p>
 
                             </div>
 
@@ -396,40 +411,78 @@
                                             default => 'bg-accent/10 text-accent',
                                         };
                                     @endphp
-
-                                    <div
-                                        class="border-b border-border px-5 py-4 transition hover:bg-background {{ !$notification->is_read ? 'bg-accent/5' : '' }}">
+                                    <a
+                                        href="{{ route('notifications.open', $notification) }}"
+                                        aria-label="Open notification: {{ $notification->title }}"
+                                        class="group block border-b border-border px-5 py-4 transition hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent {{ !$notification->is_read ? 'bg-accent/5' : '' }}">
 
                                         <div class="flex gap-3">
 
+                                            {{-- Severity icon --}}
                                             <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl {{ $iconClass }}">
 
                                                 @if ($severity === 'success')
 
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                              d="M5 13l4 4L19 7" />
+                                                    <svg
+                                                        class="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M5 13l4 4L19 7" />
+
                                                     </svg>
 
                                                 @elseif ($severity === 'warning')
 
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                              d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+                                                    <svg
+                                                        class="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+
                                                     </svg>
 
                                                 @elseif ($severity === 'error' || $severity === 'danger')
 
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                              d="M6 18L18 6M6 6l12 12" />
+                                                    <svg
+                                                        class="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M6 18L18 6M6 6l12 12" />
+
                                                     </svg>
 
                                                 @else
 
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    <svg
+                                                        class="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
                                                     </svg>
 
                                                 @endif
@@ -439,33 +492,78 @@
 
                                             <div class="min-w-0 flex-1">
 
-                                                <div class="flex items-start justify-between gap-2">
+                                                <div class="flex items-start justify-between gap-3">
 
-                                                    <p class="truncate font-button text-sm font-semibold text-primary">
-                                                        {{ $notification->title }}
-                                                    </p>
+                                                    <div class="min-w-0">
 
-                                                    @if (!$notification->is_read)
+                                                        <div class="flex items-center gap-2">
 
-                                                        <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-secondary"></span>
+                                                            <p class="truncate font-button text-sm font-semibold text-primary">
+                                                                {{ $notification->title }}
+                                                            </p>
 
-                                                    @endif
+                                                            @if (!$notification->is_read)
+
+                                                                <span
+                                                                    class="h-2 w-2 shrink-0 rounded-full bg-secondary"
+                                                                    title="Unread">
+                                                                </span>
+
+                                                            @endif
+
+                                                        </div>
+
+
+                                                        <p class="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">
+                                                            {{ \Illuminate\Support\Str::limit($notification->body, 100) }}
+                                                        </p>
+
+
+                                                        <div class="mt-2 flex items-center gap-2 text-[10px] text-slate-400">
+
+                                                            <span>
+                                                                {{ $notification->created_at->diffForHumans() }}
+                                                            </span>
+
+                                                            @if ($notification->module)
+
+                                                                <span>
+                                                                    •
+                                                                </span>
+
+                                                                <span class="capitalize">
+                                                                    {{ str_replace('_', ' ', $notification->module) }}
+                                                                </span>
+
+                                                            @endif
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <svg
+                                                        class="mt-1 h-4 w-4 shrink-0 text-slate-300 transition duration-200 group-hover:translate-x-0.5 group-hover:text-accent"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M9 5l7 7-7 7" />
+
+                                                    </svg>
 
                                                 </div>
-
-                                                <p class="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">
-                                                    {{ \Illuminate\Support\Str::limit($notification->body, 100) }}
-                                                </p>
-
-                                                <p class="mt-2 text-[10px] text-slate-400">
-                                                    {{ $notification->created_at->diffForHumans() }}
-                                                </p>
 
                                             </div>
 
                                         </div>
 
-                                    </div>
+                                    </a>
+
 
                                 @empty
 
@@ -638,23 +736,68 @@
         {{-- Page content --}}
         <main class="flex-1 bg-background p-4 md:p-8 lg:p-10">
 
-            {{-- Success --}}
+                        {{-- Success --}}
             @if (session('status'))
 
                 <div
                     data-toast
-                    class="mb-5 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm">
+                    data-toast-type="success"
+                    data-toast-floating
+                    role="status"
+                    aria-live="polite"
+                    class="fams-toast flex items-start gap-3 rounded-2xl border border-success/20 bg-card px-4 py-4 shadow-xl">
 
-                    <span>
-                        {{ session('status') }}
-                    </span>
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
+
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 13l4 4L19 7" />
+
+                        </svg>
+
+                    </div>
+
+
+                    <div class="min-w-0 flex-1">
+
+                        <p class="font-button text-sm font-semibold text-primary">
+                            Success
+                        </p>
+
+                        <p class="mt-0.5 text-sm leading-relaxed text-slate-500">
+                            {{ session('status') }}
+                        </p>
+
+                    </div>
+
 
                     <button
                         type="button"
                         data-dismiss
-                        class="ml-4 text-emerald-600 hover:text-emerald-900">
+                        aria-label="Dismiss notification"
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-background hover:text-primary">
 
-                        ✕
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+
+                        </svg>
 
                     </button>
 
@@ -668,6 +811,9 @@
 
                 <div
                     data-toast
+                    data-toast-type="error"
+                    data-toast-persistent
+                    role="alert"
                     class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 shadow-sm">
 
                     <div class="flex justify-between">

@@ -157,13 +157,15 @@
                         id="capacity"
                         type="number"
                         name="capacity"
-                        min="1"
+                        min="0"
                         value="{{ old('capacity', $facility->capacity ?? '') }}"
                         placeholder="e.g. 20"
                         class="input pl-10 pr-16 @error('capacity') border-error focus:border-error focus:ring-error/20 @enderror">
 
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5">
-                        <span class="text-xs text-slate-400">
+                        <span
+                            id="facility-capacity-unit"
+                            class="text-xs text-slate-400">
                             people
                         </span>
                     </div>
@@ -217,7 +219,8 @@
                         'meeting_room',
                         'training_room',
                         'function_room',
-                        'other'
+                                                    'vehicle',
+                                                    'other'
                     ] as $type)
 
                         <option

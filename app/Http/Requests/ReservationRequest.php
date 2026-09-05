@@ -18,8 +18,8 @@ class ReservationRequest extends FormRequest
             'date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
-            'attendees' => ['nullable', 'integer', 'min:1', 'max:100000'],
-            'purpose' => ['nullable', 'string'],
+            'attendees' => ['required', 'integer', 'min:1', 'max:100000'],
+            'purpose' => ['required', 'string', 'max:2000'],
         ];
     }
 }

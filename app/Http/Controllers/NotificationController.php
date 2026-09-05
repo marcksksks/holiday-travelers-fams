@@ -9,15 +9,170 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $notifications = AppNotification::where(
-            'recipient_email',
-            $request->user()->email
-        )
-            ->orderByDesc('created_at')
-            ->limit(30)
-            ->get();
+        $status = strtolower(
+            trim(
+                (string) $request->query(
+                    'status',
+                    'all'
+                )
+            )
+        );
 
-        return view('notifications.index', compact('notifications'));
+        if (
+            ! in_array(
+                $status,
+                ['all', 'unread', 'read'],
+                true
+            )
+        ) {
+            $status = 'all';
+        }
+
+
+        $search = mb_substr(
+            trim(
+                (string) $request->query(
+                    'q',
+                    ''
+                )
+            ),
+            0,
+            120
+        );
+
+
+        $baseQuery = AppNotification::query()
+            ->where(
+                'recipient_email',
+                $request->user()->email
+            );
+
+
+        $totalCount =
+            (clone $baseQuery)->count();
+
+        $unreadCount =
+            (clone $baseQuery)
+                ->where('is_read', false)
+                ->count();
+
+        $readCount =
+            $totalCount - $unreadCount;
+
+
+        $listQuery =
+            clone $baseQuery;
+
+
+        if ($search !== '') {
+
+            $needle =
+                '%'
+                . mb_strtolower($search)
+                . '%';
+
+
+            $listQuery->where(
+                function ($query) use ($needle) {
+
+                    $query
+                        ->whereRaw(
+                            'LOWER(title) LIKE ?',
+                            [$needle]
+                        )
+                        ->orWhereRaw(
+                            'LOWER(body) LIKE ?',
+                            [$needle]
+                        )
+                        ->orWhereRaw(
+                            "LOWER(COALESCE(module, '')) LIKE ?",
+                            [$needle]
+                        );
+                }
+            );
+        }
+
+
+        $notifications =
+            $listQuery
+
+                ->when(
+                    $status === 'unread',
+                    fn ($query) =>
+                        $query->where(
+                            'is_read',
+                            false
+                        )
+                )
+
+                ->when(
+                    $status === 'read',
+                    fn ($query) =>
+                        $query->where(
+                            'is_read',
+                            true
+                        )
+                )
+
+                ->orderByDesc('created_at')
+
+                ->paginate(15)
+
+                ->withQueryString();
+
+
+        return view(
+            'notifications.index',
+            compact(
+                'notifications',
+                'status',
+                'totalCount',
+                'unreadCount',
+                'readCount',
+                'search'
+            )
+        );
+    }
+
+    public function open(
+        Request $request,
+        AppNotification $notification
+    ) {
+        abort_unless(
+            $notification->recipient_email ===
+                $request->user()->email,
+            403
+        );
+
+
+        if (! $notification->is_read) {
+            $notification->update([
+                'is_read' => true,
+            ]);
+        }
+
+
+        $link = trim(
+            (string) $notification->link
+        );
+
+
+        /*
+         * Only allow internal application paths.
+         * Prevent redirecting users to an external URL.
+         */
+        if (
+            $link === ''
+            || ! str_starts_with($link, '/')
+            || str_starts_with($link, '//')
+        ) {
+            return redirect()->route(
+                'notifications.index'
+            );
+        }
+
+
+        return redirect()->to($link);
     }
 
     public function markRead(Request $request, AppNotification $notification)
