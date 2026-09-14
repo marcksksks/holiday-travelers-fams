@@ -7,116 +7,311 @@
 <div class="space-y-6">
 
     {{-- Header --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 
         <div>
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
+            <div class="mb-2 flex items-center gap-2">
+                <div class="h-1 w-12 rounded-full bg-secondary"></div>
 
-            <h2 class="font-heading text-2xl font-bold text-primary">
+                <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    Records Governance
+                </span>
+            </div>
+
+            <h2 class="font-heading text-2xl font-bold tracking-tight text-primary">
                 Records Retention & Compliance
             </h2>
 
-            <p class="mt-1 text-sm text-slate-500">
-                Monitor retention periods, compliance conditions, review schedules, and record disposition.
+            <p class="mt-1 max-w-2xl text-sm text-slate-500">
+                Monitor retention periods, compliance conditions, review schedules, and controlled record disposition.
             </p>
         </div>
 
-        <div class="rounded-xl border border-border bg-card px-4 py-2.5 shadow-card">
-            <p class="text-xs text-slate-500">
-                Active Policies
-            </p>
-
-            <p class="mt-0.5 font-heading text-lg font-bold text-primary">
-                {{ $policies->count() }}
-            </p>
-        </div>
 
     </div>
-
 
     {{-- Summary Cards --}}
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    @php
+        $retentionSummary = [
+            [
+                'label' => 'Tracked Records',
+                'value' => $stats['total'],
+                'description' => 'Under retention control',
+                'numberClass' => 'text-primary',
+                'iconClass' => 'bg-primary/5 text-primary',
+                'barClass' => 'bg-primary',
+            ],
+            [
+                'label' => 'Compliant',
+                'value' => $stats['compliant'],
+                'description' => 'Meeting retention requirements',
+                'numberClass' => 'text-success',
+                'iconClass' => 'bg-success/10 text-success',
+                'barClass' => 'bg-success',
+            ],
+            [
+                'label' => 'At Risk',
+                'value' => $stats['at_risk'],
+                'description' => 'Compliance attention needed',
+                'numberClass' => 'text-amber-600',
+                'iconClass' => 'bg-warning/10 text-amber-600',
+                'barClass' => 'bg-warning',
+            ],
+            [
+                'label' => 'Review Required',
+                'value' => $stats['review_required'],
+                'description' => 'Awaiting retention review',
+                'numberClass' => 'text-error',
+                'iconClass' => 'bg-error/10 text-error',
+                'barClass' => 'bg-error',
+            ],
+        ];
+    @endphp
 
-        <div class="card relative overflow-hidden p-5">
-            <div class="absolute inset-x-0 bottom-0 h-1 bg-primary"></div>
+    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
-            <p class="text-xs font-medium text-slate-500">
-                Tracked Records
-            </p>
+        @foreach ($retentionSummary as $card)
 
-            <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                {{ $stats['total'] }}
-            </p>
+            <div class="card group overflow-hidden p-4">
 
-            <p class="mt-1 text-xs text-slate-400">
-                Records under retention tracking
-            </p>
-        </div>
+                <div class="flex items-center justify-between gap-4">
 
+                    <div class="min-w-0">
 
-        <div class="card relative overflow-hidden p-5">
-            <div class="absolute inset-x-0 bottom-0 h-1 bg-success"></div>
+                        <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                            {{ $card['label'] }}
+                        </p>
 
-            <p class="text-xs font-medium text-slate-500">
-                Compliant
-            </p>
+                        <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight {{ $card['numberClass'] }}">
+                            {{ number_format($card['value']) }}
+                        </p>
 
-            <p class="mt-2 font-heading text-3xl font-bold text-success">
-                {{ $stats['compliant'] }}
-            </p>
+                        <p class="mt-0.5 truncate text-xs text-slate-500">
+                            {{ $card['description'] }}
+                        </p>
 
-            <p class="mt-1 text-xs text-slate-400">
-                Records currently compliant
-            </p>
-        </div>
+                    </div>
 
 
-        <div class="card relative overflow-hidden p-5">
-            <div class="absolute inset-x-0 bottom-0 h-1 bg-warning"></div>
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $card['iconClass'] }}">
 
-            <p class="text-xs font-medium text-slate-500">
-                At Risk
-            </p>
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true">
 
-            <p class="mt-2 font-heading text-3xl font-bold text-amber-600">
-                {{ $stats['at_risk'] }}
-            </p>
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 12l2 2 4-4m5-4a11 11 0 01-8 3 11 11 0 01-8-3c0 5.25 3.44 10.74 8 12 4.56-1.26 8-6.75 8-12z" />
 
-            <p class="mt-1 text-xs text-slate-400">
-                Compliance attention needed
-            </p>
-        </div>
+                        </svg>
+
+                    </div>
+
+                </div>
 
 
-        <div class="card relative overflow-hidden p-5">
-            <div class="absolute inset-x-0 bottom-0 h-1 bg-error"></div>
+                <div class="mt-4 h-1 overflow-hidden rounded-full bg-slate-100">
+                    <div class="h-full w-full rounded-full {{ $card['barClass'] }}"></div>
+                </div>
 
-            <p class="text-xs font-medium text-slate-500">
-                Review Required
-            </p>
+            </div>
 
-            <p class="mt-2 font-heading text-3xl font-bold text-error">
-                {{ $stats['review_required'] }}
-            </p>
-
-            <p class="mt-1 text-xs text-slate-400">
-                Records awaiting review
-            </p>
-        </div>
+        @endforeach
 
     </div>
 
+    {{-- Retention Workspace Navigation --}}
+    @php
+        $retentionUser = request()->user();
 
-    <div class="grid gap-6 xl:grid-cols-[400px_minmax(0,1fr)]">
+        $retentionTabs = ['records'];
+
+        if ($retentionUser && $retentionUser->can('approveRetentionDisposal')) {
+            $retentionTabs[] = 'disposal';
+        }
+
+        if ($retentionUser && $retentionUser->can('manageRetention')) {
+            $retentionTabs[] = 'policies';
+        }
+
+        $retentionTab = request('tab', 'records');
+
+        if (! in_array($retentionTab, $retentionTabs, true)) {
+            $retentionTab = 'records';
+        }
+    @endphp
+
+
+    <nav
+        class="flex gap-1 overflow-x-auto border-b border-border"
+        aria-label="Retention workspace">
+
+        <a
+            href="{{ route('retention.index', ['tab' => 'records']) }}"
+            @class([
+                'group inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition',
+                'border-primary text-primary' => $retentionTab === 'records',
+                'border-transparent text-slate-500 hover:border-slate-300 hover:text-primary' => $retentionTab !== 'records',
+            ])
+            @if ($retentionTab === 'records')
+                aria-current="page"
+            @endif>
+
+            <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true">
+
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h16" />
+
+            </svg>
+
+            Records
+
+            <span @class([
+                'rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                'bg-primary/10 text-primary' => $retentionTab === 'records',
+                'bg-slate-100 text-slate-500' => $retentionTab !== 'records',
+            ])>
+                {{ number_format($stats['total']) }}
+            </span>
+
+        </a>
+
+
+        @can('approveRetentionDisposal')
+
+            <a
+                href="{{ route('retention.index', ['tab' => 'disposal']) }}"
+                @class([
+                    'group inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition',
+                    'border-warning text-amber-700' => $retentionTab === 'disposal',
+                    'border-transparent text-slate-500 hover:border-slate-300 hover:text-primary' => $retentionTab !== 'disposal',
+                ])
+                @if ($retentionTab === 'disposal')
+                    aria-current="page"
+                @endif>
+
+                <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-3-3v6m8-3a8 8 0 11-16 0 8 8 0 0116 0z" />
+
+                </svg>
+
+                Disposal Queue
+
+                @if ($pendingDisposals->isNotEmpty())
+
+                    <span class="rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                        {{ $pendingDisposals->count() }}
+                    </span>
+
+                @endif
+
+            </a>
+
+        @endcan
+
+
+        @can('manageRetention')
+
+            <a
+                href="{{ route('retention.index', ['tab' => 'policies']) }}"
+                @class([
+                    'group inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition',
+                    'border-primary text-primary' => $retentionTab === 'policies',
+                    'border-transparent text-slate-500 hover:border-slate-300 hover:text-primary' => $retentionTab !== 'policies',
+                ])
+                @if ($retentionTab === 'policies')
+                    aria-current="page"
+                @endif>
+
+                <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6M9 16h6M9 8h6M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
+
+                </svg>
+
+                Retention Policies
+
+                <span @class([
+                    'rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                    'bg-primary/10 text-primary' => $retentionTab === 'policies',
+                    'bg-slate-100 text-slate-500' => $retentionTab !== 'policies',
+                ])>
+                    {{ $allPolicies->count() }}
+                </span>
+
+            </a>
+
+        @endcan
+
+    </nav>
+
+    <div class="space-y-6">
 
         {{-- Track Record --}}
         @can('manageRetention')
 
-            <div>
+            <dialog
+                id="trackRetentionDialog"
+                class="relative max-h-[90vh] w-[calc(100%_-_2rem)] max-w-2xl overflow-hidden rounded-2xl border border-border bg-card p-0 shadow-2xl backdrop:bg-slate-950/50">
 
-                <div class="card overflow-hidden xl:sticky xl:top-6">
+                <button
+                    type="button"
+                    onclick="this.closest('dialog').close()"
+                    class="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-background hover:text-primary"
+                    aria-label="Close Track Record dialog">
 
-                    <div class="border-b border-border bg-background/60 px-5 py-5">
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+
+                    </svg>
+
+                </button>
+
+                <div class="flex max-h-[90vh] flex-col overflow-hidden bg-card">
+
+                    <div class="shrink-0 border-b border-border bg-background/60 px-5 py-5 pr-16">
 
                         <div class="flex items-center gap-3">
 
@@ -156,7 +351,7 @@
                     <form
                         method="POST"
                         action="{{ route('retention.store') }}"
-                        class="space-y-5 p-5">
+                        class="min-h-0 flex-1 space-y-5 overflow-y-auto p-5">
 
                         @csrf
 
@@ -245,7 +440,7 @@
                                 class="input">
 
                                 <option value="">
-                                    No policy selected
+                                    No policy assigned selected
                                 </option>
 
                                 @foreach ($policies as $policy)
@@ -301,7 +496,7 @@
 
                             <div>
                                 <label for="status" class="label">
-                                    Retention Status
+                                    Lifecycle
                                 </label>
 
                                 <select
@@ -401,225 +596,114 @@
 
                 </div>
 
-            </div>
+            </dialog>
 
         @endcan
 
 
-        @can('approveRetentionDisposal')
+        {{-- Disposal Queue --}}
+        @include('retention._disposal-queue')
 
-            @if ($pendingDisposals->isNotEmpty())
 
-                <div class="card mb-6 overflow-hidden">
+        {{-- Register --}}
+        @if ($retentionTab === 'records')
+        <div class="min-w-0 space-y-4">
 
-                    <div class="border-b border-border bg-warning/5 px-5 py-4">
+            <div class="space-y-4">
 
-                        <div class="flex items-center justify-between">
+                {{-- Workspace heading --}}
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
-                            <div>
-                                <h3 class="font-heading text-base font-semibold text-primary">
-                                    Pending Disposal Approvals
-                                </h3>
+                    <div>
 
-                                <p class="mt-1 text-xs text-slate-500">
-                                    Records awaiting authorized disposition review.
-                                </p>
-                            </div>
 
-                            <span class="badge badge-warning">
-                                {{ $pendingDisposals->count() }} Pending
+                        <div class="flex flex-wrap items-center gap-2">
+
+                            <h3 class="font-heading text-lg font-semibold text-primary">
+                                Retention Register
+                            </h3>
+
+                            <span class="rounded-full bg-primary/5 px-2.5 py-1 text-[10px] font-semibold text-primary ring-1 ring-inset ring-primary/10">
+                                {{ number_format($retentions->total()) }}
+                                {{ Str::plural('record', $retentions->total()) }}
                             </span>
 
                         </div>
 
-                    </div>
-
-
-                    <div class="divide-y divide-border">
-
-                        @foreach ($pendingDisposals as $pending)
-
-                            <div class="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-
-                                <div>
-
-                                    <p class="text-sm font-semibold text-primary">
-                                        {{ $pending->record_title }}
-                                    </p>
-
-                                    <p class="mt-1 text-xs text-slate-500">
-                                        Requested by
-                                        {{ $pending->disposition_requested_by }}
-
-                                        @if ($pending->disposition_requested_at)
-                                            &bull;
-                                            {{ $pending->disposition_requested_at->format('M d, Y h:i A') }}
-                                        @endif
-                                    </p>
-
-                                </div>
-
-                                <a
-                                    href="{{ route('retention.disposition', $pending) }}"
-                                    class="btn-outline whitespace-nowrap">
-
-                                    Review Request
-
-                                </a>
-
-                            </div>
-
-                        @endforeach
+                        <p class="mt-1 text-xs leading-5 text-slate-500">
+                            Monitor lifecycle status, review schedules, policies, and compliance health.
+                        </p>
 
                     </div>
 
+
+                    @can('manageRetention')
+
+                        <button
+                            type="button"
+                            onclick="document.getElementById('trackRetentionDialog').showModal()"
+                            class="btn-secondary shrink-0 justify-center">
+
+                            <svg
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+
+                            </svg>
+
+                            Track Retention Record
+
+                        </button>
+
+                    @endcan
+
                 </div>
 
-            @endif
 
-        @endcan
-
-
-        {{-- Register --}}
-        <div class="min-w-0 space-y-4">
-
-            <div class="flex flex-col gap-4">
-
-                <div>
-                    <h3 class="font-heading text-lg font-semibold text-primary">
-                        Retention Register
-                    </h3>
-
-                    <p class="mt-1 text-xs text-slate-500">
-                        Monitor review schedules, disposition status, and compliance.
-                    </p>
-                </div>
-
-
-                {{-- Filters --}}
-                <form
-                    method="GET"
-                    action="{{ route('retention.index') }}"
-                    class="grid gap-2 sm:grid-cols-3">
-
-                    <select
-                        name="record_type"
-                        onchange="this.form.submit()"
-                        class="input">
-
-                        <option value="">
-                            All Record Types
-                        </option>
-
-                        @foreach ([
-                            'document',
-                            'contract',
-                            'legal_record',
-                            'other'
-                        ] as $type)
-
-                            <option
-                                value="{{ $type }}"
-                                @selected(request('record_type') === $type)>
-
-                                {{ str($type)->headline() }}
-
-                            </option>
-
-                        @endforeach
-
-                    </select>
-
-
-                    <select
-                        name="status"
-                        onchange="this.form.submit()"
-                        class="input">
-
-                        <option value="">
-                            All Retention Statuses
-                        </option>
-
-                        @foreach ([
-                            'retained',
-                            'review_required',
-                            'extended',
-                            'archived',
-                            'marked_for_disposal'
-                        ] as $status)
-
-                            <option
-                                value="{{ $status }}"
-                                @selected(request('status') === $status)>
-
-                                {{ str($status)->headline() }}
-
-                            </option>
-
-                        @endforeach
-
-                    </select>
-
-
-                    <select
-                        name="compliance"
-                        onchange="this.form.submit()"
-                        class="input">
-
-                        <option value="">
-                            All Compliance
-                        </option>
-
-                        @foreach ([
-                            'compliant',
-                            'at_risk',
-                            'non_compliant'
-                        ] as $status)
-
-                            <option
-                                value="{{ $status }}"
-                                @selected(request('compliance') === $status)>
-
-                                {{ str($status)->headline() }}
-
-                            </option>
-
-                        @endforeach
-
-                    </select>
-
-                </form>
+                {{-- Search and filters --}}
+                @include('retention._records-toolbar')
 
             </div>
-
 
             <div class="table-shell">
 
                 <div class="overflow-x-auto">
 
-                    <table class="min-w-full text-left text-sm">
+                    <table class="w-full min-w-[900px] text-left text-sm">
 
-                        <thead class="table-header">
+                        <thead class="table-header border-b border-border">
 
                             <tr>
-                                <th class="px-5 py-4 font-medium">
+                                <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                                     Record
                                 </th>
 
-                                <th class="px-5 py-4 font-medium">
+                                <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                                     Policy
                                 </th>
 
-                                <th class="px-5 py-4 font-medium">
+                                <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                                     Review
                                 </th>
 
-                                <th class="px-5 py-4 font-medium">
-                                    Retention Status
+                                <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                    Lifecycle
                                 </th>
 
-                                <th class="px-5 py-4 font-medium">
+                                <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                                     Compliance
+                                </th>
+
+                                <th class="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                                    Action
                                 </th>
                             </tr>
 
@@ -640,14 +724,23 @@
                                 @endphp
 
 
-                                <tr class="transition hover:bg-sky-50/40">
+                                <tr @class([
+                                    'group transition-colors hover:bg-sky-50/60',
+                                    'bg-error/[0.025]' =>
+                                        $daysToReview !== null
+                                        && $daysToReview < 0,
+                                    'bg-warning/[0.025]' =>
+                                        $daysToReview !== null
+                                        && $daysToReview >= 0
+                                        && $daysToReview <= 30,
+                                ])>
 
                                     {{-- Record --}}
-                                    <td class="px-5 py-4">
+                                    <td class="px-4 py-3.5">
 
                                         <div class="flex items-start gap-3">
 
-                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
 
                                                 <svg
                                                     class="h-5 w-5"
@@ -667,7 +760,7 @@
 
                                             <div class="min-w-0">
 
-                                                <p class="max-w-[220px] truncate font-button text-sm font-semibold text-primary">
+                                                <p class="max-w-[240px] truncate font-heading text-sm font-semibold text-primary">
                                                     {{ $retention->record_title }}
                                                 </p>
 
@@ -703,7 +796,7 @@
 
 
                                     {{-- Policy --}}
-                                    <td class="px-5 py-4">
+                                    <td class="px-4 py-3.5">
 
                                         @if ($retention->policy)
 
@@ -725,7 +818,7 @@
                                         @else
 
                                             <span class="text-xs text-slate-400">
-                                                No policy
+                                                No policy assigned
                                             </span>
 
                                         @endif
@@ -734,7 +827,7 @@
 
 
                                     {{-- Review --}}
-                                    <td class="px-5 py-4">
+                                    <td class="px-4 py-3.5">
 
                                         @if ($retention->review_date)
 
@@ -751,19 +844,19 @@
 
                                             @if ($daysToReview < 0)
 
-                                                <p class="mt-1 text-[10px] font-medium text-error">
+                                                <p class="mt-1.5 inline-flex rounded-full bg-error/10 px-2 py-0.5 text-[10px] font-semibold text-error">
                                                     Overdue by {{ abs($daysToReview) }} days
                                                 </p>
 
                                             @elseif ($daysToReview === 0)
 
-                                                <p class="mt-1 text-[10px] font-medium text-error">
+                                                <p class="mt-1.5 inline-flex rounded-full bg-error/10 px-2 py-0.5 text-[10px] font-semibold text-error">
                                                     Review due today
                                                 </p>
 
                                             @elseif ($daysToReview <= 30)
 
-                                                <p class="mt-1 text-[10px] font-medium text-amber-600">
+                                                <p class="mt-1.5 inline-flex rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
                                                     Due in {{ $daysToReview }} days
                                                 </p>
 
@@ -779,7 +872,7 @@
 
                                     </td>
                                     {{-- Status --}}
-                                    <td class="px-5 py-4">
+                                    <td class="px-4 py-3.5">
 
                                         <span @class([
                                             'badge',
@@ -806,7 +899,7 @@
 
                                     </td>
                                     {{-- Compliance --}}
-                                    <td class="px-5 py-4">
+                                    <td class="px-4 py-3.5">
 
                                         <span @class([
                                             'badge',
@@ -825,20 +918,50 @@
 
                                         </span>
 
+                                    </td>
+
+
+                                    {{-- Action --}}
+                                    <td class="px-4 py-3.5 text-right">
 
                                         @can('manageRetention')
 
                                             <a
                                                 href="{{ route('retention.review', $retention) }}"
-                                                class="mt-3 inline-flex items-center text-xs font-semibold text-primary transition hover:text-secondary">
+                                                class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-primary transition hover:border-primary/20 hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
 
                                                 @if ($retention->status === 'review_required')
-                                                    Review Record →
+
+                                                    Review Record
+
                                                 @else
-                                                    Manage Retention →
+
+                                                    Manage
+
                                                 @endif
 
+                                                <svg
+                                                    class="h-3.5 w-3.5"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                    aria-hidden="true">
+
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M9 5l7 7-7 7" />
+
+                                                </svg>
+
                                             </a>
+
+                                        @else
+
+                                            <span class="text-xs text-slate-400">
+                                                —
+                                            </span>
 
                                         @endcan
 
@@ -849,17 +972,18 @@
 
                                 <tr>
 
-                                    <td colspan="5" class="px-6 py-16">
+                                    <td colspan="6" class="px-6 py-16">
 
-                                        <div class="mx-auto flex max-w-sm flex-col items-center text-center">
+                                        <div class="mx-auto flex max-w-md flex-col items-center text-center">
 
-                                            <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 text-accent">
+                                            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary ring-1 ring-inset ring-primary/10">
 
                                                 <svg
-                                                    class="h-7 w-7"
+                                                    class="h-6 w-6"
                                                     fill="none"
                                                     stroke="currentColor"
-                                                    viewBox="0 0 24 24">
+                                                    viewBox="0 0 24 24"
+                                                    aria-hidden="true">
 
                                                     <path
                                                         stroke-linecap="round"
@@ -871,21 +995,51 @@
 
                                             </div>
 
-                                            <h3 class="font-heading text-base font-semibold text-primary">
-                                                No retention records found
-                                            </h3>
 
-                                            <p class="mt-1 text-sm text-slate-500">
-                                                Records registered for retention monitoring will appear here.
-                                            </p>
+                                            @if (
+                                                request()->filled('q')
+                                                || request()->filled('record_type')
+                                                || request()->filled('status')
+                                                || request()->filled('compliance')
+                                                || request()->filled('attention')
+                                            )
+
+                                                <h3 class="mt-4 font-heading text-base font-semibold text-primary">
+                                                    No matching retention records
+                                                </h3>
+
+                                                <p class="mt-1.5 text-sm leading-6 text-slate-500">
+                                                    @if (request()->filled('q'))
+                                                        No retention records match “{{ request('q') }}” with the selected filters.
+                                                    @else
+                                                        No records match the current quick view or selected retention filters.
+                                                    @endif
+                                                </p>
+
+                                                <a
+                                                    href="{{ route('retention.index', ['tab' => 'records']) }}"
+                                                    class="btn-outline mt-4 justify-center">
+                                                    Clear Filters
+                                                </a>
+
+                                            @else
+
+                                                <h3 class="mt-4 font-heading text-base font-semibold text-primary">
+                                                    No retention records yet
+                                                </h3>
+
+                                                <p class="mt-1.5 text-sm leading-6 text-slate-500">
+                                                    Records placed under retention monitoring will appear in this register.
+                                                </p>
+
+                                            @endif
 
                                         </div>
 
                                     </td>
 
                                 </tr>
-
-                            @endforelse
+@endforelse
 
                         </tbody>
 
@@ -896,310 +1050,79 @@
             </div>
 
 
-            @if ($retentions->hasPages())
+            @if ($retentions->total() > 0)
 
-                <div class="rounded-2xl border border-border bg-card px-5 py-4 shadow-card">
-                    {{ $retentions->withQueryString()->links() }}
+                <div class="rounded-xl border border-border bg-card px-4 py-4 shadow-card">
+
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+
+                            <span class="h-2 w-2 rounded-full bg-accent"></span>
+
+                            <span>
+                                Showing
+                                <span class="font-semibold text-primary">
+                                    {{ $retentions->firstItem() ?? 0 }}
+                                </span>
+                                –
+                                <span class="font-semibold text-primary">
+                                    {{ $retentions->lastItem() ?? 0 }}
+                                </span>
+                                of
+                                <span class="font-semibold text-primary">
+                                    {{ number_format($retentions->total()) }}
+                                </span>
+                                retention records
+                            </span>
+
+                        </div>
+
+
+                        @if ($retentions->hasPages())
+
+                            <div class="shrink-0">
+                                {{ $retentions->withQueryString()->links() }}
+                            </div>
+
+                        @endif
+
+                    </div>
+
                 </div>
 
             @endif
 
         </div>
 
+        @endif
+
     </div>
 
 
     {{-- Retention Policies --}}
-    @can('manageRetention')
-
-        <div class="card overflow-hidden">
-
-            <div class="border-b border-border bg-background/60 px-5 py-5">
-
-                <div class="flex items-center justify-between gap-4">
-
-                    <div>
-                        <h3 class="font-heading text-base font-semibold text-primary">
-                            Retention Policies
-                        </h3>
-
-                        <p class="mt-1 text-xs text-slate-500">
-                            Define retention duration and legal basis for organizational record categories.
-                        </p>
-                    </div>
-
-                    <span class="badge badge-info">
-                        {{ $allPolicies->count() }} Policies
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="grid gap-6 p-5 xl:grid-cols-[360px_minmax(0,1fr)]">
-
-                {{-- Add Policy --}}
-                <form
-                    method="POST"
-                    action="{{ route('retention-policies.store') }}"
-                    class="space-y-4 rounded-xl border border-border bg-background/40 p-4">
-
-                    @csrf
-
-                    <h4 class="font-heading text-sm font-semibold text-primary">
-                        Create Policy
-                    </h4>
-
-
-                    <div>
-                        <label class="label">
-                            Policy Name
-                        </label>
-
-                        <input
-                            type="text"
-                            name="name"
-                            required
-                            placeholder="e.g. Contract Records Policy"
-                            class="input">
-                    </div>
-
-
-                    <div>
-                        <label class="label">
-                            Record Category
-                        </label>
-
-                        <select name="record_category" class="input">
-
-                            @foreach ([
-                                'administrative',
-                                'contract',
-                                'legal',
-                                'permit',
-                                'license',
-                                'compliance',
-                                'partnership',
-                                'financial',
-                                'operational',
-                                'other'
-                            ] as $category)
-
-                                <option value="{{ $category }}">
-                                    {{ str($category)->headline() }}
-                                </option>
-
-                            @endforeach
-
-                        </select>
-                    </div>
-
-
-                    <div>
-                        <label class="label">
-                            Retention Years
-                        </label>
-
-                        <input
-                            type="number"
-                            min="1"
-                            name="retention_years"
-                            value="5"
-                            required
-                            class="input">
-                    </div>
-
-
-                    <div>
-                        <label class="label">
-                            Legal Basis
-                        </label>
-
-                        <textarea
-                            name="legal_basis"
-                            rows="2"
-                            placeholder="Law, regulation, policy, or contractual basis..."
-                            class="input"></textarea>
-                    </div>
-
-
-                    <div>
-                        <label class="label">
-                            Description
-                        </label>
-
-                        <textarea
-                            name="description"
-                            rows="2"
-                            placeholder="Describe the policy..."
-                            class="input"></textarea>
-                    </div>
-
-
-                    <input type="hidden" name="is_active" value="0">
-
-                    <label class="flex items-center gap-2 text-sm text-slate-600">
-
-                        <input
-                            type="checkbox"
-                            name="is_active"
-                            value="1"
-                            checked
-                            class="rounded border-border text-primary focus:ring-primary">
-
-                        Active policy
-
-                    </label>
-
-
-                    <button type="submit" class="btn-primary w-full justify-center">
-                        Create Policy
-                    </button>
-
-                </form>
-
-
-                {{-- Policy List --}}
-                <div class="space-y-3">
-
-                    @forelse ($allPolicies as $policy)
-
-                        <div class="rounded-xl border border-border bg-white p-4">
-
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-
-                                <div>
-
-                                    <div class="flex flex-wrap items-center gap-2">
-
-                                        <h4 class="font-button text-sm font-semibold text-primary">
-                                            {{ $policy->name }}
-                                        </h4>
-
-                                        @if ($policy->is_active)
-
-                                            <span class="badge badge-success">
-                                                Active
-                                            </span>
-
-                                        @else
-
-                                            <span class="badge bg-slate-100 text-slate-500">
-                                                Inactive
-                                            </span>
-
-                                        @endif
-
-                                    </div>
-
-
-                                    <p class="mt-2 text-xs text-slate-500">
-
-                                        {{ str($policy->record_category)->headline() }}
-
-                                        <span class="mx-1">•</span>
-
-                                        {{ $policy->retention_years }}
-                                        {{ Str::plural('year', $policy->retention_years) }}
-
-                                    </p>
-
-
-                                    @if ($policy->legal_basis)
-
-                                        <p class="mt-2 text-xs text-slate-500">
-                                            <span class="font-semibold text-slate-600">
-                                                Legal basis:
-                                            </span>
-
-                                            {{ $policy->legal_basis }}
-                                        </p>
-
-                                    @endif
-
-
-                                    @if ($policy->description)
-
-                                        <p class="mt-2 text-xs leading-5 text-slate-400">
-                                            {{ $policy->description }}
-                                        </p>
-
-                                    @endif
-
-                                </div>
-
-
-                                {{-- Toggle Policy --}}
-                                <form
-                                    method="POST"
-                                    action="{{ route('retention-policies.update', $policy) }}">
-
-                                    @csrf
-                                    @method('PUT')
-
-                                    <input type="hidden"
-                                           name="name"
-                                           value="{{ $policy->name }}">
-
-                                    <input type="hidden"
-                                           name="record_category"
-                                           value="{{ $policy->record_category }}">
-
-                                    <input type="hidden"
-                                           name="retention_years"
-                                           value="{{ $policy->retention_years }}">
-
-                                    <input type="hidden"
-                                           name="description"
-                                           value="{{ $policy->description }}">
-
-                                    <input type="hidden"
-                                           name="legal_basis"
-                                           value="{{ $policy->legal_basis }}">
-
-                                    <input type="hidden"
-                                           name="is_active"
-                                           value="{{ $policy->is_active ? 0 : 1 }}">
-
-                                    <button
-                                        type="submit"
-                                        class="btn-outline whitespace-nowrap text-xs">
-
-                                        {{ $policy->is_active ? 'Deactivate' : 'Activate' }}
-
-                                    </button>
-
-                                </form>
-
-                            </div>
-
-                        </div>
-
-                    @empty
-
-                        <div class="rounded-xl border border-dashed border-border p-10 text-center">
-
-                            <p class="text-sm font-medium text-slate-600">
-                                No retention policies
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-400">
-                                Create your first retention policy using the form.
-                            </p>
-
-                        </div>
-
-                    @endforelse
-
-                </div>
-
-            </div>
-
-        </div>
-
-    @endcan
+    @include('retention._policies')
 
 </div>
+
+
+
+@if ($errors->hasAny([
+    'record_title',
+    'record_type',
+    'record_id',
+    'policy_id',
+    'start_date',
+    'review_date',
+    'status',
+    'compliance_status',
+    'notes'
+]))
+    <script data-retention-create-validation>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('trackRetentionDialog')?.showModal();
+        });
+    </script>
+@endif
 
 @endsection

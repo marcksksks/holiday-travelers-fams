@@ -21,7 +21,7 @@ class RetentionPolicyController extends Controller
         );
 
         return redirect()
-            ->route('retention.index')
+            ->route('retention.index', ['tab' => 'policies'])
             ->with(
                 'status',
                 'Retention policy created.'
@@ -42,7 +42,7 @@ class RetentionPolicyController extends Controller
         );
 
         return redirect()
-            ->route('retention.index')
+            ->route('retention.index', ['tab' => 'policies'])
             ->with(
                 'status',
                 'Retention policy updated.'
