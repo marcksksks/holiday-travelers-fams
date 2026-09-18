@@ -8,13 +8,15 @@ use App\Http\Resources\ArchiveDocumentResource;
 use App\Models\ArchiveDocument;
 use App\Services\AuditService;
 use App\Services\DocumentAccessService;
+use App\Services\DocumentFileStorageService;
 use Illuminate\Http\Request;
 
 class ArchiveDocumentApiController extends Controller
 {
     public function __construct(
         private DocumentAccessService $access,
-        private AuditService $audit
+        private AuditService $audit,
+        private DocumentFileStorageService $fileStorage
     ) {}
 
     public function index(Request $request)
@@ -63,34 +65,64 @@ class ArchiveDocumentApiController extends Controller
         );
 
         $data = $request->validated();
+        $file = $request->file('file');
 
-        if ($request->hasFile('file')) {
-            $data['file_uri'] = $request
-                ->file('file')
-                ->store(
-                    'archive',
-                    'documents'
-                );
-
-            $data['file_name'] = $request
-                ->file('file')
-                ->getClientOriginalName();
-        }
+        unset($data['file']);
 
         $data['uploaded_by_email'] =
             $request->user()->email;
 
-        $document = ArchiveDocument::create(
-            $data
-        );
+        $persist = function (
+            array $payload
+        ) use ($request): ArchiveDocument {
+            $document = ArchiveDocument::create(
+                $payload
+            );
 
-        $this->audit->log(
-            $request->user(),
-            'upload',
-            'documents',
-            "Document - {$document->title}",
-            (string) $document->id
-        );
+            $this->audit->log(
+                $request->user(),
+                'upload',
+                'documents',
+                "Document - {$document->title}",
+                (string) $document->id
+            );
+
+            return $document;
+        };
+
+        if ($file) {
+            $fileName =
+                $file->getClientOriginalName();
+
+            $document =
+                $this->fileStorage->create(
+                    $file,
+                    'archive',
+                    function (
+                        string $newPath
+                    ) use (
+                        $persist,
+                        $data,
+                        $fileName
+                    ): ArchiveDocument {
+                        $payload = $data;
+
+                        $payload['file_uri'] =
+                            $newPath;
+
+                        $payload['file_name'] =
+                            $fileName;
+
+                        return $persist(
+                            $payload
+                        );
+                    }
+                );
+        } else {
+            $document = $persist(
+                $data
+            );
+        }
 
         return (
             new ArchiveDocumentResource(
@@ -100,7 +132,6 @@ class ArchiveDocumentApiController extends Controller
             ->response()
             ->setStatusCode(201);
     }
-
     public function requestLink(
         Request $request,
         ArchiveDocument $document

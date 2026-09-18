@@ -25,7 +25,7 @@ class ContractRequest extends FormRequest
             'currency' => ['nullable', 'string', 'max:8'],
             'description' => ['nullable', 'string'],
             'responsible_officer_email' => ['nullable', 'email'],
-            'file' => ['nullable', 'file', 'max:20480'],
+            'file' => \App\Support\DocumentUploadPolicy::rules(),
         ];
     }
 }

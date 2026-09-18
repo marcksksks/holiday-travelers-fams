@@ -2,13 +2,13 @@
 
 FROM composer:2 AS vendor
 WORKDIR /app
-COPY composer.json ./
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --no-scripts
 
 FROM node:20-alpine AS assets
 WORKDIR /app
-COPY package.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
 COPY resources ./resources
 COPY vite.config.js tailwind.config.js postcss.config.js ./
 COPY --from=vendor /app/vendor ./vendor
@@ -18,6 +18,8 @@ FROM php:8.3-fpm-alpine AS app
 
 RUN apk add --no-cache nginx postgresql-dev supervisor \
     && docker-php-ext-install pdo pdo_pgsql bcmath
+
+COPY docker/php-security.ini /usr/local/etc/php/conf.d/99-fams-security.ini
 
 WORKDIR /var/www/html
 COPY . .

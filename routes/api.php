@@ -18,22 +18,22 @@ use Illuminate\Support\Facades\Route;
 | Every route below requires auth:sanctum. Role/permission checks happen
 | inside each controller via Gate abilities defined in Rbac::PERMISSIONS.
 */
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', [MeApiController::class, 'show']);
+Route::middleware('auth:sanctum')->name('api.')->group(function () {
+    Route::get('/me', [MeApiController::class, 'show'])->name('me');
 
     Route::apiResource('facilities', FacilityApiController::class);
 
     Route::apiResource('reservations', ReservationApiController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
-    Route::post('reservations/{reservation}/decide', [ReservationApiController::class, 'decide']);
+    Route::post('reservations/{reservation}/decide', [ReservationApiController::class, 'decide'])->name('reservations.decide');
 
     Route::apiResource('appointments', AppointmentApiController::class);
 
     Route::apiResource('visitors', VisitorApiController::class)->only(['index', 'show', 'store']);
-    Route::post('visitors/{visitor}/check-in', [VisitorApiController::class, 'checkIn']);
-    Route::post('visitors/{visitor}/check-out', [VisitorApiController::class, 'checkOut']);
+    Route::post('visitors/{visitor}/check-in', [VisitorApiController::class, 'checkIn'])->name('visitors.check-in');
+    Route::post('visitors/{visitor}/check-out', [VisitorApiController::class, 'checkOut'])->name('visitors.check-out');
 
     Route::apiResource('documents', ArchiveDocumentApiController::class)->only(['index', 'show', 'store']);
-    Route::post('documents/{document}/request-link', [ArchiveDocumentApiController::class, 'requestLink']);
+    Route::post('documents/{document}/request-link', [ArchiveDocumentApiController::class, 'requestLink'])->name('documents.request-link');
 
     Route::apiResource(
         'legal-records',
@@ -50,9 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
 
     Route::apiResource('contracts', ContractApiController::class)->only(['index', 'show', 'store', 'update']);
-    Route::post('contracts/{contract}/submit-review', [ContractApiController::class, 'submitForReview']);
-    Route::post('contracts/{contract}/legal-review', [ContractApiController::class, 'legalReview']);
-    Route::post('contracts/{contract}/decide', [ContractApiController::class, 'decide']);
+    Route::post('contracts/{contract}/submit-review', [ContractApiController::class, 'submitForReview'])->name('contracts.submit-review');
+    Route::post('contracts/{contract}/legal-review', [ContractApiController::class, 'legalReview'])->name('contracts.legal-review');
+    Route::post('contracts/{contract}/decide', [ContractApiController::class, 'decide'])->name('contracts.decide');
 
     Route::apiResource('users', UserApiController::class)->only(['index', 'store']);
 });

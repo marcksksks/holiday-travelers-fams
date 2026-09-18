@@ -24,7 +24,7 @@ class LegalRecordRequest extends FormRequest
             'responsible_officer_email' => ['nullable', 'email'],
             'legal_notes' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
-            'file' => ['nullable', 'file', 'max:20480'],
+            'file' => \App\Support\DocumentUploadPolicy::rules(),
         ];
     }
 }

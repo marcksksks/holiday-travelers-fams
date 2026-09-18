@@ -20,9 +20,11 @@ yarn-error.log
 /.zed
 database.sqlite
 
-/backups/
 
-/backups/
 
 /storage/framework/
 /storage/logs/*.log
+
+/backups/
+*.backup
+*.before-*

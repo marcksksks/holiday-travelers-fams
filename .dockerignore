@@ -1,0 +1,77 @@
+# ------------------------------------------------------------
+# Source-control metadata
+# ------------------------------------------------------------
+.git
+.gitignore
+.gitattributes
+.github
+
+# ------------------------------------------------------------
+# Local environment / secrets
+# Keep the public template available if ever needed.
+# ------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ------------------------------------------------------------
+# Local dependency trees
+# Dependencies are rebuilt from lock files inside Docker.
+# ------------------------------------------------------------
+vendor
+node_modules
+
+# ------------------------------------------------------------
+# Locally generated frontend artifacts
+# Docker builds these in the assets stage.
+# ------------------------------------------------------------
+public/build
+public/hot
+public/storage
+
+# ------------------------------------------------------------
+# Laravel runtime state
+# Required directories are recreated by the Dockerfile.
+#
+# IMPORTANT:
+# storage/app/documents is intentionally NOT excluded yet.
+# Legacy tracked documents still depend on it.
+# ------------------------------------------------------------
+storage/framework
+storage/logs
+storage/*.key
+storage/pail
+bootstrap/cache/*.php
+
+# ------------------------------------------------------------
+# Local backups and temporary development artifacts
+# ------------------------------------------------------------
+backups
+*.backup
+*.before-*
+.phpunit.result.cache
+.phpunit.cache
+.phpunit.cache/
+npm-debug.log
+yarn-error.log
+
+# ------------------------------------------------------------
+# Editor / IDE metadata
+# ------------------------------------------------------------
+.idea
+.vscode
+.fleet
+.zed
+
+# ------------------------------------------------------------
+# Local OS noise
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# ------------------------------------------------------------
+# Development-only material not required by the production image
+# ------------------------------------------------------------
+tests
+phpunit.xml
+FINAL_AUDIT.md

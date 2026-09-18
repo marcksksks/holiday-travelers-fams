@@ -8,14 +8,15 @@ use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use App\Services\AuditService;
 use App\Services\ContractWorkflowService;
+use App\Services\DocumentFileStorageService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ContractApiController extends Controller
 {
     public function __construct(
         private ContractWorkflowService $workflow,
-        private AuditService $audit
+        private AuditService $audit,
+        private DocumentFileStorageService $fileStorage
     ) {}
 
     public function index(Request $request)
@@ -64,31 +65,61 @@ class ContractApiController extends Controller
         );
 
         $data = $request->validated();
+        $file = $request->file('file');
 
-        if ($request->hasFile('file')) {
-            $data['file_uri'] = $request
-                ->file('file')
-                ->store(
+        unset($data['file']);
+
+        $persist = function (
+            array $payload
+        ) use ($request): Contract {
+            $contract = Contract::create(
+                $payload
+            );
+
+            $this->audit->log(
+                $request->user(),
+                'create',
+                'contracts',
+                "Contract \u{2022} {$contract->title}",
+                (string) $contract->id
+            );
+
+            return $contract;
+        };
+
+        if ($file) {
+            $fileName =
+                $file->getClientOriginalName();
+
+            $contract =
+                $this->fileStorage->create(
+                    $file,
                     'contracts',
-                    'documents'
+                    function (
+                        string $newPath
+                    ) use (
+                        $persist,
+                        $data,
+                        $fileName
+                    ): Contract {
+                        $payload = $data;
+
+                        $payload['file_uri'] =
+                            $newPath;
+
+                        $payload['file_name'] =
+                            $fileName;
+
+                        return $persist(
+                            $payload
+                        );
+                    }
                 );
-
-            $data['file_name'] = $request
-                ->file('file')
-                ->getClientOriginalName();
+        } else {
+            $contract = $persist(
+                $data
+            );
         }
-
-        $contract = Contract::create(
-            $data
-        );
-
-        $this->audit->log(
-            $request->user(),
-            'create',
-            'contracts',
-            "Contract • {$contract->title}",
-            (string) $contract->id
-        );
 
         return (
             new ContractResource($contract)
@@ -96,7 +127,6 @@ class ContractApiController extends Controller
             ->response()
             ->setStatusCode(201);
     }
-
     public function update(
         ContractRequest $request,
         Contract $contract
@@ -107,46 +137,69 @@ class ContractApiController extends Controller
         );
 
         $data = $request->validated();
+        $file = $request->file('file');
 
-        $oldPath = $contract->file_uri;
+        unset($data['file']);
 
-        if ($request->hasFile('file')) {
-            $data['file_uri'] = $request
-                ->file('file')
-                ->store(
-                    'contracts',
-                    'documents'
-                );
+        $persist = function (
+            array $payload
+        ) use (
+            $request,
+            $contract
+        ): Contract {
+            $contract->update(
+                $payload
+            );
 
-            $data['file_name'] = $request
-                ->file('file')
-                ->getClientOriginalName();
+            $this->audit->log(
+                $request->user(),
+                'update',
+                'contracts',
+                "Contract \u{2022} {$contract->title}",
+                (string) $contract->id
+            );
+
+            return $contract;
+        };
+
+        if ($file) {
+            $fileName =
+                $file->getClientOriginalName();
+
+            $this->fileStorage->replace(
+                $file,
+                'contracts',
+                $contract->file_uri,
+                function (
+                    string $newPath
+                ) use (
+                    $persist,
+                    $data,
+                    $fileName
+                ): Contract {
+                    $payload = $data;
+
+                    $payload['file_uri'] =
+                        $newPath;
+
+                    $payload['file_name'] =
+                        $fileName;
+
+                    return $persist(
+                        $payload
+                    );
+                }
+            );
+        } else {
+            $persist(
+                $data
+            );
         }
-
-        $contract->update($data);
-
-        if (
-            $request->hasFile('file') &&
-            $oldPath &&
-            $oldPath !== $contract->file_uri
-        ) {
-            Storage::disk('documents')
-                ->delete($oldPath);
-        }
-
-        $this->audit->log(
-            $request->user(),
-            'update',
-            'contracts',
-            "Contract • {$contract->title}",
-            (string) $contract->id
-        );
 
         return new ContractResource(
             $contract->refresh()
         );
     }
-
     public function submitForReview(
         Request $request,
         Contract $contract

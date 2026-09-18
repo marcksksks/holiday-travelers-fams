@@ -13,6 +13,7 @@ use App\Models\RetentionPolicy;
 use App\Models\Visitor;
 use App\Services\DocumentAccessService;
 use App\Services\DocumentAutomationService;
+use App\Services\DocumentFileStorageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -23,7 +24,8 @@ class DocumentController extends Controller
 {
     public function __construct(
         private DocumentAccessService $access,
-        private DocumentAutomationService $automation
+        private DocumentAutomationService $automation,
+        private DocumentFileStorageService $fileStorage
     ) {}
 
     public function index(Request $request)
@@ -295,6 +297,8 @@ class DocumentController extends Controller
         $relatedId =
             $data['related_id'] ?? null;
 
+        $file = $request->file('file');
+
         unset(
             $data['related_type'],
             $data['related_id'],
@@ -306,21 +310,6 @@ class DocumentController extends Controller
             $relatedType,
             $relatedId
         );
-
-        if ($request->hasFile('file')) {
-            $path = $request
-                ->file('file')
-                ->store(
-                    'archive',
-                    'documents'
-                );
-
-            $data['file_uri'] = $path;
-
-            $data['file_name'] = $request
-                ->file('file')
-                ->getClientOriginalName();
-        }
 
         $data['uploaded_by_email'] =
             $request->user()->email;
@@ -335,18 +324,70 @@ class DocumentController extends Controller
             'note' => 'Initial upload',
         ]];
 
-        $document = ArchiveDocument::create($data);
+        $persist = function (
+            array $payload
+        ) use ($request): ArchiveDocument {
+            $document = ArchiveDocument::create(
+                $payload
+            );
 
-        AuditLog::create([
-            'actor_email' => $request->user()->email,
-            'actor_role' => $request->user()->app_role,
-            'action' => 'upload',
-            'module' => 'documents',
-            'record_label' =>
-                "Document - {$document->title}",
-            'record_id' => $document->id,
-            'created_at' => now(),
-        ]);
+            AuditLog::create([
+                'actor_email' =>
+                    $request->user()->email,
+
+                'actor_role' =>
+                    $request->user()->app_role,
+
+                'action' => 'upload',
+
+                'module' => 'documents',
+
+                'record_label' =>
+                    "Document - {$document->title}",
+
+                'record_id' =>
+                    $document->id,
+
+                'created_at' =>
+                    now(),
+            ]);
+
+            return $document;
+        };
+
+        if ($file) {
+            $fileName =
+                $file->getClientOriginalName();
+
+            $document =
+                $this->fileStorage->create(
+                    $file,
+                    'archive',
+                    function (
+                        string $newPath
+                    ) use (
+                        $persist,
+                        $data,
+                        $fileName
+                    ): ArchiveDocument {
+                        $payload = $data;
+
+                        $payload['file_uri'] =
+                            $newPath;
+
+                        $payload['file_name'] =
+                            $fileName;
+
+                        return $persist(
+                            $payload
+                        );
+                    }
+                );
+        } else {
+            $document = $persist(
+                $data
+            );
+        }
 
         return redirect()
             ->route(
@@ -358,7 +399,6 @@ class DocumentController extends Controller
                 'Document added to Document Management.'
             );
     }
-
     public function update(
         Request $request,
         ArchiveDocument $document
@@ -522,11 +562,6 @@ class DocumentController extends Controller
                 'exists:archive_documents,id',
             ],
 
-            'container_id' => [
-                'nullable',
-                'integer',
-                'exists:document_containers,id',
-            ],
         ]);
 
         $documentIds = collect(
@@ -555,23 +590,6 @@ class DocumentController extends Controller
             'One or more selected documents are not accessible.'
         );
 
-        $newContainer = null;
-
-        if (
-            $data['action'] === 'move'
-            && ! empty($data['container_id'])
-        ) {
-            $newContainer =
-                DocumentContainer::findOrFail(
-                    $data['container_id']
-                );
-
-            $this->assertContainerVisible(
-                $request,
-                $newContainer
-            );
-        }
-
         $updated = 0;
         $skipped = 0;
 
@@ -581,7 +599,6 @@ class DocumentController extends Controller
                 $data,
                 $documentIds,
                 $documents,
-                $newContainer,
                 &$updated,
                 &$skipped
             ) {
@@ -597,177 +614,11 @@ class DocumentController extends Controller
                     $history =
                         $document->history ?? [];
 
-                    $oldStatus =
-                        $document->status;
 
                     $auditAction = null;
                     $auditDetails = null;
 
                     switch ($data['action']) {
-                        case 'move':
-                            if (
-                                $document
-                                    ->is_system_generated
-                            ) {
-                                $skipped++;
-                                continue 2;
-                            }
-
-                            $oldContainerName =
-                                $document
-                                    ->container?->name
-                                ?? 'Unfiled';
-
-                            $newContainerName =
-                                $newContainer?->name
-                                ?? 'Unfiled';
-
-                            if (
-                                $document->container_id
-                                === $newContainer?->id
-                            ) {
-                                $skipped++;
-                                continue 2;
-                            }
-
-                            $history[] = [
-                                'version' =>
-                                    $document->version
-                                    ?? 1,
-
-                                'action' => 'move',
-
-                                'by' =>
-                                    $request
-                                        ->user()
-                                        ->email,
-
-                                'at' =>
-                                    now()
-                                        ->toISOString(),
-
-                                'note' =>
-                                    "Bulk moved from {$oldContainerName} to {$newContainerName}.",
-                            ];
-
-                            $document->update([
-                                'container_id' =>
-                                    $newContainer?->id,
-
-                                'history' =>
-                                    $history,
-                            ]);
-
-                            $auditAction = 'move';
-
-                            $auditDetails =
-                                "Bulk action: {$oldContainerName} -> {$newContainerName}";
-
-                            break;
-
-
-                        case 'needs_review':
-                            if (
-                                $document
-                                    ->is_system_generated
-                                || $document->status
-                                    === 'archived'
-                                || $document->status
-                                    === 'needs_review'
-                            ) {
-                                $skipped++;
-                                continue 2;
-                            }
-
-                            $history[] = [
-                                'version' =>
-                                    $document->version
-                                    ?? 1,
-
-                                'action' =>
-                                    'status_change',
-
-                                'by' =>
-                                    $request
-                                        ->user()
-                                        ->email,
-
-                                'at' =>
-                                    now()
-                                        ->toISOString(),
-
-                                'note' =>
-                                    "Bulk status change from {$oldStatus} to needs_review.",
-                            ];
-
-                            $document->update([
-                                'status' =>
-                                    'needs_review',
-
-                                'history' =>
-                                    $history,
-                            ]);
-
-                            $auditAction =
-                                'update';
-
-                            $auditDetails =
-                                "Bulk status change: {$oldStatus} -> needs_review";
-
-                            break;
-
-
-                        case 'active':
-                            if (
-                                $document
-                                    ->is_system_generated
-                                || $document->status
-                                    === 'archived'
-                                || $document->status
-                                    === 'active'
-                            ) {
-                                $skipped++;
-                                continue 2;
-                            }
-
-                            $history[] = [
-                                'version' =>
-                                    $document->version
-                                    ?? 1,
-
-                                'action' =>
-                                    'status_change',
-
-                                'by' =>
-                                    $request
-                                        ->user()
-                                        ->email,
-
-                                'at' =>
-                                    now()
-                                        ->toISOString(),
-
-                                'note' =>
-                                    "Bulk status change from {$oldStatus} to active.",
-                            ];
-
-                            $document->update([
-                                'status' =>
-                                    'active',
-
-                                'history' =>
-                                    $history,
-                            ]);
-
-                            $auditAction =
-                                'update';
-
-                            $auditDetails =
-                                "Bulk status change: {$oldStatus} -> active";
-
-                            break;
-
-
                         case 'archive':
                             if (
                                 $document->status
@@ -946,6 +797,11 @@ class DocumentController extends Controller
             $newContainer = DocumentContainer::findOrFail(
                 $data['container_id']
             );
+
+            $this->assertContainerVisible(
+                $request,
+                $newContainer
+            );
         }
 
         $newContainerName =
@@ -1015,11 +871,10 @@ class DocumentController extends Controller
         );
 
         $data = $request->validate([
-            'file' => [
-                'required',
-                'file',
-                'max:20480',
-            ],
+            'file' =>
+                \App\Support\DocumentUploadPolicy::rules(
+                    true
+                ),
 
             'version_note' => [
                 'nullable',
@@ -1028,15 +883,10 @@ class DocumentController extends Controller
             ],
         ]);
 
+        $file = $request->file('file');
+
         $oldPath =
             $document->file_uri;
-
-        $newPath = $request
-            ->file('file')
-            ->store(
-                'archive',
-                'documents'
-            );
 
         $newVersion =
             ($document->version ?? 1) + 1;
@@ -1045,51 +895,82 @@ class DocumentController extends Controller
             $document->history ?? [];
 
         $history[] = [
-            'version' => $newVersion,
-            'action' => 'version_upload',
-            'by' => $request->user()->email,
-            'at' => now()->toISOString(),
+            'version' =>
+                $newVersion,
+
+            'action' =>
+                'version_upload',
+
+            'by' =>
+                $request->user()->email,
+
+            'at' =>
+                now()->toISOString(),
 
             'note' =>
                 $data['version_note']
                 ?: 'New document version uploaded.',
         ];
 
-        $document->update([
-            'file_uri' => $newPath,
+        $fileName =
+            $file->getClientOriginalName();
 
-            'file_name' => $request
-                ->file('file')
-                ->getClientOriginalName(),
+        $this->fileStorage->replace(
+            $file,
+            'archive',
+            $oldPath,
+            function (
+                string $newPath
+            ) use (
+                $request,
+                $document,
+                $newVersion,
+                $history,
+                $fileName
+            ): ArchiveDocument {
+                $document->update([
+                    'file_uri' =>
+                        $newPath,
 
-            'version' => $newVersion,
-            'history' => $history,
-        ]);
+                    'file_name' =>
+                        $fileName,
 
-        if (
-            $oldPath &&
-            $oldPath !== $newPath
-        ) {
-            Storage::disk('documents')
-                ->delete($oldPath);
-        }
+                    'version' =>
+                        $newVersion,
 
-        AuditLog::create([
-            'actor_email' => $request->user()->email,
-            'actor_role' => $request->user()->app_role,
-            'action' => 'version_upload',
-            'module' => 'documents',
+                    'history' =>
+                        $history,
+                ]);
 
-            'record_label' =>
-                "Document - {$document->title}",
+                AuditLog::create([
+                    'actor_email' =>
+                        $request->user()->email,
 
-            'record_id' => $document->id,
+                    'actor_role' =>
+                        $request->user()->app_role,
 
-            'details' =>
-                "Version {$newVersion} uploaded",
+                    'action' =>
+                        'version_upload',
 
-            'created_at' => now(),
-        ]);
+                    'module' =>
+                        'documents',
+
+                    'record_label' =>
+                        "Document - {$document->title}",
+
+                    'record_id' =>
+                        $document->id,
+
+                    'details' =>
+                        "Version {$newVersion} uploaded",
+
+                    'created_at' =>
+                        now(),
+                ]);
+
+                return $document;
+            }
+        );
 
         return redirect()
             ->route(
@@ -1101,7 +982,6 @@ class DocumentController extends Controller
                 "Version {$newVersion} uploaded successfully."
             );
     }
-
     public function archive(
         Request $request,
         ArchiveDocument $document

@@ -2,9 +2,11 @@
 
 use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\ForcePasswordChange;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,11 +16,28 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        /*
+         * Render terminates public TLS before forwarding
+         * requests to this application over HTTP.
+         *
+         * Trust only the proxy metadata required for the
+         * original client IP and HTTPS scheme. The forwarded
+         * host header is intentionally not trusted.
+         */
+        $middleware->trustProxies(
+            at: '*',
+            headers:
+                Request::HEADER_X_FORWARDED_FOR |
+                Request::HEADER_X_FORWARDED_PORT |
+                Request::HEADER_X_FORWARDED_PROTO
+        );
         $middleware->web(append: [
+            SecurityHeaders::class,
             EnsureActiveAccount::class,
             ForcePasswordChange::class,
         ]);
         $middleware->api(append: [
+            SecurityHeaders::class,
             EnsureActiveAccount::class,
             ForcePasswordChange::class,
         ]);
@@ -28,7 +47,19 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->statefulApi();
+        $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->respond(
+            function (
+                \Symfony\Component\HttpFoundation\Response $response,
+                \Throwable $exception,
+                Request $request
+            ): \Symfony\Component\HttpFoundation\Response {
+                return SecurityHeaders::apply(
+                    $response,
+                    $request
+                );
+            }
+        );
     })->create();

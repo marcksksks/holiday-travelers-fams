@@ -31,7 +31,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'store']);
 
     Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
+        ->middleware('throttle:password-reset-link')
+        ->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'resetForm'])->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 });
@@ -84,13 +86,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/visitors/{visitor}/check-in', [VisitorController::class, 'checkIn'])->name('visitors.check-in');
         Route::post('/visitors/{visitor}/check-out', [VisitorController::class, 'checkOut'])->name('visitors.check-out');
         Route::post('/visitors/{visitor}/decline', [VisitorController::class, 'decline'])->name('visitors.decline');
-        Route::post('/visitors/{visitor}/sync-calendar', [VisitorController::class, 'syncCalendar'])->name('visitors.sync-calendar');
+        Route::post('/visitors/{visitor}/sync-calendar', [VisitorController::class, 'syncCalendar'])
+            ->middleware('throttle:calendar-sync')
+            ->name('visitors.sync-calendar');
     });
 
     Route::middleware('role:receptionist,admin_officer,manager,sys_admin')
         ->post('/visitors/ai-assist', [VisitorController::class, 'aiAssist'])
+        ->middleware('throttle:ai-assist')
         ->name('visitors.ai-assist');
-
     // Records & Archive
     Route::middleware('role:admin_officer,manager,legal_officer,sys_admin')->group(function () {
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');

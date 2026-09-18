@@ -23,6 +23,7 @@ return [
             'root' => storage_path('app/documents'),
             'serve' => false,
             'throw' => false,
+            'report' => true,
         ],
     ],
 

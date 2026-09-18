@@ -128,19 +128,58 @@ class UserManagementService
             ]);
         }
 
-        $target->update([
-            'is_active' => $active,
-        ]);
+        return \Illuminate\Support\Facades\DB::transaction(
+            function () use (
+                $admin,
+                $target,
+                $active
+            ): User {
+                $attributes = [
+                    'is_active' => $active,
+                ];
 
-        $this->audit->log(
-            $admin,
-            'update',
-            'users',
-            "User - {$target->full_name}",
-            (string) $target->id,
-            $active ? 'Reactivated' : 'Deactivated'
+                if (! $active) {
+                    $attributes['remember_token'] = null;
+                }
+
+                $target
+                    ->forceFill($attributes)
+                    ->save();
+
+                if (! $active) {
+                    \Illuminate\Support\Facades\DB::connection(
+                        config('session.connection')
+                    )
+                        ->table(
+                            config(
+                                'session.table',
+                                'sessions'
+                            )
+                        )
+                        ->where(
+                            'user_id',
+                            $target->getKey()
+                        )
+                        ->delete();
+
+                    $target
+                        ->tokens()
+                        ->delete();
+                }
+
+                $this->audit->log(
+                    $admin,
+                    'update',
+                    'users',
+                    "User - {$target->full_name}",
+                    (string) $target->id,
+                    $active
+                        ? 'Reactivated'
+                        : 'Deactivated'
+                );
+
+                return $target->refresh();
+            }
         );
-
-        return $target->refresh();
     }
 }

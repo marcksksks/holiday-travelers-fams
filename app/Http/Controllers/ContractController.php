@@ -6,12 +6,16 @@ use App\Http\Requests\ContractRequest;
 use App\Models\AuditLog;
 use App\Models\Contract;
 use App\Services\ContractWorkflowService;
+use App\Services\DocumentFileStorageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class ContractController extends Controller
 {
-    public function __construct(private ContractWorkflowService $workflow) {}
+    public function __construct(
+        private ContractWorkflowService $workflow,
+        private DocumentFileStorageService $fileStorage
+    ) {}
 
     public function index(Request $request)
     {
@@ -39,44 +43,128 @@ class ContractController extends Controller
         );
 
         $data = $request->validated();
-        if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('contracts', 'documents');
-            $data['file_uri'] = $path;
-            $data['file_name'] = $request->file('file')->getClientOriginalName();
+        $file = $request->file('file');
+
+        unset($data['file']);
+
+        $persist = function (
+            array $payload
+        ) use ($request): Contract {
+            $contract = Contract::create(
+                $payload
+            );
+
+            AuditLog::create([
+                'actor_email' => $request->user()->email,
+                'actor_role' => $request->user()->app_role,
+                'action' => 'create',
+                'module' => 'contracts',
+                'record_label' => "Contract • {$contract->title}",
+                'record_id' => $contract->id,
+                'created_at' => now(),
+            ]);
+
+            return $contract;
+        };
+
+        if ($file) {
+            $fileName =
+                $file->getClientOriginalName();
+
+            $contract =
+                $this->fileStorage->create(
+                    $file,
+                    'contracts',
+                    function (
+                        string $newPath
+                    ) use (
+                        $persist,
+                        $data,
+                        $fileName
+                    ): Contract {
+                        $payload = $data;
+
+                        $payload['file_uri'] =
+                            $newPath;
+
+                        $payload['file_name'] =
+                            $fileName;
+
+                        return $persist(
+                            $payload
+                        );
+                    }
+                );
+        } else {
+            $contract = $persist(
+                $data
+            );
         }
 
-        $contract = Contract::create($data);
-
-        AuditLog::create([
-            'actor_email' => $request->user()->email, 'actor_role' => $request->user()->app_role,
-            'action' => 'create', 'module' => 'contracts', 'record_label' => "Contract • {$contract->title}",
-            'record_id' => $contract->id, 'created_at' => now(),
-        ]);
-
-        return redirect()->route('contracts.index')->with('status', 'Contract created as draft.');
+        return redirect()
+            ->route('contracts.index')
+            ->with(
+                'status',
+                'Contract created as draft.'
+            );
     }
-
-    public function update(ContractRequest $request, Contract $contract): RedirectResponse
-    {
+    public function update(
+        ContractRequest $request,
+        Contract $contract
+    ): RedirectResponse {
         abort_unless(
             $request->user()->can('manageContracts'),
             403
         );
 
         $data = $request->validated();
-        $oldPath = $contract->file_uri;
-        if ($request->hasFile('file')) {
-            $data['file_uri'] = $request->file('file')->store('contracts', 'documents');
-            $data['file_name'] = $request->file('file')->getClientOriginalName();
-        }
-        $contract->update($data);
-        if ($request->hasFile('file') && $oldPath && $oldPath !== $contract->file_uri) {
-            \Illuminate\Support\Facades\Storage::disk('documents')->delete($oldPath);
+        $file = $request->file('file');
+
+        unset($data['file']);
+
+        if ($file) {
+            $fileName =
+                $file->getClientOriginalName();
+
+            $this->fileStorage->replace(
+                $file,
+                'contracts',
+                $contract->file_uri,
+                function (
+                    string $newPath
+                ) use (
+                    $contract,
+                    $data,
+                    $fileName
+                ): Contract {
+                    $payload = $data;
+
+                    $payload['file_uri'] =
+                        $newPath;
+
+                    $payload['file_name'] =
+                        $fileName;
+
+                    $contract->update(
+                        $payload
+                    );
+
+                    return $contract;
+                }
+            );
+        } else {
+            $contract->update(
+                $data
+            );
         }
 
-        return redirect()->route('contracts.index')->with('status', 'Contract updated.');
+        return redirect()
+            ->route('contracts.index')
+            ->with(
+                'status',
+                'Contract updated.'
+            );
     }
-
     public function submitForReview(Request $request, Contract $contract): RedirectResponse
     {
         $this->workflow->submitForReview($request->user(), $contract);

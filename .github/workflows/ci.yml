@@ -47,7 +47,7 @@ jobs:
         run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Install JS dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Build frontend assets
         run: npm run build

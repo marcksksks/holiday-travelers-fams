@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LegalRecordRequest;
 use App\Models\AuditLog;
 use App\Models\LegalRecord;
+use App\Services\DocumentFileStorageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class LegalRecordController extends Controller
 {
+    public function __construct(
+        private DocumentFileStorageService $fileStorage
+    ) {}
     public function index(Request $request)
     {
         $records = LegalRecord::when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
@@ -36,43 +40,128 @@ class LegalRecordController extends Controller
         );
 
         $data = $request->validated();
-        if ($request->hasFile('file')) {
-            $data['file_uri'] = $request->file('file')->store('legal', 'documents');
-            $data['file_name'] = $request->file('file')->getClientOriginalName();
+        $file = $request->file('file');
+
+        unset($data['file']);
+
+        $persist = function (
+            array $payload
+        ) use ($request): LegalRecord {
+            $record = LegalRecord::create(
+                $payload
+            );
+
+            AuditLog::create([
+                'actor_email' => $request->user()->email,
+                'actor_role' => $request->user()->app_role,
+                'action' => 'create',
+                'module' => 'legal',
+                'record_label' => "Legal • {$record->title}",
+                'record_id' => $record->id,
+                'created_at' => now(),
+            ]);
+
+            return $record;
+        };
+
+        if ($file) {
+            $fileName =
+                $file->getClientOriginalName();
+
+            $record =
+                $this->fileStorage->create(
+                    $file,
+                    'legal',
+                    function (
+                        string $newPath
+                    ) use (
+                        $persist,
+                        $data,
+                        $fileName
+                    ): LegalRecord {
+                        $payload = $data;
+
+                        $payload['file_uri'] =
+                            $newPath;
+
+                        $payload['file_name'] =
+                            $fileName;
+
+                        return $persist(
+                            $payload
+                        );
+                    }
+                );
+        } else {
+            $record = $persist(
+                $data
+            );
         }
 
-        $record = LegalRecord::create($data);
-
-        AuditLog::create([
-            'actor_email' => $request->user()->email, 'actor_role' => $request->user()->app_role,
-            'action' => 'create', 'module' => 'legal', 'record_label' => "Legal • {$record->title}",
-            'record_id' => $record->id, 'created_at' => now(),
-        ]);
-
-        return redirect()->route('legal.index')->with('status', 'Legal record created.');
+        return redirect()
+            ->route('legal.index')
+            ->with(
+                'status',
+                'Legal record created.'
+            );
     }
-
-    public function update(LegalRecordRequest $request, LegalRecord $legal): RedirectResponse
-    {
+    public function update(
+        LegalRecordRequest $request,
+        LegalRecord $legal
+    ): RedirectResponse {
         abort_unless(
             $request->user()->can('manageLegal'),
             403
         );
 
         $data = $request->validated();
-        $oldPath = $legal->file_uri;
-        if ($request->hasFile('file')) {
-            $data['file_uri'] = $request->file('file')->store('legal', 'documents');
-            $data['file_name'] = $request->file('file')->getClientOriginalName();
-        }
-        $legal->update($data);
-        if ($request->hasFile('file') && $oldPath && $oldPath !== $legal->file_uri) {
-            \Illuminate\Support\Facades\Storage::disk('documents')->delete($oldPath);
+        $file = $request->file('file');
+
+        unset($data['file']);
+
+        if ($file) {
+            $fileName =
+                $file->getClientOriginalName();
+
+            $this->fileStorage->replace(
+                $file,
+                'legal',
+                $legal->file_uri,
+                function (
+                    string $newPath
+                ) use (
+                    $legal,
+                    $data,
+                    $fileName
+                ): LegalRecord {
+                    $payload = $data;
+
+                    $payload['file_uri'] =
+                        $newPath;
+
+                    $payload['file_name'] =
+                        $fileName;
+
+                    $legal->update(
+                        $payload
+                    );
+
+                    return $legal;
+                }
+            );
+        } else {
+            $legal->update(
+                $data
+            );
         }
 
-        return redirect()->route('legal.index')->with('status', 'Legal record updated.');
+        return redirect()
+            ->route('legal.index')
+            ->with(
+                'status',
+                'Legal record updated.'
+            );
     }
-
     public function review(
         Request $request,
         LegalRecord $legal

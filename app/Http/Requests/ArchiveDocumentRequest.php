@@ -68,11 +68,7 @@ class ArchiveDocumentRequest extends FormRequest
                 'min:1',
             ],
 
-            'file' => [
-                'nullable',
-                'file',
-                'max:20480',
-            ],
+            'file' => \App\Support\DocumentUploadPolicy::rules(),
         ];
     }
 

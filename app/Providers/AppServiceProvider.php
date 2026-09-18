@@ -12,7 +12,10 @@ use App\Observers\LegalRecordObserver;
 use App\Observers\ReservationObserver;
 use App\Observers\VisitorObserver;
 use App\Support\Rbac;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,6 +27,66 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        RateLimiter::for(
+            'api',
+            function (Request $request): Limit {
+                $userId =
+                    $request->user()
+                        ?->getAuthIdentifier();
+
+                $key =
+                    $userId !== null
+                        ? "user:{$userId}"
+                        : 'ip:'.$request->ip();
+
+                return Limit::perMinute(120)
+                    ->by($key);
+            }
+        );
+
+        RateLimiter::for(
+            'password-reset-link',
+            fn (Request $request): Limit =>
+                Limit::perMinute(5)
+                    ->by(
+                        'password-reset-link:'.$request->ip()
+                    )
+        );
+
+        RateLimiter::for(
+            'ai-assist',
+            function (Request $request): Limit {
+                $userId =
+                    $request->user()
+                        ?->getAuthIdentifier();
+
+                $key =
+                    $userId !== null
+                        ? "ai-assist:user:{$userId}"
+                        : 'ai-assist:ip:'.$request->ip();
+
+                return Limit::perMinute(10)
+                    ->by($key);
+            }
+        );
+
+        RateLimiter::for(
+            'calendar-sync',
+            function (Request $request): Limit {
+                $userId =
+                    $request->user()
+                        ?->getAuthIdentifier();
+
+                $key =
+                    $userId !== null
+                        ? "calendar-sync:user:{$userId}"
+                        : 'calendar-sync:ip:'.$request->ip();
+
+                return Limit::perMinute(5)
+                    ->by($key);
+            }
+        );
+
         foreach (
             array_keys(Rbac::PERMISSIONS)
             as $permission
