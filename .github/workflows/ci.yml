@@ -65,7 +65,7 @@ jobs:
           echo "DB_PASSWORD=secret" >> .env
 
       - name: Directory permissions
-        run: chmod -R 777 storage bootstrap/cache
+        run: chmod -R u+rwX,g+rwX,o-rwx storage bootstrap/cache
 
       - name: Run migrations
         run: php artisan migrate --force
