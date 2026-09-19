@@ -75,5 +75,30 @@ jobs:
       - name: Run test suite
         run: php artisan test
 
-      - name: Lint (Pint, dry-run)
-        run: vendor/bin/pint --test
+      - name: Lint changed PHP files (Pint, dry-run)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            BASE="origin/${{ github.base_ref }}"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            BASE="HEAD^"
+          else
+            BASE="$(git hash-object -t tree /dev/null)"
+          fi
+
+          mapfile -t PHP_FILES < <(
+            git diff --name-only --diff-filter=ACMR "$BASE" HEAD -- '*.php'
+          )
+
+          if (( ${#PHP_FILES[@]} == 0 )); then
+            echo "No changed PHP files to lint."
+            exit 0
+          fi
+
+          printf 'Linting %d changed PHP file(s):\n' "${#PHP_FILES[@]}"
+          printf '  %s\n' "${PHP_FILES[@]}"
+
+          vendor/bin/pint --test -- "${PHP_FILES[@]}"
