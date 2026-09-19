@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->name('api.')->group(function () {
     Route::get('/me', [MeApiController::class, 'show'])->name('me');
 
     Route::apiResource('facilities', FacilityApiController::class);
+    Route::patch('facilities/{facility}/restore', [FacilityApiController::class, 'restore'])->name('facilities.restore');
 
     Route::apiResource('reservations', ReservationApiController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
     Route::post('reservations/{reservation}/decide', [ReservationApiController::class, 'decide'])->name('reservations.decide');

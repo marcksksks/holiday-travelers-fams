@@ -24,7 +24,7 @@ database.sqlite
 
 /storage/framework/
 /storage/logs/*.log
-
 /backups/
+
 *.backup
 *.before-*

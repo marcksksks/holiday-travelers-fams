@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/facilities/{facility}/edit', [FacilityController::class, 'edit'])->name('facilities.edit');
     Route::put('/facilities/{facility}', [FacilityController::class, 'update'])->name('facilities.update');
     Route::delete('/facilities/{facility}', [FacilityController::class, 'destroy'])->name('facilities.destroy');
+    Route::patch('/facilities/{facility}/restore', [FacilityController::class, 'restore'])->name('facilities.restore');
 
     // Reservations — submit + admin/manager decision.
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
@@ -95,6 +96,7 @@ Route::middleware('auth')->group(function () {
         ->post('/visitors/ai-assist', [VisitorController::class, 'aiAssist'])
         ->middleware('throttle:ai-assist')
         ->name('visitors.ai-assist');
+
     // Records & Archive
     Route::middleware('role:admin_officer,manager,legal_officer,sys_admin')->group(function () {
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
