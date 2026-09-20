@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 
 return [
@@ -8,7 +9,20 @@ return [
     'channels' => [
         'stack' => ['driver' => 'stack', 'channels' => explode(',', env('LOG_STACK', 'single')), 'ignore_exceptions' => false],
         'single' => ['driver' => 'single', 'path' => storage_path('logs/laravel.log'), 'level' => env('LOG_LEVEL', 'debug')],
-        'stderr' => ['driver' => 'monolog', 'handler' => StreamHandler::class, 'formatter' => env('LOG_STDERR_FORMATTER'), 'with' => ['stream' => 'php://stderr']],
-        'null' => ['driver' => 'monolog', 'handler' => \Monolog\Handler\NullHandler::class],
+        'stderr' => [
+            'driver' => 'monolog',
+            'handler' => StreamHandler::class,
+            'formatter' => env(
+                'LOG_STDERR_FORMATTER'
+            ),
+            'level' => env(
+                'LOG_LEVEL',
+                'debug'
+            ),
+            'with' => [
+                'stream' => 'php://stderr',
+            ],
+        ],
+        'null' => ['driver' => 'monolog', 'handler' => NullHandler::class],
     ],
 ];
