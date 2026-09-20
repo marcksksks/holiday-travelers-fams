@@ -28,3 +28,6 @@ database.sqlite
 
 *.backup
 *.before-*
+
+# Private uploaded documents - never commit
+/storage/app/documents/

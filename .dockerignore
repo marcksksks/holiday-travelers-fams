@@ -33,10 +33,11 @@ public/storage
 # Laravel runtime state
 # Required directories are recreated by the Dockerfile.
 #
-# IMPORTANT:
-# storage/app/documents is intentionally NOT excluded yet.
-# Legacy tracked documents still depend on it.
+# Private document storage is supplied at runtime by
+# the persistent Render disk. Never include uploaded
+# documents inside the production image.
 # ------------------------------------------------------------
+storage/app/documents
 storage/framework
 storage/logs
 storage/*.key

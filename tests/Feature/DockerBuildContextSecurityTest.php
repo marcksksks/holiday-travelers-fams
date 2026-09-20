@@ -23,6 +23,7 @@ class DockerBuildContextSecurityTest extends TestCase
             'vendor',
             'node_modules',
             'public/build',
+            'storage/app/documents',
             'storage/framework',
             'storage/logs',
             'backups',
@@ -49,29 +50,20 @@ class DockerBuildContextSecurityTest extends TestCase
         );
     }
 
-    public function test_legacy_document_storage_is_not_excluded_yet(): void
+    public function test_private_document_storage_is_ignored_by_git(): void
     {
-        $lines =
-            file(
-                base_path('.dockerignore'),
-                FILE_IGNORE_NEW_LINES
+        $contents =
+            file_get_contents(
+                base_path('.gitignore')
             );
 
-        $normalized =
-            array_map(
-                fn (string $line): string =>
-                    trim($line),
-                $lines
-            );
-
-        $this->assertNotContains(
-            'storage/app/documents',
-            $normalized
+        $this->assertIsString(
+            $contents
         );
 
-        $this->assertNotContains(
-            '/storage/app/documents',
-            $normalized
+        $this->assertStringContainsString(
+            '/storage/app/documents/',
+            $contents
         );
     }
 }
