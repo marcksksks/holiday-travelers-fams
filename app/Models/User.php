@@ -2,24 +2,35 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Laragear\TwoFactor\Contracts\TwoFactorAuthenticatable;
 use Laragear\TwoFactor\TwoFactorAuthentication;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements TwoFactorAuthenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthentication;
 
     public const ROLE_EMPLOYEE = 'employee';
+
     public const ROLE_RECEPTIONIST = 'receptionist';
+
     public const ROLE_ADMIN_OFFICER = 'admin_officer';
+
     public const ROLE_MANAGER = 'manager';
+
     public const ROLE_LEGAL_OFFICER = 'legal_officer';
+
     public const ROLE_SYS_ADMIN = 'sys_admin';
+
+    public const MFA_REQUIRED_ROLES = [
+        self::ROLE_ADMIN_OFFICER,
+        self::ROLE_MANAGER,
+        self::ROLE_LEGAL_OFFICER,
+        self::ROLE_SYS_ADMIN,
+    ];
 
     public const ROLES = [
         self::ROLE_EMPLOYEE => 'Employee / Staff',
@@ -52,6 +63,13 @@ class User extends Authenticatable implements TwoFactorAuthenticatable
         $roles = is_array($roles) ? $roles : [$roles];
 
         return in_array($this->app_role, $roles, true);
+    }
+
+    public function requiresMandatoryMfa(): bool
+    {
+        return $this->hasRole(
+            self::MFA_REQUIRED_ROLES
+        );
     }
 
     public function isSysAdmin(): bool

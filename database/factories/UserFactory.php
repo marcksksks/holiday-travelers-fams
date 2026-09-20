@@ -22,6 +22,27 @@ class UserFactory extends Factory
         ];
     }
 
+    public function configure(): static
+    {
+        return $this->afterCreating(
+            function (User $user): void {
+                if (
+                    ! app()->runningUnitTests() ||
+                    ! $user->requiresMandatoryMfa() ||
+                    $user->hasTwoFactorEnabled()
+                ) {
+                    return;
+                }
+
+                $user->createTwoFactorAuth();
+
+                $user->confirmTwoFactorAuth(
+                    $user->makeTwoFactorCode()
+                );
+            }
+        );
+    }
+
     public function role(string $role): static
     {
         return $this->state(fn () => ['app_role' => $role]);

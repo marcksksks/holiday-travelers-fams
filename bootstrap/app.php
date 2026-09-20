@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Middleware\EnsureActiveAccount;
+use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\ForcePasswordChange;
+use App\Http\Middleware\RequirePrivilegedMfa;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -26,8 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
          */
         $middleware->trustProxies(
             at: '*',
-            headers:
-                Request::HEADER_X_FORWARDED_FOR |
+            headers: Request::HEADER_X_FORWARDED_FOR |
                 Request::HEADER_X_FORWARDED_PORT |
                 Request::HEADER_X_FORWARDED_PROTO
         );
@@ -35,15 +37,18 @@ return Application::configure(basePath: dirname(__DIR__))
             SecurityHeaders::class,
             EnsureActiveAccount::class,
             ForcePasswordChange::class,
+            RequirePrivilegedMfa::class,
         ]);
         $middleware->api(append: [
             SecurityHeaders::class,
             EnsureActiveAccount::class,
             ForcePasswordChange::class,
+            RequirePrivilegedMfa::class,
         ]);
 
         $middleware->alias([
-            'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'role' => EnsureUserHasRole::class,
+            'privileged.mfa' => RequirePrivilegedMfa::class,
         ]);
 
         $middleware->statefulApi();
@@ -52,10 +57,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->respond(
             function (
-                \Symfony\Component\HttpFoundation\Response $response,
-                \Throwable $exception,
+                Response $response,
+                Throwable $exception,
                 Request $request
-            ): \Symfony\Component\HttpFoundation\Response {
+            ): Response {
                 return SecurityHeaders::apply(
                     $response,
                     $request

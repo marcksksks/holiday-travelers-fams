@@ -61,6 +61,9 @@ class SettingsController extends Controller
         $mfaEnabled =
             $user->hasTwoFactorEnabled();
 
+        $mfaRequired =
+            $user->requiresMandatoryMfa();
+
         $mfaSetupPending =
             $twoFactor !== null
             && ! $mfaEnabled;
@@ -95,35 +98,27 @@ class SettingsController extends Controller
             );
 
         return view('settings.index', [
-            'user' =>
-                $user,
+            'user' => $user,
 
-            'aiProvider' =>
-                $aiProvider,
+            'aiProvider' => $aiProvider,
 
-            'aiModel' =>
-                $aiModel,
+            'aiModel' => $aiModel,
 
-            'aiConfigured' =>
-                $aiConfigured,
+            'aiConfigured' => $aiConfigured,
 
-            'mfaEnabled' =>
-                $mfaEnabled,
+            'mfaEnabled' => $mfaEnabled,
 
-            'mfaSetupPending' =>
-                $mfaSetupPending,
+            'mfaRequired' => $mfaRequired,
 
-            'mfaSetupAuthorized' =>
-                $mfaSetupAuthorized,
+            'mfaSetupPending' => $mfaSetupPending,
 
-            'mfaQrCode' =>
-                $mfaQrCode,
+            'mfaSetupAuthorized' => $mfaSetupAuthorized,
 
-            'mfaSecret' =>
-                $mfaSecret,
+            'mfaQrCode' => $mfaQrCode,
 
-            'mfaRecoveryCodes' =>
-                $mfaRecoveryCodes,
+            'mfaSecret' => $mfaSecret,
+
+            'mfaRecoveryCodes' => $mfaRecoveryCodes,
         ]);
     }
 
@@ -207,8 +202,7 @@ class SettingsController extends Controller
          */
         if ($user->hasTwoFactorEnabled()) {
             return back()->withErrors([
-                'mfa' =>
-                    'Two-factor authentication is already enabled.',
+                'mfa' => 'Two-factor authentication is already enabled.',
             ]);
         }
 
@@ -280,8 +274,7 @@ class SettingsController extends Controller
 
         if ($twoFactor === null) {
             throw ValidationException::withMessages([
-                '2fa_code' =>
-                    'Start two-factor authentication setup before confirming a code.',
+                '2fa_code' => 'Start two-factor authentication setup before confirming a code.',
             ]);
         }
 
@@ -291,8 +284,7 @@ class SettingsController extends Controller
             )
         ) {
             throw ValidationException::withMessages([
-                '2fa_code' =>
-                    'Your MFA setup session has expired. Enter your current password and restart setup.',
+                '2fa_code' => 'Your MFA setup session has expired. Enter your current password and restart setup.',
             ]);
         }
 
@@ -302,8 +294,7 @@ class SettingsController extends Controller
             )
         ) {
             throw ValidationException::withMessages([
-                '2fa_code' =>
-                    'The authentication code is invalid or has expired.',
+                '2fa_code' => 'The authentication code is invalid or has expired.',
             ]);
         }
 
@@ -354,8 +345,7 @@ class SettingsController extends Controller
 
         if (! $user->hasTwoFactorEnabled()) {
             throw ValidationException::withMessages([
-                'mfa' =>
-                    'Enable two-factor authentication before generating recovery codes.',
+                'mfa' => 'Enable two-factor authentication before generating recovery codes.',
             ]);
         }
 
@@ -400,6 +390,12 @@ class SettingsController extends Controller
 
         /** @var User $user */
         $user = $request->user();
+
+        if ($user->requiresMandatoryMfa()) {
+            throw ValidationException::withMessages([
+                'mfa' => 'Two-factor authentication is required for your role and cannot be disabled.',
+            ]);
+        }
 
         $twoFactor =
             $user
@@ -489,8 +485,7 @@ class SettingsController extends Controller
                 );
         } catch (JsonException) {
             throw ValidationException::withMessages([
-                'mfa' =>
-                    'Recovery codes could not be prepared for display.',
+                'mfa' => 'Recovery codes could not be prepared for display.',
             ]);
         }
 
@@ -530,7 +525,7 @@ class SettingsController extends Controller
                     JSON_THROW_ON_ERROR
                 );
         } catch (
-            DecryptException |
+            DecryptException|
             JsonException
         ) {
             return [];
@@ -543,8 +538,7 @@ class SettingsController extends Controller
         return array_values(
             array_filter(
                 $decoded,
-                static fn ($code): bool =>
-                    is_string($code)
+                static fn ($code): bool => is_string($code)
                     && $code !== ''
             )
         );

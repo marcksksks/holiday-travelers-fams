@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 | Every route below requires auth:sanctum. Role/permission checks happen
 | inside each controller via Gate abilities defined in Rbac::PERMISSIONS.
 */
-Route::middleware('auth:sanctum')->name('api.')->group(function () {
+Route::middleware(['auth:sanctum', 'privileged.mfa'])->name('api.')->group(function () {
     Route::get('/me', [MeApiController::class, 'show'])->name('me');
 
     Route::apiResource('facilities', FacilityApiController::class);

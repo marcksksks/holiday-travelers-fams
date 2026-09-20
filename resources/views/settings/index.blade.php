@@ -382,6 +382,12 @@
                                 MFA Enabled
                             </span>
 
+                        @elseif ($mfaRequired)
+
+                            <span class="badge badge-warning">
+                                MFA Required
+                            </span>
+
                         @elseif ($mfaSetupPending)
 
                             <span class="badge badge-warning">
@@ -480,6 +486,23 @@
                         </div>
 
                     @enderror
+
+
+                    @if ($mfaRequired)
+
+                        <div class="rounded-xl border border-warning/30 bg-warning/5 px-4 py-3">
+
+                            <p class="text-xs font-semibold text-primary">
+                                MFA is mandatory for your role.
+                            </p>
+
+                            <p class="mt-1 text-xs leading-5 text-slate-500">
+                                Administrative, management, legal, and system administrator accounts must keep two-factor authentication enabled.
+                            </p>
+
+                        </div>
+
+                    @endif
 
 
                     {{-- One-time Recovery Codes --}}
@@ -658,59 +681,77 @@
                         </div>
 
 
-                        <div class="rounded-xl border border-error/20 bg-error/5 p-4">
+                        @if ($mfaRequired)
 
-                            <p class="text-sm font-semibold text-error">
-                                Disable Two-Factor Authentication
-                            </p>
+                            <div class="rounded-xl border border-primary/15 bg-primary/5 p-4">
 
-                            <p class="mt-1 text-xs leading-5 text-slate-600">
-                                Your account will return to password-only authentication.
-                                Existing recovery codes will also become invalid.
-                            </p>
+                                <p class="text-sm font-semibold text-primary">
+                                    MFA Required by Security Policy
+                                </p>
 
+                                <p class="mt-1 text-xs leading-5 text-slate-500">
+                                    Two-factor authentication cannot be disabled while your account has a privileged role.
+                                </p>
 
-                            <form
-                                method="POST"
-                                action="{{ route('settings.mfa.disable') }}"
-                                class="mt-4 space-y-3"
-                                onsubmit="return confirm('Disable two-factor authentication for your account?');">
+                            </div>
 
-                                @csrf
-                                @method('DELETE')
+                        @else
 
-                                <div>
+                            <div class="rounded-xl border border-error/20 bg-error/5 p-4">
 
-                                    <label
-                                        for="mfa_disable_password"
-                                        class="label">
-
-                                        Current Password
-
-                                    </label>
-
-                                    <input
-                                        id="mfa_disable_password"
-                                        type="password"
-                                        name="current_password"
-                                        required
-                                        autocomplete="current-password"
-                                        class="input"
-                                        placeholder="Enter current password">
-
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    class="inline-flex w-full items-center justify-center rounded-lg bg-error px-4 py-2.5 font-button text-sm font-semibold text-white transition hover:opacity-90">
-
+                                <p class="text-sm font-semibold text-error">
                                     Disable Two-Factor Authentication
+                                </p>
 
-                                </button>
+                                <p class="mt-1 text-xs leading-5 text-slate-600">
+                                    Your account will return to password-only authentication.
+                                    Existing recovery codes will also become invalid.
+                                </p>
 
-                            </form>
 
-                        </div>
+                                <form
+                                    method="POST"
+                                    action="{{ route('settings.mfa.disable') }}"
+                                    class="mt-4 space-y-3"
+                                    onsubmit="return confirm('Disable two-factor authentication for your account?');">
+
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <div>
+
+                                        <label
+                                            for="mfa_disable_password"
+                                            class="label">
+
+                                            Current Password
+
+                                        </label>
+
+                                        <input
+                                            id="mfa_disable_password"
+                                            type="password"
+                                            name="current_password"
+                                            required
+                                            autocomplete="current-password"
+                                            class="input"
+                                            placeholder="Enter current password">
+
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        class="inline-flex w-full items-center justify-center rounded-lg bg-error px-4 py-2.5 font-button text-sm font-semibold text-white transition hover:opacity-90">
+
+                                        Disable Two-Factor Authentication
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        @endif
 
 
                     {{-- Authorized Setup State --}}
