@@ -56,6 +56,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
 
+    // Personal MFA management.
+    Route::post('/settings/mfa/setup', [SettingsController::class, 'beginMfaSetup'])
+        ->middleware('throttle:6,1')
+        ->name('settings.mfa.setup');
+
+    Route::post('/settings/mfa/confirm', [SettingsController::class, 'confirmMfa'])
+        ->middleware('throttle:10,1')
+        ->name('settings.mfa.confirm');
+
+    Route::post('/settings/mfa/recovery-codes', [SettingsController::class, 'regenerateMfaRecoveryCodes'])
+        ->middleware('throttle:6,1')
+        ->name('settings.mfa.recovery.regenerate');
+
+    Route::delete('/settings/mfa', [SettingsController::class, 'disableMfa'])
+        ->middleware('throttle:6,1')
+        ->name('settings.mfa.disable');
+
     // Facilities — everyone can browse; create/edit/archive gated by 'manageFacilities'.
     Route::get('/facilities', [FacilityController::class, 'index'])->name('facilities.index');
     Route::get('/facilities/create', [FacilityController::class, 'create'])->name('facilities.create');

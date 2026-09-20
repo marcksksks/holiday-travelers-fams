@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Laragear\TwoFactor\Contracts\TwoFactorAuthenticatable;
+use Laragear\TwoFactor\TwoFactorAuthentication;
 
-class User extends Authenticatable
+class User extends Authenticatable implements TwoFactorAuthenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthentication;
 
     public const ROLE_EMPLOYEE = 'employee';
     public const ROLE_RECEPTIONIST = 'receptionist';
