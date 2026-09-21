@@ -259,4 +259,37 @@ class ProductionRuntimeHardeningTest extends TestCase
             $contents
         );
     }
+
+    public function test_docker_creates_required_laravel_runtime_directories(): void
+    {
+        $contents =
+            file_get_contents(
+                base_path(
+                    'Dockerfile'
+                )
+            );
+
+        $this->assertIsString(
+            $contents
+        );
+
+        foreach ([
+            'storage/framework/cache/data',
+            'storage/framework/sessions',
+            'storage/framework/views',
+            'storage/logs',
+            'storage/app/documents',
+            'bootstrap/cache',
+        ] as $directory) {
+            $this->assertStringContainsString(
+                $directory,
+                $contents
+            );
+        }
+
+        $this->assertStringNotContainsString(
+            'storage/framework/{cache,sessions,views}',
+            $contents
+        );
+    }
 }

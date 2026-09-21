@@ -26,7 +26,14 @@ COPY . .
 COPY --from=vendor /app/vendor ./vendor
 COPY --from=assets /app/public/build ./public/build
 
-RUN mkdir -p storage/framework/{cache,sessions,views} storage/logs storage/app/public storage/app/documents bootstrap/cache \
+RUN mkdir -p \
+        storage/framework/cache/data \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/logs \
+        storage/app/public \
+        storage/app/documents \
+        bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
