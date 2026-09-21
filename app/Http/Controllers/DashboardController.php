@@ -16,88 +16,151 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user();
+        $data =
+            $this->dashboardData(
+                $request
+            );
 
-        $now = now();
+        if (
+            $request->boolean(
+                'partial'
+            )
+        ) {
+            return response()
+                ->view(
+                    'dashboard._workspace',
+                    $data
+                )
+                ->header(
+                    'Cache-Control',
+                    'no-store, no-cache, must-revalidate, max-age=0'
+                );
+        }
 
-        $today = $now->toDateString();
+        return view(
+            'dashboard.index',
+            $data
+        );
+    }
 
-        $currentTime = $now->format('H:i:s');
+    private function dashboardData(
+        Request $request
+    ): array {
+        $user =
+            $request->user();
 
-        $thirtyDaysFromNow = $now
-            ->copy()
-            ->addDays(30)
-            ->toDateString();
+        $now =
+            now();
+
+        $today =
+            $now->toDateString();
+
+        $currentTime =
+            $now->format('H:i:s');
+
+        $thirtyDaysFromNow =
+            $now
+                ->copy()
+                ->addDays(30)
+                ->toDateString();
 
         $canViewAppointments =
-            $user->can('viewAppointments');
+            $user->can(
+                'viewAppointments'
+            );
 
         $canViewVisitors =
-            $user->can('viewVisitors');
+            $user->can(
+                'viewVisitors'
+            );
 
         $canViewContracts =
-            $user->can('viewContracts');
+            $user->can(
+                'viewContracts'
+            );
 
         $canViewLegal =
-            $user->can('viewLegal');
+            $user->can(
+                'viewLegal'
+            );
 
         $canViewDocuments =
-            $user->can('viewDocuments');
+            $user->can(
+                'viewDocuments'
+            );
 
         $canManageRetention =
-            $user->can('manageRetention');
+            $user->can(
+                'manageRetention'
+            );
 
         $canApproveDisposal =
-            $user->can('approveRetentionDisposal');
+            $user->can(
+                'approveRetentionDisposal'
+            );
 
         /*
-         * Document alert scope.
-         *
-         * Apply the same source-module restrictions
-         * used by Document Management.
+         * Apply the same source-module restrictions used
+         * by Document Management.
          */
         $documentAlertQuery =
             ArchiveDocument::query();
 
         if (! $canViewVisitors) {
             $documentAlertQuery
-                ->where(function ($query) {
-                    $query
-                        ->whereNull('source_module')
-                        ->orWhere(
-                            'source_module',
-                            '<>',
-                            'visitors'
-                        );
-                })
-                ->whereNull('linked_visitor_id');
+                ->where(
+                    function ($query) {
+                        $query
+                            ->whereNull(
+                                'source_module'
+                            )
+                            ->orWhere(
+                                'source_module',
+                                '<>',
+                                'visitors'
+                            );
+                    }
+                )
+                ->whereNull(
+                    'linked_visitor_id'
+                );
         }
 
         if (! $canViewContracts) {
             $documentAlertQuery
-                ->where(function ($query) {
-                    $query
-                        ->whereNull('source_module')
-                        ->orWhere(
-                            'source_module',
-                            '<>',
-                            'contracts'
-                        );
-                })
-                ->whereNull('linked_contract_id');
+                ->where(
+                    function ($query) {
+                        $query
+                            ->whereNull(
+                                'source_module'
+                            )
+                            ->orWhere(
+                                'source_module',
+                                '<>',
+                                'contracts'
+                            );
+                    }
+                )
+                ->whereNull(
+                    'linked_contract_id'
+                );
         }
 
         if (! $canViewLegal) {
             $documentAlertQuery
-                ->where(function ($query) {
-                    $query
-                        ->whereNull('source_module')
-                        ->orWhere(
-                            'source_module',
-                            '<>',
-                            'legal'
-                        );
-                })
+                ->where(
+                    function ($query) {
+                        $query
+                            ->whereNull(
+                                'source_module'
+                            )
+                            ->orWhere(
+                                'source_module',
+                                '<>',
+                                'legal'
+                            );
+                    }
+                )
                 ->whereNull(
                     'linked_legal_record_id'
                 );
@@ -105,11 +168,9 @@ class DashboardController extends Controller
 
         /*
          * Live operations.
-         *
-         * These queries are anchored to the same Laravel
-         * server timestamp used throughout this request.
          */
-        $liveNextAppointment = null;
+        $liveNextAppointment =
+            null;
 
         if ($canViewAppointments) {
 
@@ -122,44 +183,49 @@ class DashboardController extends Controller
                             'confirmed',
                         ]
                     )
-                    ->where(function ($query) use (
-                        $today,
-                        $currentTime
-                    ) {
-
-                        $query
-                            ->whereDate(
-                                'date',
-                                '>',
-                                $today
-                            )
-                            ->orWhere(function ($query) use (
-                                $today,
-                                $currentTime
-                            ) {
-
-                                $query
-                                    ->whereDate(
-                                        'date',
-                                        $today
-                                    )
-                                    ->whereTime(
-                                        'start_time',
-                                        '>=',
+                    ->where(
+                        function ($query) use (
+                            $today,
+                            $currentTime
+                        ) {
+                            $query
+                                ->whereDate(
+                                    'date',
+                                    '>',
+                                    $today
+                                )
+                                ->orWhere(
+                                    function ($query) use (
+                                        $today,
                                         $currentTime
-                                    );
-
-                            });
-
-                    })
-                    ->orderBy('date')
-                    ->orderBy('start_time')
+                                    ) {
+                                        $query
+                                            ->whereDate(
+                                                'date',
+                                                $today
+                                            )
+                                            ->whereTime(
+                                                'start_time',
+                                                '>=',
+                                                $currentTime
+                                            );
+                                    }
+                                );
+                        }
+                    )
+                    ->orderBy(
+                        'date'
+                    )
+                    ->orderBy(
+                        'start_time'
+                    )
                     ->first();
-
         }
 
         $liveReservationsInUse =
-            Reservation::with('facility')
+            Reservation::with(
+                'facility'
+            )
                 ->where(
                     'status',
                     'approved'
@@ -178,27 +244,24 @@ class DashboardController extends Controller
                     '>',
                     $currentTime
                 )
-                ->orderBy('end_time')
+                ->orderBy(
+                    'end_time'
+                )
                 ->get();
 
-        return view('dashboard.index', [
-
-            /*
-             * Live operations
-             */
+        return [
             'liveNextAppointment' => $liveNextAppointment,
 
             'liveReservationsInUse' => $liveReservationsInUse,
 
             'liveFacilitiesInUseCount' => $liveReservationsInUse
-                ->pluck('facility_id')
+                ->pluck(
+                    'facility_id'
+                )
                 ->filter()
                 ->unique()
                 ->count(),
 
-            /*
-             * Main dashboard cards
-             */
             'facilityCount' => Facility::where(
                 'status',
                 'available'
@@ -251,9 +314,6 @@ class DashboardController extends Controller
                     )->count()
                     : 0,
 
-            /*
-             * Document & compliance alerts
-             */
             'documentNeedsReview' => $canViewDocuments
                     ? (clone $documentAlertQuery)
                         ->where(
@@ -277,9 +337,6 @@ class DashboardController extends Controller
                     )->count()
                     : 0,
 
-            /*
-             * Permissions passed to Blade
-             */
             'canViewAppointments' => $canViewAppointments,
 
             'canViewVisitors' => $canViewVisitors,
@@ -294,10 +351,9 @@ class DashboardController extends Controller
 
             'canApproveDisposal' => $canApproveDisposal,
 
-            /*
-             * Upcoming reservation list
-             */
-            'upcomingReservations' => Reservation::with('facility')
+            'upcomingReservations' => Reservation::with(
+                'facility'
+            )
                 ->where(
                     'status',
                     'approved'
@@ -307,14 +363,15 @@ class DashboardController extends Controller
                     '>=',
                     $today
                 )
-                ->orderBy('date')
-                ->orderBy('start_time')
+                ->orderBy(
+                    'date'
+                )
+                ->orderBy(
+                    'start_time'
+                )
                 ->limit(6)
                 ->get(),
 
-            /*
-             * Today's appointment list
-             */
             'recentAppointments' => $canViewAppointments
                     ? Appointment::whereDate(
                         'date',
@@ -326,6 +383,6 @@ class DashboardController extends Controller
                         ->limit(6)
                         ->get()
                     : collect(),
-        ]);
+        ];
     }
 }
