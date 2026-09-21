@@ -129,31 +129,6 @@
     </x-page-header>
 
 
-    <div class="-mt-3 flex justify-end">
-
-        <div
-            data-dashboard-live-indicator
-            class="inline-flex items-center gap-2 rounded-full border border-success/20 bg-success/5 px-3 py-1.5 text-[10px] font-semibold text-success">
-
-            <span
-                data-dashboard-live-dot
-                class="relative flex h-2 w-2">
-
-                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-40"></span>
-
-                <span class="relative inline-flex h-2 w-2 rounded-full bg-success"></span>
-
-            </span>
-
-            <span data-dashboard-live-status>
-                Live · connecting...
-            </span>
-
-        </div>
-
-    </div>
-
-
     {{-- =====================================================
          SYSTEM OVERVIEW
     ====================================================== --}}

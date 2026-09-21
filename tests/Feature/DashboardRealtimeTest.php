@@ -101,7 +101,7 @@ class DashboardRealtimeTest extends TestCase
             );
     }
 
-    public function test_full_dashboard_contains_realtime_client(): void
+    public function test_full_dashboard_contains_headless_realtime_client(): void
     {
         $user =
             $this->user(
@@ -119,11 +119,12 @@ class DashboardRealtimeTest extends TestCase
                 false
             )
             ->assertSee(
-                'data-dashboard-live-status',
+                'data-dashboard-partial-url',
                 false
             )
-            ->assertSee(
-                'Live · connecting...'
+            ->assertDontSee(
+                '<div class="-mt-3 flex justify-end">',
+                false
             );
     }
 }
