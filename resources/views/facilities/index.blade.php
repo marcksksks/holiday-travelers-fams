@@ -7,45 +7,22 @@
 <div class="space-y-6">
 
     {{-- =====================================================
-         FACILITIES RESERVATION WORKSPACE HEADER
+         FACILITIES WORKSPACE HEADER
     ====================================================== --}}
-    <section class="card overflow-hidden">
+    <x-page-header
+        eyebrow="Facilities Reservation"
+        title="Facilities"
+        badge="Resource Directory"
+        description="Manage reservable rooms, vehicles, shared spaces, and operational resources from one workspace.">
 
-        {{-- Main header --}}
-        <div class="flex flex-col gap-5 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        @can('manageFacilities')
 
-            <div class="min-w-0">
-
-                <div class="flex items-center gap-2">
-
-                    <span class="h-2 w-2 rounded-full bg-secondary"></span>
-
-                    <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Facilities Reservation
-                    </p>
-
-                </div>
-
-
-                <h1 class="mt-2 font-heading text-xl font-bold text-primary sm:text-2xl">
-                    Facilities
-                </h1>
-
-
-                <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-                    Manage reservable rooms, vehicles, shared spaces, and operational resources from one directory.
-                </p>
-
-            </div>
-
-
-            {{-- Primary action --}}
-            @can('manageFacilities')
+            <x-slot:actions>
 
                 <a
                     href="{{ route('facilities.create') }}"
                     data-facility-create-open
-                    class="btn-primary inline-flex shrink-0 items-center justify-center gap-2 self-start lg:self-auto">
+                    class="btn-primary inline-flex items-center justify-center gap-2">
 
                     <svg
                         class="h-4 w-4"
@@ -65,99 +42,94 @@
 
                 </a>
 
-            @endcan
+            </x-slot:actions>
 
-        </div>
+        @endcan
 
+    </x-page-header>
 
-        {{-- Unified module navigation --}}
-        <div class="border-t border-border px-3 sm:px-5">
-
-            <nav
-                class="flex gap-1"
-                aria-label="Facilities Reservation workspace">
-
-                {{-- Facilities --}}
-                <a
-                    href="{{ route('facilities.index') }}"
-                    class="relative inline-flex items-center gap-2 px-3 py-3.5 font-button text-sm font-semibold text-primary sm:px-4"
-                    aria-current="page">
-
-                    <svg
-                        class="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
-
-                    </svg>
-
-                    Facilities
-
-                    <span class="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-secondary sm:inset-x-4"></span>
-
-                </a>
-
-
-                {{-- Reservations --}}
-                <a
-                    href="{{ route('reservations.index') }}"
-                    class="relative inline-flex items-center gap-2 px-3 py-3.5 font-button text-sm font-semibold text-slate-500 transition hover:text-primary sm:px-4">
-
-                    <svg
-                        class="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-
-                    </svg>
-
-                    Reservations
-
-                </a>
-
-            </nav>
-
-        </div>
-
-    </section>
 
     {{-- =====================================================
-         COMPACT FACILITY OVERVIEW
+         MODULE NAVIGATION
     ====================================================== --}}
-    <div class="card overflow-hidden">
+    <div class="card p-1.5">
 
-        <div class="grid sm:grid-cols-3">
+        <nav
+            class="grid grid-cols-2 gap-1 sm:inline-grid sm:min-w-[340px] sm:grid-cols-2"
+            aria-label="Facilities Reservation workspace">
 
-            {{-- Total --}}
             <a
                 href="{{ route('facilities.index') }}"
-                class="group flex items-center justify-between gap-4 border-b border-border px-5 py-4 transition hover:bg-background/70 sm:border-b-0 sm:border-r">
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-button text-sm font-semibold text-white shadow-sm"
+                aria-current="page">
 
-                <div>
+                <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
 
-                    <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Total Facilities
-                    </p>
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
 
-                    <p class="mt-1 font-heading text-2xl font-bold text-primary">
-                        {{ number_format($counts['total']) }}
-                    </p>
+                </svg>
 
-                </div>
+                Facilities
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-primary transition group-hover:bg-primary/10">
+            </a>
+
+
+            <a
+                href="{{ route('reservations.index') }}"
+                class="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-button text-sm font-semibold text-slate-500 transition hover:bg-background hover:text-primary">
+
+                <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+
+                </svg>
+
+                Reservations
+
+            </a>
+
+        </nav>
+
+    </div>
+
+
+    {{-- =====================================================
+         FACILITY OVERVIEW
+    ====================================================== --}}
+    <section class="space-y-4">
+
+        <x-section-header
+            eyebrow="Overview"
+            title="Facility Status"
+            description="A current snapshot of the facilities visible to your role." />
+
+
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+
+            <x-metric-card
+                label="Total Facilities"
+                :value="number_format($counts['total'])"
+                :href="route('facilities.index')"
+                helper="Facilities currently visible in this directory."
+                tone="primary">
+
+                <x-slot:icon>
 
                     <svg
                         class="h-5 w-5"
@@ -173,83 +145,133 @@
 
                     </svg>
 
-                </div>
+                </x-slot:icon>
 
-            </a>
-
-
-            {{-- Available --}}
-            <a
-                href="{{ route('facilities.index', ['status' => 'available']) }}"
-                @class([
-                    'group flex items-center justify-between gap-4 border-b border-border px-5 py-4 transition hover:bg-background/70 sm:border-b-0 sm:border-r',
-                    'bg-success/5' => request('status') === 'available',
-                ])>
-
-                <div>
-
-                    <div class="flex items-center gap-2">
-
-                        <span class="h-2 w-2 rounded-full bg-success"></span>
-
-                        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                            Available
-                        </p>
-
-                    </div>
-
-                    <p class="mt-1 font-heading text-2xl font-bold text-success">
-                        {{ number_format($counts['available']) }}
-                    </p>
-
-                </div>
-
-                <span class="text-[10px] font-medium text-slate-400">
-                    Reservable
-                </span>
-
-            </a>
+            </x-metric-card>
 
 
-            {{-- Maintenance --}}
-            <a
-                href="{{ route('facilities.index', ['status' => 'maintenance']) }}"
-                @class([
-                    'group flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-background/70',
-                    'bg-warning/5' => request('status') === 'maintenance',
-                ])>
+            <x-metric-card
+                label="Available"
+                :value="number_format($counts['available'])"
+                :href="route('facilities.index', ['status' => 'available'])"
+                helper="Ready to accept new reservation requests."
+                tone="success">
 
-                <div>
+                <x-slot:icon>
 
-                    <div class="flex items-center gap-2">
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                        <span class="h-2 w-2 rounded-full bg-warning"></span>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7" />
 
-                        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                            Maintenance
-                        </p>
+                    </svg>
 
-                    </div>
+                </x-slot:icon>
 
-                    <p class="mt-1 font-heading text-2xl font-bold text-amber-600">
-                        {{ number_format($counts['maintenance']) }}
-                    </p>
+            </x-metric-card>
 
-                </div>
 
-                @if ($counts['maintenance'] > 0)
+            <x-metric-card
+                label="Maintenance"
+                :value="number_format($counts['maintenance'])"
+                :href="route('facilities.index', ['status' => 'maintenance'])"
+                helper="Temporarily unavailable while maintenance is in progress."
+                tone="warning">
 
-                    <span class="rounded-full bg-warning/10 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
-                        Attention
-                    </span>
+                <x-slot:icon>
 
-                @endif
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-            </a>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M14.7 6.3a4 4 0 01-5 5L4 17v3h3l5.7-5.7a4 4 0 005-5l-3 3-3-3 3-3z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Unavailable"
+                :value="number_format($counts['unavailable'])"
+                :href="route('facilities.index', ['status' => 'unavailable'])"
+                helper="Not currently open for reservation requests."
+                tone="accent">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
 
         </div>
 
-    </div>
+
+        @if (
+            $canViewArchived
+            &&
+            $counts['archived'] > 0
+        )
+
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+
+                <div>
+
+                    <p class="text-xs font-semibold text-primary">
+                        Archived Facilities
+                    </p>
+
+                    <p class="mt-0.5 text-[11px] text-slate-500">
+                        {{ number_format($counts['archived']) }}
+                        archived
+                        {{ \Illuminate\Support\Str::plural('facility', $counts['archived']) }}
+                        are retained outside the active reservable inventory.
+                    </p>
+
+                </div>
+
+                <a
+                    href="{{ route('facilities.index', ['status' => 'archived']) }}"
+                    class="text-xs font-semibold text-accent transition hover:text-primary">
+
+                    Review archived →
+
+                </a>
+
+            </div>
+
+        @endif
+
+    </section>
 
     {{-- =====================================================
          FACILITY FILTER TOOLBAR
@@ -468,8 +490,11 @@
     </div>
 
 
+    @include('facilities._mobile-cards')
+
+
     {{-- Facilities table --}}
-    <div class="table-shell overflow-hidden">
+    <div class="table-shell hidden overflow-hidden md:block">
 
         <div class="overflow-x-auto">
 

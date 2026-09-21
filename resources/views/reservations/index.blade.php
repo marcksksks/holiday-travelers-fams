@@ -6,301 +6,278 @@
 
 <div class="space-y-6">
 
+    @php
+        $reservationWorkspaceDescription =
+            $canDecide
+                ? 'Review reservation requests, monitor approvals, and coordinate shared facility availability from one workspace.'
+                : 'Reserve available facilities and track the progress of your requests from one workspace.';
+
+        $closedReservationCount =
+            ($counts['rejected'] ?? 0)
+            +
+            ($counts['cancelled'] ?? 0);
+    @endphp
+
+
     {{-- =====================================================
-         FACILITIES RESERVATION WORKSPACE HEADER
+         RESERVATIONS WORKSPACE HEADER
     ====================================================== --}}
-    <section class="card overflow-visible">
+    <x-page-header
+        eyebrow="Facilities Reservation"
+        title="Reservations"
+        :badge="$canDecide ? 'Approval Workspace' : 'Personal Requests'"
+        :description="$reservationWorkspaceDescription">
 
-        {{-- Main header --}}
-        <div class="flex flex-col gap-5 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <x-slot:actions>
 
-            <div class="min-w-0">
+            @if ($facilities->isNotEmpty())
 
-                <div class="flex items-center gap-2">
+                <details class="group relative">
 
-                    <span class="h-2 w-2 rounded-full bg-secondary"></span>
+                    <summary
+                        class="btn-primary flex cursor-pointer list-none items-center justify-center gap-2">
 
-                    <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Facilities Reservation
-                    </p>
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
 
-                </div>
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 4v16m8-8H4" />
 
-                <h1 class="mt-2 font-heading text-xl font-bold text-primary sm:text-2xl">
-                    Reservations
-                </h1>
+                        </svg>
 
-                <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+                        Reserve Facility
 
-                    @if ($canDecide)
+                        <svg
+                            class="h-3.5 w-3.5 transition group-open:rotate-180"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
 
-                        Review requests and coordinate facility availability from one workspace.
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 9l-7 7-7-7" />
 
-                    @else
+                        </svg>
 
-                        Reserve an available facility and track your requests from one workspace.
+                    </summary>
 
-                    @endif
 
-                </p>
+                    <div class="absolute right-0 z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
 
-            </div>
+                        <div class="border-b border-border px-4 py-3">
 
+                            <p class="text-xs font-semibold text-primary">
+                                Choose a facility
+                            </p>
 
-            {{-- Primary action --}}
-            <div class="flex shrink-0 flex-wrap items-center gap-2">
-
-                @if ($facilities->isNotEmpty())
-
-                    <details class="group relative">
-
-                        <summary
-                            class="btn-primary flex cursor-pointer list-none items-center justify-center gap-2">
-
-                            <svg
-                                class="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
-
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
-
-                            </svg>
-
-                            Reserve Facility
-
-                            <svg
-                                class="h-3.5 w-3.5 transition group-open:rotate-180"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
-
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 9l-7 7-7-7" />
-
-                            </svg>
-
-                        </summary>
-
-
-                        <div class="absolute right-0 z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
-
-                            <div class="border-b border-border px-4 py-3">
-
-                                <p class="text-xs font-semibold text-primary">
-                                    Choose a facility
-                                </p>
-
-                                <p class="mt-0.5 text-[11px] text-slate-400">
-                                    Only operationally available facilities are listed.
-                                </p>
-
-                            </div>
-
-
-                            <div class="max-h-72 overflow-y-auto p-1.5">
-
-                                @foreach ($facilities as $facility)
-
-                                    <a
-                                        href="{{ route('reservations.index', ['reserve_facility' => $facility->id]) }}"
-                                        class="flex items-center gap-3 rounded-lg px-3 py-2.5 transition hover:bg-background">
-
-                                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary">
-
-                                            @if ($facility->facility_type === 'vehicle')
-
-                                                <svg
-                                                    class="h-4 w-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M3 13l2-5h14l2 5M5 13v6m14-6v6M6 17h.01M18 17h.01M5 13h14" />
-
-                                                </svg>
-
-                                            @else
-
-                                                <svg
-                                                    class="h-4 w-4"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
-
-                                                </svg>
-
-                                            @endif
-
-                                        </div>
-
-
-                                        <div class="min-w-0 flex-1">
-
-                                            <p class="truncate text-sm font-semibold text-slate-700">
-                                                {{ $facility->name }}
-                                            </p>
-
-                                            <p class="mt-0.5 truncate text-[11px] text-slate-400">
-
-                                                {{ str($facility->facility_type)->headline() }}
-
-                                                @if ($facility->capacity)
-
-                                                    &bull;
-                                                    Capacity {{ number_format($facility->capacity) }}
-
-                                                @endif
-
-                                            </p>
-
-                                        </div>
-
-
-                                        <svg
-                                            class="h-4 w-4 shrink-0 text-slate-300"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24">
-
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M9 5l7 7-7 7" />
-
-                                        </svg>
-
-                                    </a>
-
-                                @endforeach
-
-                            </div>
+                            <p class="mt-0.5 text-[11px] text-slate-400">
+                                Only facilities currently available for reservation are listed.
+                            </p>
 
                         </div>
 
-                    </details>
 
-                @else
+                        <div class="max-h-72 overflow-y-auto p-1.5">
 
-                    <a
-                        href="{{ route('facilities.index') }}"
-                        class="btn-outline inline-flex items-center gap-2">
+                            @foreach ($facilities as $facility)
 
-                        Browse Facilities
+                                <a
+                                    href="{{ route('reservations.index', ['reserve_facility' => $facility->id]) }}"
+                                    class="flex items-center gap-3 rounded-lg px-3 py-2.5 transition hover:bg-background">
 
-                    </a>
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary">
 
-                @endif
+                                        @if ($facility->facility_type === 'vehicle')
 
-            </div>
+                                            <svg
+                                                class="h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24">
 
-        </div>
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M3 13l2-5h14l2 5M5 13v6m14-6v6M6 17h.01M18 17h.01M5 13h14" />
+
+                                            </svg>
+
+                                        @else
+
+                                            <svg
+                                                class="h-4 w-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24">
+
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
+
+                                            </svg>
+
+                                        @endif
+
+                                    </div>
 
 
-        {{-- Module navigation --}}
-        <div class="border-t border-border px-3 sm:px-5">
+                                    <div class="min-w-0 flex-1">
 
-            <nav
-                class="flex gap-1"
-                aria-label="Facilities Reservation workspace">
+                                        <p class="truncate text-sm font-semibold text-slate-700">
+                                            {{ $facility->name }}
+                                        </p>
+
+                                        <p class="mt-0.5 truncate text-[11px] text-slate-400">
+
+                                            {{ str($facility->facility_type)->headline() }}
+
+                                            @if ($facility->capacity)
+
+                                                &bull;
+                                                Capacity {{ number_format($facility->capacity) }}
+
+                                            @endif
+
+                                        </p>
+
+                                    </div>
+
+
+                                    <svg
+                                        class="h-4 w-4 shrink-0 text-slate-300"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24">
+
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
+
+                                    </svg>
+
+                                </a>
+
+                            @endforeach
+
+                        </div>
+
+                    </div>
+
+                </details>
+
+            @else
 
                 <a
                     href="{{ route('facilities.index') }}"
-                    class="relative inline-flex items-center gap-2 px-3 py-3.5 font-button text-sm font-semibold text-slate-500 transition hover:text-primary sm:px-4">
+                    class="btn-outline inline-flex items-center gap-2">
 
-                    <svg
-                        class="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
-
-                    </svg>
-
-                    Facilities
+                    Browse Facilities
 
                 </a>
 
+            @endif
 
-                <a
-                    href="{{ route('reservations.index') }}"
-                    class="relative inline-flex items-center gap-2 px-3 py-3.5 font-button text-sm font-semibold text-primary sm:px-4"
-                    aria-current="page">
+        </x-slot:actions>
 
-                    <svg
-                        class="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
+    </x-page-header>
 
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-
-                    </svg>
-
-                    Reservations
-
-                    <span class="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-secondary sm:inset-x-4"></span>
-
-                </a>
-
-            </nav>
-
-        </div>
-
-    </section>
 
     {{-- =====================================================
-         COMPACT RESERVATION OVERVIEW
+         MODULE NAVIGATION
     ====================================================== --}}
-    <div class="card overflow-hidden">
+    <div class="card p-1.5">
 
-        <div class="grid sm:grid-cols-3">
+        <nav
+            class="grid grid-cols-2 gap-1 sm:inline-grid sm:min-w-[340px] sm:grid-cols-2"
+            aria-label="Facilities Reservation workspace">
 
-            {{-- Total --}}
+            <a
+                href="{{ route('facilities.index') }}"
+                class="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-button text-sm font-semibold text-slate-500 transition hover:bg-background hover:text-primary">
+
+                <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
+
+                </svg>
+
+                Facilities
+
+            </a>
+
+
             <a
                 href="{{ route('reservations.index') }}"
-                class="group flex items-center justify-between gap-4 border-b border-border px-5 py-4 transition hover:bg-background/70 sm:border-b-0 sm:border-r">
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-button text-sm font-semibold text-white shadow-sm"
+                aria-current="page">
 
-                <div>
+                <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
 
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                        Total Requests
-                    </p>
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
 
-                    <p class="mt-1 font-heading text-2xl font-bold text-primary">
-                        {{ number_format($counts['total']) }}
-                    </p>
+                </svg>
 
-                </div>
+                Reservations
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-primary transition group-hover:bg-primary/10">
+            </a>
+
+        </nav>
+
+    </div>
+
+
+    {{-- =====================================================
+         RESERVATION OVERVIEW
+    ====================================================== --}}
+    <section class="space-y-4">
+
+        <x-section-header
+            eyebrow="Overview"
+            title="Reservation Overview"
+            :description="$canDecide
+                ? 'A current snapshot of the reservation queue and approved facility use.'
+                : 'A current snapshot of your facility reservation requests.'" />
+
+
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+
+            <x-metric-card
+                label="Total Requests"
+                :value="number_format($counts['total'])"
+                :href="route('reservations.index')"
+                helper="Reservation requests included in your current access scope."
+                tone="primary">
+
+                <x-slot:icon>
 
                     <svg
                         class="h-5 w-5"
@@ -316,84 +293,152 @@
 
                     </svg>
 
-                </div>
+                </x-slot:icon>
 
-            </a>
-
-
-            {{-- Pending --}}
-            <a
-                href="{{ route('reservations.index', ['status' => 'pending']) }}"
-                @class([
-                    'group flex items-center justify-between gap-4 border-b border-border px-5 py-4 transition hover:bg-background/70 sm:border-b-0 sm:border-r',
-                    'bg-warning/5' => request('status') === 'pending',
-                ])>
-
-                <div>
-
-                    <div class="flex items-center gap-2">
-
-                        <span class="h-2 w-2 rounded-full bg-warning"></span>
-
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                            Pending
-                        </p>
-
-                    </div>
-
-                    <p class="mt-1 font-heading text-2xl font-bold text-amber-600">
-                        {{ number_format($counts['pending']) }}
-                    </p>
-
-                </div>
-
-                @if ($counts['pending'] > 0)
-
-                    <span class="rounded-full bg-warning/10 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
-                        Needs review
-                    </span>
-
-                @endif
-
-            </a>
+            </x-metric-card>
 
 
-            {{-- Approved --}}
-            <a
-                href="{{ route('reservations.index', ['status' => 'approved']) }}"
-                @class([
-                    'group flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-background/70',
-                    'bg-success/5' => request('status') === 'approved',
-                ])>
+            <x-metric-card
+                label="Pending"
+                :value="number_format($counts['pending'])"
+                :href="route('reservations.index', ['status' => 'pending'])"
+                :helper="$canDecide
+                    ? 'Requests currently waiting for a reservation decision.'
+                    : 'Your requests currently waiting for review.'"
+                tone="warning">
 
-                <div>
+                <x-slot:icon>
 
-                    <div class="flex items-center gap-2">
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                        <span class="h-2 w-2 rounded-full bg-success"></span>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                            Approved
-                        </p>
+                    </svg>
 
-                    </div>
+                </x-slot:icon>
 
-                    <p class="mt-1 font-heading text-2xl font-bold text-success">
-                        {{ number_format($counts['approved']) }}
-                    </p>
+            </x-metric-card>
 
-                </div>
 
-                <span class="text-[11px] font-medium text-slate-400">
-                    Active
-                </span>
+            <x-metric-card
+                label="Approved"
+                :value="number_format($counts['approved'])"
+                :href="route('reservations.index', ['status' => 'approved'])"
+                helper="Reservation requests approved for facility use."
+                tone="success">
 
-            </a>
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Completed"
+                :value="number_format($counts['completed'])"
+                :href="route('reservations.index', ['status' => 'completed'])"
+                helper="Facility reservations that have completed their lifecycle."
+                tone="accent">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
 
         </div>
 
-    </div>
 
+        @if ($closedReservationCount > 0)
+
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+
+                <div>
+
+                    <p class="text-xs font-semibold text-primary">
+                        Closed Requests
+                    </p>
+
+                    <p class="mt-0.5 text-[11px] text-slate-500">
+                        {{ number_format($counts['rejected']) }} rejected
+                        ·
+                        {{ number_format($counts['cancelled']) }} cancelled
+                    </p>
+
+                </div>
+
+
+                <div class="flex items-center gap-4">
+
+                    @if ($counts['rejected'] > 0)
+
+                        <a
+                            href="{{ route('reservations.index', ['status' => 'rejected']) }}"
+                            class="text-xs font-semibold text-error transition hover:text-primary">
+
+                            Rejected →
+
+                        </a>
+
+                    @endif
+
+
+                    @if ($counts['cancelled'] > 0)
+
+                        <a
+                            href="{{ route('reservations.index', ['status' => 'cancelled']) }}"
+                            class="text-xs font-semibold text-slate-500 transition hover:text-primary">
+
+                            Cancelled →
+
+                        </a>
+
+                    @endif
+
+                </div>
+
+            </div>
+
+        @endif
+
+    </section>
 
     {{-- =====================================================
          SHARED FACILITY AVAILABILITY
