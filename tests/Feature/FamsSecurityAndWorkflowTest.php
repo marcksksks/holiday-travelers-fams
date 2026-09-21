@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\ArchiveDocument;
 use App\Models\Contract;
 use App\Models\Facility;
-use App\Models\Reservation;
 use App\Models\User;
 use App\Services\AppointmentService;
+use App\Services\ContractWorkflowService;
 use App\Services\ReservationService;
+use App\Services\UserManagementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -81,11 +81,35 @@ class FamsSecurityAndWorkflowTest extends TestCase
         $this->assertSame('scheduled', $appointment->status);
     }
 
+    public function test_facility_appointment_requires_end_time(): void
+    {
+        $facility = Facility::factory()->create([
+            'status' => 'available',
+        ]);
+
+        $manager = User::factory()
+            ->role(User::ROLE_MANAGER)
+            ->create();
+
+        $this->expectException(
+            ValidationException::class
+        );
+
+        app(AppointmentService::class)
+            ->create($manager, [
+                'visitor_name' => 'Facility Visitor',
+                'visitor_type' => 'guest',
+                'date' => now()->addDay()->toDateString(),
+                'start_time' => '09:00',
+                'facility_id' => $facility->id,
+            ]);
+    }
+
     public function test_last_active_system_admin_cannot_be_deactivated(): void
     {
         $admin = User::factory()->role(User::ROLE_SYS_ADMIN)->create();
         $this->expectException(ValidationException::class);
-        app(\App\Services\UserManagementService::class)->setActive($admin, $admin, false);
+        app(UserManagementService::class)->setActive($admin, $admin, false);
     }
 
     public function test_contract_cannot_skip_legal_review(): void
@@ -93,6 +117,6 @@ class FamsSecurityAndWorkflowTest extends TestCase
         $admin = User::factory()->role(User::ROLE_ADMIN_OFFICER)->create();
         $contract = Contract::create(['title' => 'Test', 'contract_type' => 'service', 'status' => 'draft']);
         $this->expectException(ValidationException::class);
-        app(\App\Services\ContractWorkflowService::class)->decide(User::factory()->role(User::ROLE_MANAGER)->create(), $contract, true);
+        app(ContractWorkflowService::class)->decide(User::factory()->role(User::ROLE_MANAGER)->create(), $contract, true);
     }
 }

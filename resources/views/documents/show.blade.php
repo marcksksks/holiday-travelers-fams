@@ -4,491 +4,623 @@
 
 @section('content')
 
-<div class="space-y-6">
+<div class="space-y-4">
 
-    {{-- Header --}}
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    {{-- =====================================================
+         MODERN DOCUMENT DETAILS HEADER
+    ====================================================== --}}
+    <section class="card overflow-visible">
 
-        <div>
+        <div class="px-5 py-5 sm:px-6">
 
-            <a
-                href="{{ route('documents.index', ['container' => $document->container_id]) }}"
-                class="mb-3 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-primary">
-
-                <span>&larr;</span>
-                Back to Document Management
-
-            </a>
-
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
-
-            <div class="flex flex-wrap items-center gap-3">
-
-                <h1 class="font-heading text-2xl font-bold text-primary">
-                    {{ $document->title }}
-                </h1>
-
-                @if ($document->is_system_generated)
-
-                    <span class="rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-                        System Record
-                    </span>
-
-                @else
-
-                    <span class="rounded-full bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
-                        Version {{ $document->version ?? 1 }}
-                    </span>
-
-                @endif
-
-            </div>
-
-            <p class="mt-2 text-sm text-slate-500">
-                {{ $document->description ?: 'No description provided.' }}
-            </p>
-
-        </div>
-
-
-        <div class="flex flex-wrap gap-2">
-
-            @can('manageDocuments')
-
-                @if (! $document->is_system_generated)
-
-                    <a
-                        href="{{ route('documents.edit', $document) }}"
-                        class="btn-outline">
-
-                        Manage Document
-
-                    </a>
-
-                @endif
-
-            @endcan
-
-
-            @if ($document->file_uri)
-
-                <button
-                    type="button"
-                    data-document-download="{{ route('documents.request-link', $document) }}"
-                    class="btn-primary">
-
-                    Download File
-
-                </button>
-
-            @endif
-
-
-            @can('manageDocuments')
-
-                @if ($document->status === 'archived')
-
-                    <form
-                        method="POST"
-                        action="{{ route('documents.restore', $document) }}">
-
-                        @csrf
-
-                        <button
-                            type="submit"
-                            class="btn-primary">
-
-                            Restore
-
-                        </button>
-
-                    </form>
-
-                @else
-
-                    <form
-                        method="POST"
-                        action="{{ route('documents.archive', $document) }}"
-                        onsubmit="return confirm('Archive this document? It can be restored later.')">
-
-                        @csrf
-
-                        <button
-                            type="submit"
-                            class="btn-outline">
-
-                            Archive
-
-                        </button>
-
-                    </form>
-
-                @endif
-
-            @endcan
-
-        </div>
-
-    </div>
-
-
-    {{-- Breadcrumb --}}
-    <div class="card px-5 py-4">
-
-        <div class="flex flex-wrap items-center gap-2 text-sm">
-
-            <a
-                href="{{ route('documents.index') }}"
-                class="font-medium text-primary hover:text-secondary">
-
-                Document Management
-
-            </a>
-
-            @foreach ($breadcrumbs as $breadcrumb)
-
-                <span class="text-slate-300">/</span>
+            {{-- Navigation --}}
+            <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
 
                 <a
-                    href="{{ route('documents.index', ['container' => $breadcrumb->id]) }}"
-                    class="text-slate-600 hover:text-primary">
+                    href="{{ route(
+                        'documents.index',
+                        $document->container_id
+                            ? ['container' => $document->container_id]
+                            : []
+                    ) }}"
+                    class="inline-flex items-center gap-1.5 font-semibold text-primary transition hover:text-secondary">
 
-                    {{ $breadcrumb->name }}
+                    <svg
+                        class="h-3.5 w-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19l-7-7 7-7" />
+
+                    </svg>
+
+                    Document Management
 
                 </a>
 
-            @endforeach
+
+                @foreach ($breadcrumbs as $breadcrumb)
+
+                    <svg
+                        class="h-3 w-3 text-slate-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7" />
+
+                    </svg>
+
+                    <a
+                        href="{{ route('documents.index', ['container' => $breadcrumb->id]) }}"
+                        class="max-w-40 truncate font-medium transition hover:text-primary">
+
+                        {{ $breadcrumb->name }}
+
+                    </a>
+
+                @endforeach
+
+            </div>
+
+
+            <div class="mt-4 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+
+                <div class="min-w-0">
+
+                    <div class="flex items-start gap-3">
+
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary">
+
+                            <svg
+                                class="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M7 3h7l5 5v13H7V3zm7 0v5h5M10 13h6M10 17h6" />
+
+                            </svg>
+
+                        </div>
+
+
+                        <div class="min-w-0">
+
+                            <p class="text-[9px] font-semibold uppercase tracking-[0.16em] text-secondary">
+                                Document Details
+                            </p>
+
+                            <h1 class="mt-1 break-words font-heading text-xl font-bold tracking-tight text-primary sm:text-2xl">
+                                {{ $document->title }}
+                            </h1>
+
+
+                            {{-- Compact classification --}}
+                            <div class="mt-2 flex flex-wrap items-center gap-1.5">
+
+                                <span class="rounded-full bg-primary/5 px-2.5 py-1 text-[10px] font-semibold text-primary">
+                                    {{ str($document->category)->headline() }}
+                                </span>
+
+
+                                <span class="rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-semibold text-primary">
+                                    {{ str($document->confidentiality ?? 'general')->headline() }}
+                                </span>
+
+
+                                @switch($document->status)
+
+                                    @case('active')
+
+                                        <span class="badge badge-success">
+                                            Active
+                                        </span>
+
+                                        @break
+
+
+                                    @case('needs_review')
+
+                                        <span class="badge badge-warning">
+                                            Needs Review
+                                        </span>
+
+                                        @break
+
+
+                                    @case('archived')
+
+                                        <span class="badge bg-slate-100 text-slate-600">
+                                            Archived
+                                        </span>
+
+                                        @break
+
+
+                                    @case('superseded')
+
+                                        <span class="badge badge-info">
+                                            Superseded
+                                        </span>
+
+                                        @break
+
+
+                                    @default
+
+                                        <span class="badge badge-info">
+                                            {{ str($document->status)->headline() }}
+                                        </span>
+
+                                @endswitch
+
+
+                                @if ($document->is_system_generated)
+
+                                    <span class="rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-semibold text-accent">
+                                        System Record
+                                    </span>
+
+                                @else
+
+                                    <span class="rounded-full bg-primary/5 px-2.5 py-1 text-[10px] font-semibold text-primary">
+                                        v{{ $document->version ?? 1 }}
+                                    </span>
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    @if ($document->description)
+
+                        <p class="mt-4 max-w-3xl text-xs leading-5 text-slate-500 sm:text-sm">
+                            {{ $document->description }}
+                        </p>
+
+                    @endif
+
+                </div>
+
+
+                {{-- Primary actions --}}
+                <div class="flex shrink-0 items-center gap-2">
+
+                    @if ($document->file_uri)
+
+                        <button
+                            type="button"
+                            data-document-download="{{ route('documents.request-link', $document) }}"
+                            class="btn-primary inline-flex items-center justify-center gap-2">
+
+                            <svg
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
+
+                            </svg>
+
+                            Download File
+
+                        </button>
+
+                    @endif
+
+
+                    @include(
+                        'documents._details-actions',
+                        [
+                            'document' => $document,
+                        ]
+                    )
+
+                </div>
+
+            </div>
 
         </div>
 
-    </div>
+    </section>
 
 
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+    <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
 
-        {{-- Main metadata --}}
-        <div class="space-y-6">
+        {{-- =====================================================
+             MAIN RECORD CONTENT
+        ====================================================== --}}
+        <div class="space-y-4">
 
             <section class="card overflow-hidden">
 
-                <div class="border-b border-border px-6 py-5">
-
-                    <h2 class="font-heading text-base font-semibold text-primary">
-                        Document Information
-                    </h2>
-
-                    <p class="mt-1 text-xs text-slate-500">
-                        Classification and records-management metadata.
-                    </p>
-
-                </div>
-
-
-                <div class="grid gap-x-8 gap-y-6 p-6 sm:grid-cols-2">
+                <div class="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
 
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Category
+
+                        <h2 class="font-heading text-sm font-semibold text-primary">
+                            Document Information
+                        </h2>
+
+                        <p class="mt-0.5 text-[10px] text-slate-400">
+                            File, ownership, filing location, and record dates.
                         </p>
 
-                        <p class="mt-1.5 text-sm font-medium text-primary">
-                            {{ str($document->category)->headline() }}
-                        </p>
                     </div>
 
 
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Status
-                        </p>
+                    @if (! $document->is_system_generated)
 
-                        <div class="mt-1.5">
+                        <span class="rounded-full bg-primary/5 px-2.5 py-1 text-[9px] font-semibold text-primary">
+                            Version {{ $document->version ?? 1 }}
+                        </span>
 
-                            @switch($document->status)
-
-                                @case('active')
-                                    <span class="badge badge-success">Active</span>
-                                    @break
-
-                                @case('needs_review')
-                                    <span class="badge badge-warning">Needs Review</span>
-                                    @break
-
-                                @case('archived')
-                                    <span class="badge bg-slate-100 text-slate-600">
-                                        Archived
-                                    </span>
-                                    @break
-
-                                @case('superseded')
-                                    <span class="badge badge-info">Superseded</span>
-                                    @break
-
-                                @default
-                                    <span class="badge badge-info">
-                                        {{ str($document->status)->headline() }}
-                                    </span>
-
-                            @endswitch
-
-                        </div>
-                    </div>
-
-
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Confidentiality
-                        </p>
-
-                        <p class="mt-1.5 text-sm font-medium text-primary">
-                            {{ str($document->confidentiality)->headline() }}
-                        </p>
-                    </div>
-
-
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Department
-                        </p>
-
-                        <p class="mt-1.5 text-sm font-medium text-primary">
-                            {{ $document->department ?: 'Not specified' }}
-                        </p>
-                    </div>
-
-
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Document Date
-                        </p>
-
-                        <p class="mt-1.5 text-sm font-medium text-primary">
-                            {{ $document->document_date?->format('M d, Y') ?: 'Not specified' }}
-                        </p>
-                    </div>
-
-
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Expiration Date
-                        </p>
-
-                        <p class="mt-1.5 text-sm font-medium text-primary">
-                            {{ $document->expiration_date?->format('M d, Y') ?: 'No expiration' }}
-                        </p>
-                    </div>
-
-
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Owner
-                        </p>
-
-                        <p class="mt-1.5 break-all text-sm font-medium text-primary">
-                            {{ $document->owner_email ?: 'Not assigned' }}
-                        </p>
-                    </div>
-
-
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Version
-                        </p>
-
-                        <p class="mt-1.5 text-sm font-medium text-primary">
-                            {{ $document->version ?? 1 }}
-                        </p>
-                    </div>
-
-
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            File
-                        </p>
-
-                        <p class="mt-1.5 break-all text-sm font-medium text-primary">
-                            {{ $document->file_name ?: 'No physical file attached' }}
-                        </p>
-                    </div>
-
-
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Created
-                        </p>
-
-                        <p class="mt-1.5 text-sm font-medium text-primary">
-                            {{ $document->created_at?->format('M d, Y h:i A') }}
-                        </p>
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            {{-- History --}}
-            <section class="card overflow-hidden">
-
-                <div class="border-b border-border px-6 py-5">
-
-                    <h2 class="font-heading text-base font-semibold text-primary">
-                        Document History
-                    </h2>
-
-                    <p class="mt-1 text-xs text-slate-500">
-                        Lifecycle and synchronization activity for this record.
-                    </p>
+                    @endif
 
                 </div>
 
 
                 <div class="divide-y divide-border">
 
-                    @forelse (
-                        collect($document->history ?? [])->reverse()
-                        as $entry
-                    )
+                    {{-- File / Folder --}}
+                    <div class="grid gap-4 px-5 py-4 sm:grid-cols-2">
 
-                        <div class="flex gap-4 px-6 py-5">
+                        <div class="min-w-0">
 
-                            <div class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-accent"></div>
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                File
+                            </p>
 
-                            <div class="min-w-0 flex-1">
+                            <div class="mt-1.5 flex items-start gap-2">
 
-                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                <svg
+                                    class="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
 
-                                    <p class="font-button text-sm font-semibold text-primary">
-                                        {{ str($entry['action'] ?? 'activity')->headline() }}
-                                    </p>
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M7 3h7l5 5v13H7V3zm7 0v5h5" />
 
-                                    <span class="text-xs text-slate-400">
-                                        @if (!empty($entry['at']))
-                                            {{ \Illuminate\Support\Carbon::parse($entry['at'])->format('M d, Y h:i A') }}
-                                        @endif
-                                    </span>
+                                </svg>
 
-                                </div>
+                                <p
+                                    class="min-w-0 break-all text-xs font-medium text-primary"
+                                    title="{{ $document->file_name }}">
 
-                                <p class="mt-1 text-sm text-slate-500">
-                                    {{ $entry['note'] ?? 'No additional details.' }}
-                                </p>
+                                    {{ $document->file_name ?: 'No physical file attached' }}
 
-                                <p class="mt-2 text-xs text-slate-400">
-                                    By:
-                                    {{ $entry['by'] ?? 'system' }}
-
-                                    @if (!empty($entry['version']))
-                                        · Version {{ $entry['version'] }}
-                                    @endif
                                 </p>
 
                             </div>
 
                         </div>
 
-                    @empty
 
-                        <div class="px-6 py-10 text-center text-sm text-slate-500">
-                            No document history recorded.
+                        <div class="min-w-0">
+
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                Folder
+                            </p>
+
+                            @if ($document->container)
+
+                                <a
+                                    href="{{ route('documents.index', ['container' => $document->container->id]) }}"
+                                    class="mt-1.5 inline-flex max-w-full items-center gap-1.5 text-xs font-medium text-primary transition hover:text-secondary">
+
+                                    <svg
+                                        class="h-4 w-4 shrink-0"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24">
+
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M3 7h6l2 2h10v10H3V7z" />
+
+                                    </svg>
+
+                                    <span class="truncate">
+                                        {{ str_replace('/', ' / ', $document->container->path) }}
+                                    </span>
+
+                                </a>
+
+                            @else
+
+                                <p class="mt-1.5 text-xs font-medium text-slate-400">
+                                    Unfiled
+                                </p>
+
+                            @endif
+
                         </div>
 
-                    @endforelse
+                    </div>
+
+
+                    {{-- Organization --}}
+                    <div class="grid gap-4 px-5 py-4 sm:grid-cols-2">
+
+                        <div>
+
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                Department
+                            </p>
+
+                            <p class="mt-1.5 text-xs font-medium text-primary">
+                                {{ $document->department ?: 'Not specified' }}
+                            </p>
+
+                        </div>
+
+
+                        <div class="min-w-0">
+
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                Owner
+                            </p>
+
+                            <p class="mt-1.5 break-all text-xs font-medium text-primary">
+                                {{ $document->owner_email ?: 'Not assigned' }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- Important dates --}}
+                    <div class="grid gap-4 px-5 py-4 sm:grid-cols-2">
+
+                        <div>
+
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                Document Date
+                            </p>
+
+                            <p class="mt-1.5 text-xs font-medium text-primary">
+                                {{ $document->document_date?->format('M d, Y') ?: 'Not specified' }}
+                            </p>
+
+                        </div>
+
+
+                        <div>
+
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                Expiration Date
+                            </p>
+
+                            <p
+                                @class([
+                                    'mt-1.5 text-xs font-medium',
+                                    'text-primary' => ! $document->expiration_date,
+                                    'text-primary' => $document->expiration_date && $document->expiration_date->isFuture(),
+                                    'text-error' => $document->expiration_date && $document->expiration_date->isPast(),
+                                ])>
+
+                                {{ $document->expiration_date?->format('M d, Y') ?: 'No expiration' }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- Record timestamps --}}
+                    <div class="grid gap-4 bg-background/30 px-5 py-4 sm:grid-cols-2">
+
+                        <div>
+
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                Created
+                            </p>
+
+                            <p class="mt-1.5 text-xs font-medium text-slate-600">
+                                {{ $document->created_at?->format('M d, Y') }}
+                            </p>
+
+                            <p class="mt-0.5 text-[9px] text-slate-400">
+                                {{ $document->created_at?->format('h:i A') }}
+                            </p>
+
+                        </div>
+
+
+                        <div>
+
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                Last Updated
+                            </p>
+
+                            <p class="mt-1.5 text-xs font-medium text-slate-600">
+                                {{ $document->updated_at?->format('M d, Y') }}
+                            </p>
+
+                            <p class="mt-0.5 text-[9px] text-slate-400">
+                                {{ $document->updated_at?->format('h:i A') }}
+                            </p>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
             </section>
 
+            {{-- History --}}
+            @include(
+                'documents._history-timeline',
+                [
+                    'document' => $document,
+                ]
+            )
+
         </div>
 
 
-        {{-- Right panel --}}
-        <aside class="space-y-6">
+        {{-- =====================================================
+             RIGHT DETAILS PANEL
+        ====================================================== --}}
+        <aside class="space-y-4">
 
             <section class="card overflow-hidden">
 
-                <div class="border-b border-border px-5 py-4">
+                <div class="border-b border-border px-4 py-4">
 
-                    <h2 class="font-heading text-sm font-semibold text-primary">
-                        Related System Record
-                    </h2>
+                    <div class="flex items-center gap-3">
+
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-primary">
+
+                            <svg
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M10 13a5 5 0 007.1 0l2-2a5 5 0 00-7.1-7.1l-1.1 1.1M14 11a5 5 0 00-7.1 0l-2 2A5 5 0 0012 20.1l1.1-1.1" />
+
+                            </svg>
+
+                        </span>
+
+
+                        <div>
+
+                            <h2 class="font-heading text-sm font-semibold text-primary">
+                                Related Record
+                            </h2>
+
+                            <p class="mt-0.5 text-[10px] text-slate-400">
+                                Source and system relationship
+                            </p>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
 
-                <div class="space-y-4 p-5">
+                <div class="p-4">
 
                     @if ($document->relatedModuleLabel())
 
-                        <div>
-                            <p class="text-xs uppercase tracking-wide text-slate-400">
-                                Module
-                            </p>
+                        <div class="rounded-xl bg-background/60 p-3">
 
-                            <span class="mt-2 inline-flex rounded-lg bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
+                            <span class="inline-flex rounded-md bg-accent/10 px-2 py-1 text-[9px] font-semibold text-primary">
                                 {{ $document->relatedModuleLabel() }}
                             </span>
-                        </div>
 
 
-                        <div>
-                            <p class="text-xs uppercase tracking-wide text-slate-400">
-                                Record
-                            </p>
-
-                            <p class="mt-2 text-sm font-medium text-primary">
+                            <p class="mt-2 break-words text-xs font-semibold leading-5 text-primary">
                                 {{ $document->relatedRecordLabel() }}
                             </p>
+
                         </div>
 
                     @else
 
-                        <p class="text-sm text-slate-500">
-                            This document is not linked to another system record.
-                        </p>
+                        <div class="rounded-xl border border-dashed border-border px-3 py-4 text-center">
 
-                    @endif
-
-
-                    <div>
-                        <p class="text-xs uppercase tracking-wide text-slate-400">
-                            Source
-                        </p>
-
-                        <p class="mt-2 text-sm font-medium text-primary">
-
-                            @if ($document->is_system_generated)
-                                System Generated
-                            @else
-                                Manual Upload
-                            @endif
-
-                        </p>
-                    </div>
-
-
-                    @if ($document->source_module)
-
-                        <div>
-                            <p class="text-xs uppercase tracking-wide text-slate-400">
-                                Source Module
+                            <p class="text-xs font-medium text-primary">
+                                No linked record
                             </p>
 
-                            <p class="mt-2 text-sm font-medium text-primary">
-                                {{ str($document->source_module)->headline() }}
+                            <p class="mt-1 text-[10px] leading-4 text-slate-400">
+                                This document is not connected to another system record.
                             </p>
+
                         </div>
 
                     @endif
+
+
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+
+                        <div>
+
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                Source
+                            </p>
+
+                            <p class="mt-1 text-[10px] font-semibold text-primary">
+
+                                {{
+                                    $document->is_system_generated
+                                        ? 'System Generated'
+                                        : 'Manual Upload'
+                                }}
+
+                            </p>
+
+                        </div>
+
+
+                        <div>
+
+                            <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                                Module
+                            </p>
+
+                            <p class="mt-1 text-[10px] font-semibold text-primary">
+
+                                {{
+                                    $document->source_module
+                                        ? str($document->source_module)->headline()
+                                        : 'Document Management'
+                                }}
+
+                            </p>
+
+                        </div>
+
+                    </div>
 
 
                     @if ($document->source_module === 'reservations')
 
                         <a
                             href="{{ route('reservations.index') }}"
-                            class="btn-outline flex w-full justify-center">
+                            class="btn-outline mt-4 flex w-full justify-center text-xs">
 
-                            Open Facilities Reservations
+                            Open Facilities Reservation
 
                         </a>
 
@@ -496,7 +628,7 @@
 
                         <a
                             href="{{ route('visitors.index') }}"
-                            class="btn-outline flex w-full justify-center">
+                            class="btn-outline mt-4 flex w-full justify-center text-xs">
 
                             Open Visitor Management
 
@@ -506,7 +638,7 @@
 
                         <a
                             href="{{ route('contracts.index') }}"
-                            class="btn-outline flex w-full justify-center">
+                            class="btn-outline mt-4 flex w-full justify-center text-xs">
 
                             Open Contract Management
 
@@ -516,7 +648,7 @@
 
                         <a
                             href="{{ route('legal.index') }}"
-                            class="btn-outline flex w-full justify-center">
+                            class="btn-outline mt-4 flex w-full justify-center text-xs">
 
                             Open Legal Management
 
@@ -528,308 +660,14 @@
 
             </section>
 
-
             {{-- Retention & Compliance --}}
-            <section class="card overflow-hidden">
-
-                <div class="border-b border-border px-5 py-4">
-                    <h2 class="font-heading text-sm font-semibold text-primary">
-                        Retention & Compliance
-                    </h2>
-
-                    <p class="mt-1 text-xs text-slate-500">
-                        Retention policy and review status for this document.
-                    </p>
-                </div>
-
-                <div class="space-y-4 p-5">
-
-                    @if ($document->retentionRecord)
-
-                        <div>
-                            <p class="text-xs uppercase tracking-wide text-slate-400">
-                                Policy
-                            </p>
-
-                            <p class="mt-1.5 text-sm font-semibold text-primary">
-                                {{ $document->retentionRecord->policy_name ?: 'No policy name' }}
-                            </p>
-                        </div>
-
-
-                        <div class="grid grid-cols-2 gap-4">
-
-                            <div>
-                                <p class="text-xs uppercase tracking-wide text-slate-400">
-                                    Retention Status
-                                </p>
-
-                                <div class="mt-2">
-                                    @switch($document->retentionRecord->status)
-
-                                        @case('retained')
-                                            <span class="badge badge-success">
-                                                Retained
-                                            </span>
-                                            @break
-
-                                        @case('review_required')
-                                            <span class="badge badge-warning">
-                                                Review Required
-                                            </span>
-                                            @break
-
-                                        @case('extended')
-                                            <span class="badge badge-info">
-                                                Extended
-                                            </span>
-                                            @break
-
-                                        @case('archived')
-                                            <span class="badge bg-slate-100 text-slate-600">
-                                                Archived
-                                            </span>
-                                            @break
-
-                                        @case('marked_for_disposal')
-                                            <span class="badge badge-error">
-                                                Marked for Disposal
-                                            </span>
-                                            @break
-
-                                    @endswitch
-                                </div>
-                            </div>
-
-
-                            <div>
-                                <p class="text-xs uppercase tracking-wide text-slate-400">
-                                    Compliance
-                                </p>
-
-                                <div class="mt-2">
-                                    @switch($document->retentionRecord->compliance_status)
-
-                                        @case('compliant')
-                                            <span class="badge badge-success">
-                                                Compliant
-                                            </span>
-                                            @break
-
-                                        @case('at_risk')
-                                            <span class="badge badge-warning">
-                                                At Risk
-                                            </span>
-                                            @break
-
-                                        @case('non_compliant')
-                                            <span class="badge badge-error">
-                                                Non-Compliant
-                                            </span>
-                                            @break
-
-                                    @endswitch
-                                </div>
-                            </div>
-
-                        </div>
-
-
-                        <div class="grid grid-cols-2 gap-4">
-
-                            <div>
-                                <p class="text-xs uppercase tracking-wide text-slate-400">
-                                    Retention Start
-                                </p>
-
-                                <p class="mt-1.5 text-sm font-medium text-primary">
-                                    {{ $document->retentionRecord->start_date?->format('M d, Y') ?: 'Not specified' }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p class="text-xs uppercase tracking-wide text-slate-400">
-                                    Review Date
-                                </p>
-
-                                <p class="mt-1.5 text-sm font-medium text-primary">
-                                    {{ $document->retentionRecord->review_date?->format('M d, Y') ?: 'Not specified' }}
-                                </p>
-                            </div>
-
-                        </div>
-
-
-                        @if ($document->retentionRecord->notes)
-
-                            <div>
-                                <p class="text-xs uppercase tracking-wide text-slate-400">
-                                    Notes
-                                </p>
-
-                                <p class="mt-1.5 text-sm leading-relaxed text-slate-600">
-                                    {{ $document->retentionRecord->notes }}
-                                </p>
-                            </div>
-
-                        @endif
-
-
-                        <a
-                            href="{{ route('retention.index', ['record_type' => 'document']) }}"
-                            class="btn-outline flex w-full justify-center">
-
-                            Open Records Retention
-
-                        </a>
-
-                    @else
-
-                        <div class="rounded-xl border border-dashed border-border bg-background/50 p-4 text-center">
-
-                            <p class="text-sm font-medium text-primary">
-                                No retention policy assigned
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-500">
-                                Assign an active policy matching this document's category.
-                            </p>
-
-                        </div>
-
-
-                        @can('manageRetention')
-
-                            @if ($retentionPolicies->isNotEmpty())
-
-                                <form
-                                    method="POST"
-                                    action="{{ route('documents.retention.assign', $document) }}"
-                                    class="space-y-4">
-
-                                    @csrf
-
-
-                                    <div>
-                                        <label class="label">
-                                            Retention Policy
-                                        </label>
-
-                                        <select
-                                            name="policy_id"
-                                            required
-                                            class="input">
-
-                                            <option value="">
-                                                Select policy
-                                            </option>
-
-                                            @foreach ($retentionPolicies as $policy)
-
-                                                <option value="{{ $policy->id }}">
-                                                    {{ $policy->name }}
-                                                    - {{ $policy->retention_years }}
-                                                    {{ $policy->retention_years === 1 ? 'year' : 'years' }}
-                                                </option>
-
-                                            @endforeach
-
-                                        </select>
-                                    </div>
-
-
-                                    <div>
-                                        <label class="label">
-                                            Retention Start
-                                        </label>
-
-                                        <input
-                                            type="date"
-                                            name="start_date"
-                                            value="{{ $document->document_date?->format('Y-m-d') ?? now()->format('Y-m-d') }}"
-                                            class="input">
-                                    </div>
-
-
-                                    <div>
-                                        <label class="label">
-                                            Notes
-                                        </label>
-
-                                        <textarea
-                                            name="notes"
-                                            rows="3"
-                                            class="input"
-                                            placeholder="Optional retention notes..."></textarea>
-                                    </div>
-
-
-                                    <button
-                                        type="submit"
-                                        class="btn-primary w-full">
-
-                                        Assign Retention Policy
-
-                                    </button>
-
-                                </form>
-
-                            @else
-
-                                <div class="rounded-xl bg-warning/5 p-4">
-
-                                    <p class="text-sm font-medium text-amber-700">
-                                        No matching active policy
-                                    </p>
-
-                                    <p class="mt-1 text-xs text-slate-500">
-                                        Create an active retention policy for the
-                                        {{ str($document->category)->headline() }}
-                                        category first.
-                                    </p>
-
-                                    <a
-                                        href="{{ route('retention.index') }}"
-                                        class="mt-3 inline-flex text-sm font-semibold text-primary hover:text-secondary">
-
-                                        Open Records Retention →
-
-                                    </a>
-
-                                </div>
-
-                            @endif
-
-                        @endcan
-
-                    @endif
-
-                </div>
-
-            </section>
-
-
-            <section class="card p-5">
-
-                <p class="text-xs uppercase tracking-wide text-slate-400">
-                    Document Location
-                </p>
-
-                @if ($document->container)
-
-                    <p class="mt-2 text-sm font-medium leading-relaxed text-primary">
-                        {{ str_replace('/', ' / ', $document->container->path) }}
-                    </p>
-
-                @else
-
-                    <p class="mt-2 text-sm text-slate-500">
-                        Unfiled
-                    </p>
-
-                @endif
-
-            </section>
+            @include(
+                'documents._retention-card',
+                [
+                    'document' => $document,
+                    'retentionPolicies' => $retentionPolicies,
+                ]
+            )
 
         </aside>
 

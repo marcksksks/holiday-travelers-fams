@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\ArchiveDocument;
 use App\Models\Appointment;
+use App\Models\ArchiveDocument;
 use App\Models\Facility;
 use App\Models\LegalRecord;
 use App\Models\Reservation;
@@ -94,17 +94,13 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 ->putJson(
                     "/api/facilities/{$facility->id}",
                     [
-                        'name' =>
-                            "Updated {$role}",
+                        'name' => "Updated {$role}",
 
-                        'facility_type' =>
-                            'meeting_room',
+                        'facility_type' => 'meeting_room',
 
-                        'status' =>
-                            'available',
+                        'status' => 'available',
 
-                        'capacity' =>
-                            20,
+                        'capacity' => 20,
                     ]
                 );
 
@@ -146,6 +142,146 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 );
             }
         }
+    }
+
+    public function test_facility_api_restore_matches_role_matrix(): void
+    {
+        $allowed = [
+            User::ROLE_ADMIN_OFFICER,
+            User::ROLE_SYS_ADMIN,
+        ];
+
+        foreach ($this->roles() as $role) {
+            $actor = $this->user($role);
+
+            $facility = Facility::factory()
+                ->create([
+                    'name' => "Archived {$role}",
+                    'status' => 'archived',
+                ]);
+
+            $response = $this
+                ->actingAs($actor, 'sanctum')
+                ->patchJson(
+                    "/api/facilities/{$facility->id}/restore"
+                );
+
+            if ($this->allowed($role, $allowed)) {
+                $response->assertOk();
+
+                $facility->refresh();
+
+                $this->assertSame(
+                    'unavailable',
+                    $facility->status
+                );
+
+                $this->assertSame(
+                    $actor->email,
+                    $facility->updated_by_email
+                );
+            } else {
+                $response->assertForbidden();
+
+                $this->assertSame(
+                    'archived',
+                    $facility->refresh()->status
+                );
+            }
+        }
+    }
+
+    public function test_facility_api_restore_rejects_non_archived_facility(): void
+    {
+        $admin = $this->user(
+            User::ROLE_ADMIN_OFFICER
+        );
+
+        $facility = Facility::factory()
+            ->create([
+                'status' => 'available',
+            ]);
+
+        $this
+            ->actingAs($admin, 'sanctum')
+            ->patchJson(
+                "/api/facilities/{$facility->id}/restore"
+            )
+            ->assertStatus(422);
+
+        $this->assertSame(
+            'available',
+            $facility->refresh()->status
+        );
+    }
+
+    public function test_facility_web_restore_is_authorized_and_audited(): void
+    {
+        $admin = $this->user(
+            User::ROLE_ADMIN_OFFICER
+        );
+
+        $facility = Facility::factory()
+            ->create([
+                'name' => 'Web Restore Facility',
+                'status' => 'archived',
+            ]);
+
+        $this
+            ->actingAs($admin)
+            ->patch(
+                route(
+                    'facilities.restore',
+                    $facility
+                )
+            )
+            ->assertRedirect();
+
+        $facility->refresh();
+
+        $this->assertSame(
+            'unavailable',
+            $facility->status
+        );
+
+        $this->assertSame(
+            $admin->email,
+            $facility->updated_by_email
+        );
+
+        $this->assertDatabaseHas(
+            'audit_logs',
+            [
+                'actor_email' => $admin->email,
+                'action' => 'restore',
+                'module' => 'facilities',
+                'record_id' => $facility->id,
+            ]
+        );
+
+        $employee = $this->user(
+            User::ROLE_EMPLOYEE
+        );
+
+        $blockedFacility = Facility::factory()
+            ->create([
+                'status' => 'archived',
+            ]);
+
+        $this
+            ->actingAs($employee)
+            ->patch(
+                route(
+                    'facilities.restore',
+                    $blockedFacility
+                )
+            )
+            ->assertForbidden();
+
+        $this->assertSame(
+            'archived',
+            $blockedFacility->refresh()->status
+        );
     }
 
     public function test_archived_facility_visibility_respects_permission(): void
@@ -195,25 +331,19 @@ class LifecycleAndAuditSecurityTest extends TestCase
             $actor = $this->user($role);
 
             $appointment = Appointment::create([
-                'visitor_name' =>
-                    "Original Visitor {$role}",
+                'visitor_name' => "Original Visitor {$role}",
 
-                'visitor_type' =>
-                    'guest',
+                'visitor_type' => 'guest',
 
-                'date' =>
-                    now()
-                        ->addDays(10)
-                        ->toDateString(),
+                'date' => now()
+                    ->addDays(10)
+                    ->toDateString(),
 
-                'start_time' =>
-                    '09:00',
+                'start_time' => '09:00',
 
-                'end_time' =>
-                    '10:00',
+                'end_time' => '10:00',
 
-                'status' =>
-                    'scheduled',
+                'status' => 'scheduled',
             ]);
 
             $update = $this
@@ -221,25 +351,19 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 ->putJson(
                     "/api/appointments/{$appointment->id}",
                     [
-                        'visitor_name' =>
-                            "Updated Visitor {$role}",
+                        'visitor_name' => "Updated Visitor {$role}",
 
-                        'visitor_type' =>
-                            'guest',
+                        'visitor_type' => 'guest',
 
-                        'date' =>
-                            now()
-                                ->addDays(11)
-                                ->toDateString(),
+                        'date' => now()
+                            ->addDays(11)
+                            ->toDateString(),
 
-                        'start_time' =>
-                            '10:00',
+                        'start_time' => '10:00',
 
-                        'end_time' =>
-                            '11:00',
+                        'end_time' => '11:00',
 
-                        'purpose' =>
-                            'Lifecycle RBAC test',
+                        'purpose' => 'Lifecycle RBAC test',
                     ]
                 );
 
@@ -312,31 +436,23 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 ]);
 
             $reservation = Reservation::create([
-                'facility_id' =>
-                    $facility->id,
+                'facility_id' => $facility->id,
 
-                'facility_name' =>
-                    $facility->name,
+                'facility_name' => $facility->name,
 
-                'requester_email' =>
-                    $owner->email,
+                'requester_email' => $owner->email,
 
-                'requester_name' =>
-                    $owner->full_name,
+                'requester_name' => $owner->full_name,
 
-                'date' =>
-                    now()
-                        ->addDays(15)
-                        ->toDateString(),
+                'date' => now()
+                    ->addDays(15)
+                    ->toDateString(),
 
-                'start_time' =>
-                    '09:00',
+                'start_time' => '09:00',
 
-                'end_time' =>
-                    '10:00',
+                'end_time' => '10:00',
 
-                'status' =>
-                    'pending',
+                'status' => 'pending',
             ]);
 
             $response = $this
@@ -384,10 +500,9 @@ class LifecycleAndAuditSecurityTest extends TestCase
             'requester_email' => $owner->email,
             'requester_name' => $owner->full_name,
 
-            'date' =>
-                now()
-                    ->addDays(15)
-                    ->toDateString(),
+            'date' => now()
+                ->addDays(15)
+                ->toDateString(),
 
             'start_time' => '13:00',
             'end_time' => '14:00',
@@ -423,20 +538,15 @@ class LifecycleAndAuditSecurityTest extends TestCase
             $actor = $this->user($role);
 
             $visitor = Visitor::create([
-                'full_name' =>
-                    "Checkout Visitor {$role}",
+                'full_name' => "Checkout Visitor {$role}",
 
-                'visitor_type' =>
-                    'guest',
+                'visitor_type' => 'guest',
 
-                'is_walk_in' =>
-                    true,
+                'is_walk_in' => true,
 
-                'status' =>
-                    'checked_in',
+                'status' => 'checked_in',
 
-                'check_in_at' =>
-                    now()->subMinutes(10),
+                'check_in_at' => now()->subMinutes(10),
             ]);
 
             $response = $this
@@ -549,16 +659,14 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 ->post(
                     "/documents/{$document->id}/version",
                     [
-                        'file' =>
-                            UploadedFile::fake()
-                                ->create(
-                                    "version-{$role}.pdf",
-                                    10,
-                                    'application/pdf'
-                                ),
+                        'file' => UploadedFile::fake()
+                            ->create(
+                                "version-{$role}.pdf",
+                                10,
+                                'application/pdf'
+                            ),
 
-                        'version_note' =>
-                            'Lifecycle security test.',
+                        'version_note' => 'Lifecycle security test.',
                     ]
                 );
 
@@ -599,14 +707,11 @@ class LifecycleAndAuditSecurityTest extends TestCase
             $actor = $this->user($role);
 
             $legal = LegalRecord::create([
-                'title' =>
-                    "Legal Review {$role}",
+                'title' => "Legal Review {$role}",
 
-                'record_type' =>
-                    'permit',
+                'record_type' => 'permit',
 
-                'status' =>
-                    'active',
+                'status' => 'active',
             ]);
 
             $response = $this
@@ -614,11 +719,9 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 ->post(
                     "/legal/{$legal->id}/review",
                     [
-                        'review_status' =>
-                            'reviewed',
+                        'review_status' => 'reviewed',
 
-                        'legal_notes' =>
-                            'Lifecycle RBAC review.',
+                        'legal_notes' => 'Lifecycle RBAC review.',
                     ]
                 );
 
@@ -667,23 +770,17 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 ->post(
                     '/retention-policies',
                     [
-                        'name' =>
-                            "Policy {$role}",
+                        'name' => "Policy {$role}",
 
-                        'record_category' =>
-                            'administrative',
+                        'record_category' => 'administrative',
 
-                        'retention_years' =>
-                            5,
+                        'retention_years' => 5,
 
-                        'description' =>
-                            'Lifecycle security test.',
+                        'description' => 'Lifecycle security test.',
 
-                        'legal_basis' =>
-                            'Internal policy test',
+                        'legal_basis' => 'Internal policy test',
 
-                        'is_active' =>
-                            true,
+                        'is_active' => true,
                     ]
                 );
 
@@ -722,11 +819,9 @@ class LifecycleAndAuditSecurityTest extends TestCase
         $document = $this->document(
             'Signed Download Test',
             [
-                'file_uri' =>
-                    'archive/signed-test.txt',
+                'file_uri' => 'archive/signed-test.txt',
 
-                'file_name' =>
-                    'signed-test.txt',
+                'file_name' => 'signed-test.txt',
             ]
         );
 
@@ -744,8 +839,7 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 'documents.download',
                 now()->addMinutes(5),
                 [
-                    'document' =>
-                        $document->id,
+                    'document' => $document->id,
                 ]
             );
 
@@ -771,14 +865,11 @@ class LifecycleAndAuditSecurityTest extends TestCase
         $document = $this->document(
             'Visitor Secret',
             [
-                'source_module' =>
-                    'visitors',
+                'source_module' => 'visitors',
 
-                'file_uri' =>
-                    'archive/visitor-secret.txt',
+                'file_uri' => 'archive/visitor-secret.txt',
 
-                'file_name' =>
-                    'visitor-secret.txt',
+                'file_name' => 'visitor-secret.txt',
             ]
         );
 
@@ -787,8 +878,7 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 'documents.download',
                 now()->addMinutes(5),
                 [
-                    'document' =>
-                        $document->id,
+                    'document' => $document->id,
                 ]
             );
 
@@ -815,11 +905,9 @@ class LifecycleAndAuditSecurityTest extends TestCase
         $document = $this->document(
             'General Private File',
             [
-                'file_uri' =>
-                    'archive/general-secret.txt',
+                'file_uri' => 'archive/general-secret.txt',
 
-                'file_name' =>
-                    'general-secret.txt',
+                'file_name' => 'general-secret.txt',
             ]
         );
 
@@ -828,8 +916,7 @@ class LifecycleAndAuditSecurityTest extends TestCase
                 'documents.download',
                 now()->addMinutes(5),
                 [
-                    'document' =>
-                        $document->id,
+                    'document' => $document->id,
                 ]
             );
 
@@ -888,11 +975,9 @@ class LifecycleAndAuditSecurityTest extends TestCase
             ->post(
                 "/legal/{$legal->id}/review",
                 [
-                    'review_status' =>
-                        'reviewed',
+                    'review_status' => 'reviewed',
 
-                    'legal_notes' =>
-                        'Audit test.',
+                    'legal_notes' => 'Audit test.',
                 ]
             )
             ->assertStatus(302);
@@ -918,20 +1003,15 @@ class LifecycleAndAuditSecurityTest extends TestCase
         );
 
         $visitor = Visitor::create([
-            'full_name' =>
-                'Audit Visitor',
+            'full_name' => 'Audit Visitor',
 
-            'visitor_type' =>
-                'guest',
+            'visitor_type' => 'guest',
 
-            'is_walk_in' =>
-                true,
+            'is_walk_in' => true,
 
-            'status' =>
-                'checked_in',
+            'status' => 'checked_in',
 
-            'check_in_at' =>
-                now()->subMinutes(5),
+            'check_in_at' => now()->subMinutes(5),
         ]);
 
         $this->actingAs(

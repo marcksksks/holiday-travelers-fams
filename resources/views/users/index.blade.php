@@ -7,379 +7,333 @@
 <div class="space-y-6">
 
     {{-- Header --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 
         <div>
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
 
-            <h2 class="font-heading text-2xl font-bold text-primary">
+            <div class="mb-2 flex items-center gap-2">
+
+                <div class="h-1 w-12 rounded-full bg-secondary"></div>
+
+                <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Administration
+                </span>
+
+            </div>
+
+            <h2 class="font-heading text-2xl font-bold tracking-tight text-primary">
                 Staff Accounts
             </h2>
 
-            <p class="mt-1 text-sm text-slate-500">
-                Create staff accounts, assign system roles, and manage account access.
-            </p>
-        </div>
-
-        <div class="rounded-xl border border-border bg-card px-4 py-2.5 shadow-card">
-
-            <p class="text-xs text-slate-500">
-                Total Accounts
-            </p>
-
-            <p class="mt-0.5 font-heading text-lg font-bold text-primary">
-                {{ $stats['total'] }}
+            <p class="mt-1 max-w-2xl text-sm text-slate-500">
+                Manage staff access, system roles, account status, and login security.
             </p>
 
         </div>
+
+
+        <button
+            type="button"
+            data-staff-create-open
+            class="btn-secondary inline-flex items-center justify-center gap-2">
+
+            <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true">
+
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4" />
+
+            </svg>
+
+            <span>
+                Add Staff
+            </span>
+
+        </button>
 
     </div>
-
 
     {{-- Statistics --}}
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
-        <div class="card relative overflow-hidden p-5">
+        {{-- Total Staff --}}
+        <div class="card group overflow-hidden p-4">
 
-            <div class="absolute inset-x-0 bottom-0 h-1 bg-primary"></div>
+            <div class="flex items-center justify-between gap-4">
 
-            <p class="text-xs font-medium text-slate-500">
-                Staff Accounts
-            </p>
+                <div class="min-w-0">
 
-            <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                {{ $stats['total'] }}
-            </p>
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                        Total Staff
+                    </p>
 
-            <p class="mt-1 text-xs text-slate-400">
-                Registered system users
-            </p>
+                    <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight text-primary">
+                        {{ number_format($stats['total']) }}
+                    </p>
 
-        </div>
-
-
-        <div class="card relative overflow-hidden p-5">
-
-            <div class="absolute inset-x-0 bottom-0 h-1 bg-success"></div>
-
-            <p class="text-xs font-medium text-slate-500">
-                Active
-            </p>
-
-            <p class="mt-2 font-heading text-3xl font-bold text-success">
-                {{ $stats['active'] }}
-            </p>
-
-            <p class="mt-1 text-xs text-slate-400">
-                Accounts with system access
-            </p>
-
-        </div>
-
-
-        <div class="card relative overflow-hidden p-5">
-
-            <div class="absolute inset-x-0 bottom-0 h-1 bg-slate-400"></div>
-
-            <p class="text-xs font-medium text-slate-500">
-                Deactivated
-            </p>
-
-            <p class="mt-2 font-heading text-3xl font-bold text-slate-600">
-                {{ $stats['inactive'] }}
-            </p>
-
-            <p class="mt-1 text-xs text-slate-400">
-                Accounts without access
-            </p>
-
-        </div>
-
-
-        <div class="card relative overflow-hidden p-5">
-
-            <div class="absolute inset-x-0 bottom-0 h-1 bg-warning"></div>
-
-            <p class="text-xs font-medium text-slate-500">
-                Password Change
-            </p>
-
-            <p class="mt-2 font-heading text-3xl font-bold text-amber-600">
-                {{ $stats['password_change'] }}
-            </p>
-
-            <p class="mt-1 text-xs text-slate-400">
-                Temporary passwords pending
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <div class="grid gap-6 xl:grid-cols-[390px_minmax(0,1fr)]">
-
-        {{-- Create Account --}}
-        <div>
-
-            <div class="card overflow-hidden xl:sticky xl:top-6">
-
-                <div class="border-b border-border bg-background/60 px-5 py-5">
-
-                    <div class="flex items-center gap-3">
-
-                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
-
-                            <svg
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
-
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zm10-4v6m3-3h-6" />
-
-                            </svg>
-
-                        </div>
-
-
-                        <div>
-
-                            <h3 class="font-heading text-base font-semibold text-primary">
-                                Create Staff Account
-                            </h3>
-
-                            <p class="mt-0.5 text-xs text-slate-500">
-                                A password change will be required after first login.
-                            </p>
-
-                        </div>
-
-                    </div>
+                    <p class="mt-0.5 text-xs text-slate-500">
+                        Registered accounts
+                    </p>
 
                 </div>
 
 
-                <form
-                    method="POST"
-                    action="{{ route('users.store') }}"
-                    class="space-y-5 p-5">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary ring-1 ring-inset ring-primary/10 transition group-hover:bg-primary/10">
 
-                    @csrf
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
 
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17 20h5v-2a4 4 0 00-5-4m-4 6H3v-2a4 4 0 014-4h2a4 4 0 014 4v2zm-5-8a4 4 0 100-8 4 4 0 000 8zm9-2a3 3 0 100-6 3 3 0 000 6z" />
 
-                    <div>
+                    </svg>
 
-                        <label for="full_name" class="label">
-                            Full Name
-                            <span class="text-error">*</span>
-                        </label>
+                </div>
 
-                        <input
-                            id="full_name"
-                            type="text"
-                            name="full_name"
-                            required
-                            value="{{ old('full_name') }}"
-                            placeholder="Juan Dela Cruz"
-                            class="input">
+            </div>
 
-                        @error('full_name')
-                            <p class="mt-1 text-xs font-medium text-error">
-                                {{ $message }}
-                            </p>
-                        @enderror
+            <div class="mt-4 h-1 rounded-full bg-primary/10">
 
-                    </div>
-
-
-                    <div>
-
-                        <label for="email" class="label">
-                            Email Address
-                            <span class="text-error">*</span>
-                        </label>
-
-                        <input
-                            id="email"
-                            type="email"
-                            name="email"
-                            required
-                            value="{{ old('email') }}"
-                            placeholder="staff@example.com"
-                            class="input">
-
-                        @error('email')
-                            <p class="mt-1 text-xs font-medium text-error">
-                                {{ $message }}
-                            </p>
-                        @enderror
-
-                    </div>
-
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-
-                        <div>
-
-                            <label for="department" class="label">
-                                Department
-                            </label>
-
-                            <input
-                                id="department"
-                                type="text"
-                                name="department"
-                                value="{{ old('department') }}"
-                                placeholder="Administration"
-                                class="input">
-
-                        </div>
-
-
-                        <div>
-
-                            <label for="job_title" class="label">
-                                Job Title
-                            </label>
-
-                            <input
-                                id="job_title"
-                                type="text"
-                                name="job_title"
-                                value="{{ old('job_title') }}"
-                                placeholder="Officer"
-                                class="input">
-
-                        </div>
-
-                    </div>
-
-
-                    <div>
-
-                        <label for="phone" class="label">
-                            Contact Number
-                        </label>
-
-                        <input
-                            id="phone"
-                            type="text"
-                            name="phone"
-                            value="{{ old('phone') }}"
-                            placeholder="09XXXXXXXXX"
-                            class="input">
-
-                    </div>
-
-
-                    <div>
-
-                        <label for="app_role" class="label">
-                            System Role
-                            <span class="text-error">*</span>
-                        </label>
-
-                        <select
-                            id="app_role"
-                            name="app_role"
-                            class="input">
-
-                            @foreach (\App\Models\User::ROLES as $value => $label)
-
-                                <option
-                                    value="{{ $value }}"
-                                    @selected(old('app_role', 'employee') === $value)>
-
-                                    {{ $label }}
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                    </div>
-
-
-                    <div>
-
-                        <label for="password" class="label">
-                            Temporary Password
-                            <span class="text-error">*</span>
-                        </label>
-
-
-                        <div class="relative">
-
-                            <input
-                                id="password"
-                                type="password"
-                                name="password"
-                                required
-                                minlength="8"
-                                autocomplete="new-password"
-                                placeholder="Minimum 8 characters"
-                                class="input pr-20">
-
-
-                            <button
-                                type="button"
-                                id="toggleStaffPassword"
-                                class="absolute inset-y-0 right-3 text-xs font-semibold text-primary">
-
-                                Show
-
-                            </button>
-
-                        </div>
-
-
-                        <p class="mt-1.5 text-xs text-slate-400">
-                            The staff member must replace this temporary password after signing in.
-                        </p>
-
-
-                        @error('password')
-                            <p class="mt-1 text-xs font-medium text-error">
-                                {{ $message }}
-                            </p>
-                        @enderror
-
-                    </div>
-
-
-                    <button
-                        type="submit"
-                        class="btn-secondary w-full">
-
-                        Create Account
-
-                    </button>
-
-                </form>
+                <div class="h-1 w-full rounded-full bg-primary"></div>
 
             </div>
 
         </div>
 
 
+        {{-- Active --}}
+        <div class="card group overflow-hidden p-4">
+
+            <div class="flex items-center justify-between gap-4">
+
+                <div class="min-w-0">
+
+                    <div class="flex items-center gap-2">
+
+                        <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                            Active
+                        </p>
+
+                        <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
+
+                    </div>
+
+                    <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight text-success">
+                        {{ number_format($stats['active']) }}
+                    </p>
+
+                    <p class="mt-0.5 text-xs text-slate-500">
+                        Can access the system
+                    </p>
+
+                </div>
+
+
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success transition group-hover:bg-success/15">
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="mt-4 h-1 rounded-full bg-success/10">
+
+                @php
+                    $activePercentage = $stats['total'] > 0
+                        ? min(100, ($stats['active'] / $stats['total']) * 100)
+                        : 0;
+                @endphp
+
+                <div
+                    class="h-1 rounded-full bg-success"
+                    style="width: {{ $activePercentage }}%">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- Deactivated --}}
+        <div class="card group overflow-hidden p-4">
+
+            <div class="flex items-center justify-between gap-4">
+
+                <div class="min-w-0">
+
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                        Deactivated
+                    </p>
+
+                    <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight text-slate-600">
+                        {{ number_format($stats['inactive']) }}
+                    </p>
+
+                    <p class="mt-0.5 text-xs text-slate-500">
+                        Access currently disabled
+                    </p>
+
+                </div>
+
+
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition group-hover:bg-slate-200/70">
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M18.364 18.364A9 9 0 105.636 5.636m12.728 12.728L5.636 5.636" />
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="mt-4 h-1 rounded-full bg-slate-100">
+
+                @php
+                    $inactivePercentage = $stats['total'] > 0
+                        ? min(100, ($stats['inactive'] / $stats['total']) * 100)
+                        : 0;
+                @endphp
+
+                <div
+                    class="h-1 rounded-full bg-slate-400"
+                    style="width: {{ $inactivePercentage }}%">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- Password Change --}}
+        <div class="card group overflow-hidden p-4">
+
+            <div class="flex items-center justify-between gap-4">
+
+                <div class="min-w-0">
+
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                        Password Change
+                    </p>
+
+                    <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight text-amber-600">
+                        {{ number_format($stats['password_change']) }}
+                    </p>
+
+                    <p class="mt-0.5 text-xs text-slate-500">
+                        Action required at login
+                    </p>
+
+                </div>
+
+
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-amber-600 transition group-hover:bg-warning/15">
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 11c1.657 0 3-1.343 3-3V6a3 3 0 10-6 0v2c0 1.657 1.343 3 3 3zm-5 0h10a2 2 0 012 2v6H5v-6a2 2 0 012-2z" />
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="mt-4 h-1 rounded-full bg-warning/10">
+
+                @php
+                    $passwordPercentage = $stats['total'] > 0
+                        ? min(100, ($stats['password_change'] / $stats['total']) * 100)
+                        : 0;
+                @endphp
+
+                <div
+                    class="h-1 rounded-full bg-warning"
+                    style="width: {{ $passwordPercentage }}%">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="min-w-0">
         {{-- Directory --}}
         <div class="min-w-0 space-y-4">
 
-            <div>
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
 
-                <h3 class="font-heading text-lg font-semibold text-primary">
-                    Staff Directory
-                </h3>
+                <div>
 
-                <p class="mt-1 text-xs text-slate-500">
-                    Search staff, review account status, and manage system roles.
-                </p>
+                    <h3 class="font-heading text-lg font-semibold text-primary">
+                        Staff Directory
+                    </h3>
+
+                    <p class="mt-1 text-xs text-slate-500">
+                        Search staff, review account status, and manage system roles.
+                    </p>
+
+                </div>
+
+
+                <div class="inline-flex self-start items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 sm:self-auto">
+
+                    <span class="h-2 w-2 rounded-full bg-accent"></span>
+
+                    <span class="text-xs font-medium text-slate-500">
+                        {{ number_format($staff->total()) }}
+                        {{ \Illuminate\Support\Str::plural('account', $staff->total()) }}
+                    </span>
+
+                </div>
 
             </div>
 
@@ -389,133 +343,270 @@
     id="staffFilterForm"
     method="GET"
     action="{{ route('users.index') }}"
-    class="card grid gap-3 p-4 md:grid-cols-[1fr_190px_170px_auto]">
+    class="card overflow-hidden">
 
-    {{-- Automatic Search --}}
-    <div class="relative">
+    <div class="flex flex-col gap-4 p-4 lg:flex-row lg:items-center">
 
-        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+        {{-- Search --}}
+        <div class="min-w-0 flex-1">
 
-            <svg
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24">
+            <label
+                for="staffSearch"
+                class="sr-only">
+                Search staff
+            </label>
 
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" />
+            <div class="relative">
 
-            </svg>
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" />
+
+                    </svg>
+
+                </div>
+
+
+                <input
+                    id="staffSearch"
+                    type="search"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Search by name, email, department or job title..."
+                    autocomplete="off"
+                    class="input w-full pl-10 pr-10">
+
+
+                <div
+                    id="staffSearchIndicator"
+                    class="pointer-events-none absolute inset-y-0 right-0 hidden items-center pr-3">
+
+                    <svg
+                        class="h-4 w-4 animate-spin text-accent"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4">
+                        </circle>
+
+                        <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                        </path>
+
+                    </svg>
+
+                </div>
+
+            </div>
 
         </div>
 
-        <input
-            id="staffSearch"
-            type="search"
-            name="search"
-            value="{{ request('search') }}"
-            placeholder="Search staff..."
-            autocomplete="off"
-            class="input pl-10 pr-10">
 
-        <div
-            id="staffSearchIndicator"
-            class="pointer-events-none absolute inset-y-0 right-0 hidden items-center pr-3">
+        {{-- Filters --}}
+        <div class="grid gap-3 sm:grid-cols-2 lg:flex lg:shrink-0 lg:items-center">
 
-            <svg
-                class="h-4 w-4 animate-spin text-accent"
-                fill="none"
-                viewBox="0 0 24 24">
+            <div class="relative">
 
-                <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
+                <label
+                    for="staffRoleFilter"
+                    class="sr-only">
+                    Filter by role
+                </label>
+
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM5 21a7 7 0 0114 0" />
+
+                    </svg>
+
+                </div>
+
+                <select
+                    id="staffRoleFilter"
+                    name="role"
+                    onchange="this.form.submit()"
+                    class="input min-w-[170px] pl-9">
+
+                    <option value="">
+                        All Roles
+                    </option>
+
+                    @foreach (\App\Models\User::ROLES as $value => $label)
+
+                        <option
+                            value="{{ $value }}"
+                            @selected(request('role') === $value)>
+
+                            {{ $label }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+
+            <div class="relative">
+
+                <label
+                    for="staffStatusFilter"
+                    class="sr-only">
+                    Filter by status
+                </label>
+
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4m5-4a11 11 0 01-8 3 11 11 0 01-8-3c0 5.25 3.44 10.74 8 12 4.56-1.26 8-6.75 8-12z" />
+
+                    </svg>
+
+                </div>
+
+                <select
+                    id="staffStatusFilter"
+                    name="status"
+                    onchange="this.form.submit()"
+                    class="input min-w-[160px] pl-9">
+
+                    <option value="">
+                        All Statuses
+                    </option>
+
+                    <option
+                        value="active"
+                        @selected(request('status') === 'active')>
+                        Active
+                    </option>
+
+                    <option
+                        value="inactive"
+                        @selected(request('status') === 'inactive')>
+                        Deactivated
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        {{-- Clear Filters --}}
+        @if (request()->filled('search') || request()->filled('role') || request()->filled('status'))
+
+            <a
+                href="{{ route('users.index') }}"
+                class="inline-flex h-[42px] shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-primary">
+
+                <svg
+                    class="h-4 w-4"
+                    fill="none"
                     stroke="currentColor"
-                    stroke-width="4">
-                </circle>
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
 
-                <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
-                </path>
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12" />
 
-            </svg>
+                </svg>
 
-        </div>
+                Clear
+
+            </a>
+
+        @endif
 
     </div>
 
 
-    {{-- Automatic Role Filter --}}
-    <select
-        id="staffRoleFilter"
-        name="role"
-        onchange="this.form.submit()"
-        class="input">
+    {{-- Active filter summary --}}
+    @if (request()->filled('search') || request()->filled('role') || request()->filled('status'))
 
-        <option value="">
-            All Roles
-        </option>
+        <div class="flex flex-wrap items-center gap-2 border-t border-border bg-background/50 px-4 py-3">
 
-        @foreach (\App\Models\User::ROLES as $value => $label)
-
-            <option
-                value="{{ $value }}"
-                @selected(request('role') === $value)>
-
-                {{ $label }}
-
-            </option>
-
-        @endforeach
-
-    </select>
+            <span class="mr-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                Active Filters
+            </span>
 
 
-    {{-- Automatic Status Filter --}}
-    <select
-        id="staffStatusFilter"
-        name="status"
-        onchange="this.form.submit()"
-        class="input">
+            @if (request()->filled('search'))
 
-        <option value="">
-            All Statuses
-        </option>
+                <span class="inline-flex items-center rounded-full bg-primary/5 px-2.5 py-1 text-[11px] font-medium text-primary ring-1 ring-inset ring-primary/10">
+                    Search: {{ request('search') }}
+                </span>
 
-        <option
-            value="active"
-            @selected(request('status') === 'active')>
-
-            Active
-
-        </option>
-
-        <option
-            value="inactive"
-            @selected(request('status') === 'inactive')>
-
-            Deactivated
-
-        </option>
-
-    </select>
+            @endif
 
 
-    {{-- Reset --}}
-    <a
-        href="{{ route('users.index') }}"
-        class="btn-outline justify-center">
+            @if (request()->filled('role'))
 
-        Clear
+                <span class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-medium text-sky-700 ring-1 ring-inset ring-sky-200">
+                    Role:
+                    {{ \App\Models\User::ROLES[request('role')] ?? str(request('role'))->headline() }}
+                </span>
 
-    </a>
+            @endif
+
+
+            @if (request()->filled('status'))
+
+                <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-inset ring-slate-200">
+                    Status:
+                    {{ request('status') === 'active' ? 'Active' : 'Deactivated' }}
+                </span>
+
+            @endif
+
+        </div>
+
+    @endif
 
 </form>
 
@@ -523,31 +614,31 @@
 {{-- Staff Table --}}
             <div class="table-shell">
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto rounded-xl">
 
-                    <table class="min-w-full text-left text-sm">
+                    <table class="w-full text-left text-sm">
 
-                        <thead class="table-header">
+                        <thead class="table-header border-b border-border">
 
                             <tr>
 
-                                <th class="px-5 py-4 font-medium">
+                                <th class="px-5 py-3.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                                     Staff Member
                                 </th>
 
-                                <th class="px-5 py-4 font-medium">
+                                <th class="hidden px-5 py-3.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:table-cell">
                                     Role
                                 </th>
 
-                                <th class="px-5 py-4 font-medium">
+                                <th class="hidden px-5 py-3.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 lg:table-cell">
                                     Password
                                 </th>
 
-                                <th class="px-5 py-4 font-medium">
+                                <th class="px-5 py-3.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                                     Status
                                 </th>
 
-                                <th class="px-5 py-4 text-right font-medium">
+                                <th class="px-5 py-3.5 text-right text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                                     Action
                                 </th>
 
@@ -560,14 +651,14 @@
 
                             @forelse ($staff as $person)
 
-                                <tr class="transition hover:bg-sky-50/40">
+                                <tr class="group transition-colors hover:bg-sky-50/60">
 
                                     {{-- Staff --}}
                                     <td class="px-5 py-4">
 
-                                        <div class="flex min-w-[230px] items-center gap-3">
+                                        <div class="flex min-w-[190px] items-center gap-3 sm:min-w-[230px]">
 
-                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-heading text-sm font-bold text-primary">
+                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-primary/5 font-heading text-sm font-bold text-primary transition group-hover:bg-primary/10">
 
                                                 {{ strtoupper(substr($person->full_name ?: $person->email, 0, 1)) }}
 
@@ -578,7 +669,7 @@
 
                                                 <div class="flex items-center gap-2">
 
-                                                    <p class="max-w-[220px] truncate font-button text-sm font-semibold text-primary">
+                                                    <p class="max-w-[220px] truncate font-heading text-sm font-semibold text-primary">
                                                         {{ $person->full_name }}
                                                     </p>
 
@@ -594,10 +685,18 @@
                                                 </div>
 
 
-                                                <p class="mt-0.5 max-w-[240px] truncate text-xs text-slate-500">
+                                                <p class="mt-0.5 max-w-[240px] truncate text-xs text-slate-500" title="{{ $person->email }}">
                                                     {{ $person->email }}
                                                 </p>
 
+
+                                                <div class="mt-1.5 sm:hidden">
+
+                                                    <span class="inline-flex rounded-md bg-primary/5 px-2 py-0.5 text-[10px] font-semibold text-primary ring-1 ring-inset ring-primary/10">
+                                                        {{ \App\Models\User::ROLES[$person->app_role] ?? str($person->app_role)->headline() }}
+                                                    </span>
+
+                                                </div>
 
                                                 @if ($person->job_title || $person->department)
 
@@ -621,50 +720,30 @@
 
 
                                     {{-- Role --}}
-                                    <td class="px-5 py-4">
+                                    <td class="hidden px-5 py-4 sm:table-cell">
 
-                                        @if ($person->id === auth()->id())
+                                        @php
+                                            $roleStyle = match ($person->app_role) {
+                                                'sys_admin' => 'bg-violet-50 text-violet-700 ring-violet-200',
+                                                'manager' => 'bg-amber-50 text-amber-700 ring-amber-200',
+                                                'admin_officer' => 'bg-sky-50 text-sky-700 ring-sky-200',
+                                                'legal_officer' => 'bg-rose-50 text-rose-700 ring-rose-200',
+                                                'receptionist' => 'bg-cyan-50 text-cyan-700 ring-cyan-200',
+                                                default => 'bg-slate-50 text-slate-600 ring-slate-200',
+                                            };
+                                        @endphp
 
-                                            <span class="badge badge-info">
-                                                {{ \App\Models\User::ROLES[$person->app_role] ?? str($person->app_role)->headline() }}
-                                            </span>
+                                        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset {{ $roleStyle }}">
 
-                                        @else
+                                            <span class="h-1.5 w-1.5 rounded-full bg-current opacity-70"></span>
 
-                                            <form
-                                                method="POST"
-                                                action="{{ route('users.set-role', $person) }}"
-                                                class="min-w-[180px]">
+                                            {{ \App\Models\User::ROLES[$person->app_role] ?? str($person->app_role)->headline() }}
 
-                                                @csrf
-
-                                                <select
-                                                    name="app_role"
-                                                    onchange="if(confirm('Change this staff member''s system role?')) this.form.submit(); else this.value='{{ $person->app_role }}';"
-                                                    class="input py-2 text-xs">
-
-                                                    @foreach (\App\Models\User::ROLES as $value => $label)
-
-                                                        <option
-                                                            value="{{ $value }}"
-                                                            @selected($person->app_role === $value)>
-
-                                                            {{ $label }}
-
-                                                        </option>
-
-                                                    @endforeach
-
-                                                </select>
-
-                                            </form>
-
-                                        @endif
+                                        </span>
 
                                     </td>
 
-
-                                    {{-- Password --}}
+{{-- Password --}}
                                     <td class="px-5 py-4">
 
                                         @if ($person->force_password_change)
@@ -710,42 +789,442 @@
 
                                         @if ($person->id === auth()->id())
 
-                                            <span class="text-xs text-slate-400">
-                                                Current account
-                                            </span>
+                                            <div class="inline-flex items-center gap-2">
+
+                                                <span class="h-2 w-2 rounded-full bg-accent"></span>
+
+                                                <span class="text-xs font-medium text-slate-400">
+                                                    Current account
+                                                </span>
+
+                                            </div>
 
                                         @else
 
-                                            <form
-                                                method="POST"
-                                                action="{{ route('users.toggle-active', $person) }}"
-                                                onsubmit="return confirm('{{ $person->is_active ? 'Deactivate this staff account?' : 'Reactivate this staff account?' }}');">
+                                            <button
+                                                type="button"
+                                                onclick="document.getElementById('staffManageDialog{{ $person->id }}').showModal()"
+                                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-slate-500 transition hover:border-accent/40 hover:bg-sky-50 hover:text-primary"
+                                                aria-label="Manage {{ $person->full_name }}"
+                                                title="Manage account">
 
-                                                @csrf
+                                                <svg
+                                                    class="h-5 w-5"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                    aria-hidden="true">
 
-                                                @if ($person->is_active)
+                                                    <circle cx="5" cy="12" r="1.7" />
+                                                    <circle cx="12" cy="12" r="1.7" />
+                                                    <circle cx="19" cy="12" r="1.7" />
+
+                                                </svg>
+
+                                            </button>
+
+
+                                            <dialog
+                                                id="staffManageDialog{{ $person->id }}"
+                                                class="w-[calc(100%_-_2rem)] max-h-[90vh] max-w-xl overflow-hidden rounded-2xl open:flex open:flex-col border border-border bg-card p-0 text-left shadow-2xl backdrop:bg-slate-950/50">
+
+                                                {{-- Header --}}
+                                                <div class="shrink-0 flex items-start justify-between gap-4 border-b border-border bg-card px-6 py-5">
+
+                                                    <div class="flex min-w-0 items-center gap-3">
+
+                                                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 font-heading text-sm font-bold text-primary">
+
+                                                            {{ strtoupper(substr($person->full_name ?: $person->email, 0, 1)) }}
+
+                                                        </div>
+
+
+                                                        <div class="min-w-0">
+
+                                                            <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">
+                                                                Staff Account
+                                                            </p>
+
+                                                            <h3 class="mt-0.5 truncate font-heading text-lg font-semibold text-primary">
+                                                                {{ $person->full_name }}
+                                                            </h3>
+
+                                                            <p class="truncate text-xs text-slate-500">
+                                                                {{ $person->email }}
+                                                            </p>
+
+                                                        </div>
+
+                                                    </div>
+
 
                                                     <button
-                                                        type="submit"
-                                                        class="inline-flex rounded-lg border border-error/20 bg-error/5 px-3 py-2 font-button text-xs font-semibold text-error transition hover:bg-error hover:text-white">
+                                                        type="button"
+                                                        onclick="this.closest('dialog').close()"
+                                                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-background hover:text-primary"
+                                                        aria-label="Close">
 
-                                                        Deactivate
+                                                        <svg
+                                                            class="h-5 w-5"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M6 18L18 6M6 6l12 12" />
+
+                                                        </svg>
 
                                                     </button>
 
-                                                @else
+                                                </div>
+
+
+                                                <div class="min-h-0 flex-1 space-y-5 overflow-y-auto p-6">
+
+                                                    {{-- Staff information --}}
+
+                                                    <div class="rounded-xl border border-border bg-background/40 p-4">
+
+                                                        <div class="flex flex-wrap items-center justify-between gap-3">
+
+                                                            <div>
+                                                                <p class="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                                                    Account Overview
+                                                                </p>
+
+                                                                <div class="mt-2 flex flex-wrap items-center gap-2">
+
+                                                                    @if ($person->is_active)
+                                                                        <span class="badge badge-success">
+                                                                            Active Account
+                                                                        </span>
+                                                                    @else
+                                                                        <span class="badge bg-slate-100 text-slate-500">
+                                                                            Deactivated
+                                                                        </span>
+                                                                    @endif
+
+                                                                    <span class="badge badge-info">
+                                                                        {{ \App\Models\User::ROLES[$person->app_role] ?? str($person->app_role)->headline() }}
+                                                                    </span>
+
+                                                                </div>
+                                                            </div>
+
+                                                            @if ($person->force_password_change)
+                                                                <span class="badge badge-warning">
+                                                                    Password Change Pending
+                                                                </span>
+                                                            @endif
+
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="grid gap-3 sm:grid-cols-2">
+
+                                                        <div class="rounded-xl border border-border bg-background/50 p-4">
+
+                                                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                                                                Department
+                                                            </p>
+
+                                                            <p class="mt-1.5 text-sm font-semibold text-primary">
+                                                                {{ $person->department ?: 'Not assigned' }}
+                                                            </p>
+
+                                                        </div>
+
+
+                                                        <div class="rounded-xl border border-border bg-background/50 p-4">
+
+                                                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                                                                Job Title
+                                                            </p>
+
+                                                            <p class="mt-1.5 text-sm font-semibold text-primary">
+                                                                {{ $person->job_title ?: 'Staff Member' }}
+                                                            </p>
+
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    <div class="grid gap-3 sm:grid-cols-2">
+
+                                                        <div class="rounded-xl border border-border bg-background/40 p-4">
+                                                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                                                                Contact Number
+                                                            </p>
+
+                                                            <p class="mt-1.5 text-sm font-medium text-primary">
+                                                                {{ $person->phone ?: 'Not provided' }}
+                                                            </p>
+                                                        </div>
+
+                                                        <div class="rounded-xl border border-border bg-background/40 p-4">
+                                                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                                                                Member Since
+                                                            </p>
+
+                                                            <p class="mt-1.5 text-sm font-medium text-primary">
+                                                                {{ $person->created_at?->format('M d, Y') ?? 'Not available' }}
+                                                            </p>
+                                                        </div>
+
+                                                    </div>
+
+
+                                                    {{-- Role Management --}}
+                                                    <div class="rounded-xl border border-border p-4">
+
+                                                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+
+                                                            <div>
+                                                                <h4 class="font-heading text-sm font-semibold text-primary">
+                                                                    System Role
+                                                                </h4>
+
+                                                                <p class="mt-1 text-xs leading-5 text-slate-500">
+                                                                    Controls the modules and administrative functions available to this staff member.
+                                                                </p>
+                                                            </div>
+
+                                                            <span class="inline-flex self-start rounded-full bg-primary/5 px-2.5 py-1 text-[11px] font-semibold text-primary ring-1 ring-inset ring-primary/10">
+                                                                {{ \App\Models\User::ROLES[$person->app_role] ?? str($person->app_role)->headline() }}
+                                                            </span>
+
+                                                        </div>
+
+
+                                                        <form
+                                                            method="POST"
+                                                            action="{{ route('users.set-role', $person) }}"
+                                                            onsubmit="return confirm('Change this staff member\'s system role? Their module access may change immediately.');"
+                                                            class="mt-4">
+
+                                                            @csrf
+
+                                                            <label
+                                                                for="manage_role_{{ $person->id }}"
+                                                                class="label">
+                                                                Assigned Role
+                                                            </label>
+
+                                                            <div class="flex flex-col gap-3 sm:flex-row">
+
+                                                                <select
+                                                                    id="manage_role_{{ $person->id }}"
+                                                                    name="app_role"
+                                                                    class="input min-w-0 flex-1">
+
+                                                                    @foreach (\App\Models\User::ROLES as $value => $label)
+
+                                                                        <option
+                                                                            value="{{ $value }}"
+                                                                            @selected($person->app_role === $value)>
+                                                                            {{ $label }}
+                                                                        </option>
+
+                                                                    @endforeach
+
+                                                                </select>
+
+
+                                                                <button
+                                                                    type="submit"
+                                                                    class="btn-outline shrink-0 justify-center">
+                                                                    Update Role
+                                                                </button>
+
+                                                            </div>
+
+
+                                                            <div class="mt-3 flex items-start gap-2 rounded-lg bg-background/60 px-3 py-2.5">
+
+                                                                <svg
+                                                                    class="mt-0.5 h-4 w-4 shrink-0 text-accent"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                    aria-hidden="true">
+
+                                                                    <path
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M13 16h-1v-4h-1m1-4h.01M12 21a9 9 0 100-18 9 9 0 000 18z" />
+
+                                                                </svg>
+
+                                                                <p class="text-[11px] leading-5 text-slate-500">
+                                                                    Role changes affect this account's permitted modules and actions according to the system RBAC rules.
+                                                                </p>
+
+                                                            </div>
+
+                                                        </form>
+
+                                                    </div>
+
+{{-- Security --}}
+                                                    <div class="rounded-xl border border-border p-4">
+
+                                                        <div class="flex items-start gap-3">
+
+                                                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary">
+                                                                <svg
+                                                                    class="h-4 w-4"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M12 11V7a4 4 0 118 0v4m-12 0V7a4 4 0 018 0v4m-9 0h10a2 2 0 012 2v6H5v-6a2 2 0 012-2z" />
+                                                                </svg>
+                                                            </div>
+
+                                                            <div class="min-w-0 flex-1">
+
+                                                                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
+                                                                    <div>
+                                                                        <h4 class="font-heading text-sm font-semibold text-primary">
+                                                                            Login Security
+                                                                        </h4>
+
+                                                                        <p class="mt-1 text-xs text-slate-500">
+                                                                            Current password status for this staff account.
+                                                                        </p>
+                                                                    </div>
+
+                                                                    @if ($person->force_password_change)
+
+                                                                        <span class="badge badge-warning self-start">
+                                                                            Change Required
+                                                                        </span>
+
+                                                                    @else
+
+                                                                        <span class="badge badge-success self-start">
+                                                                            Password Configured
+                                                                        </span>
+
+                                                                    @endif
+
+                                                                </div>
+
+                                                                @if ($person->force_password_change)
+
+                                                                    <p class="mt-3 text-[11px] leading-5 text-amber-700">
+                                                                        This staff member must replace the temporary password after signing in.
+                                                                    </p>
+
+                                                                @else
+
+                                                                    <p class="mt-3 text-[11px] leading-5 text-slate-400">
+                                                                        No forced password change is currently pending.
+                                                                    </p>
+
+                                                                @endif
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+
+{{-- Account access --}}
+                                                    <div class="overflow-hidden rounded-xl border border-border">
+
+                                                        <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+
+                                                            <div>
+                                                                <div class="flex items-center gap-2">
+
+                                                                    <span class="h-2 w-2 rounded-full {{ $person->is_active ? 'bg-success' : 'bg-slate-400' }}"></span>
+
+                                                                    <h4 class="font-heading text-sm font-semibold text-primary">
+                                                                        Account Access
+                                                                    </h4>
+
+                                                                </div>
+
+                                                                <p class="mt-1.5 text-xs leading-5 text-slate-500">
+                                                                    {{ $person->is_active
+                                                                        ? 'This staff member can currently sign in and use permitted system modules.'
+                                                                        : 'System sign-in is disabled for this staff member.' }}
+                                                                </p>
+                                                            </div>
+
+                                                            <span class="{{ $person->is_active ? 'badge badge-success' : 'badge bg-slate-100 text-slate-500' }}">
+                                                                {{ $person->is_active ? 'Active' : 'Deactivated' }}
+                                                            </span>
+
+                                                        </div>
+
+
+                                                        <div class="{{ $person->is_active ? 'border-t border-error/10 bg-error/[0.03]' : 'border-t border-success/10 bg-success/[0.03]' }} px-4 py-3">
+
+                                                            <form
+                                                                method="POST"
+                                                                action="{{ route('users.toggle-active', $person) }}"
+                                                                onsubmit="return confirm('{{ $person->is_active ? 'Deactivate this staff account? The user will no longer be able to sign in.' : 'Reactivate this staff account and restore sign-in access?' }}');">
+
+                                                                @csrf
+
+                                                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+                                                                    <p class="text-[11px] leading-5 text-slate-500">
+                                                                        {{ $person->is_active
+                                                                            ? 'Deactivate access while preserving this staff member’s records and history.'
+                                                                            : 'Restore system access using the staff member’s assigned role.' }}
+                                                                    </p>
+
+                                                                    @if ($person->is_active)
+
+                                                                        <button
+                                                                            type="submit"
+                                                                            class="shrink-0 rounded-lg border border-error/20 bg-card px-4 py-2.5 text-xs font-semibold text-error transition hover:bg-error hover:text-white">
+                                                                            Deactivate Account
+                                                                        </button>
+
+                                                                    @else
+
+                                                                        <button
+                                                                            type="submit"
+                                                                            class="shrink-0 rounded-lg bg-success px-4 py-2.5 text-xs font-semibold text-white transition hover:opacity-90">
+                                                                            Reactivate Account
+                                                                        </button>
+
+                                                                    @endif
+
+                                                                </div>
+
+                                                            </form>
+
+                                                        </div>
+
+                                                    </div>
+
+<div class="shrink-0 flex justify-end border-t border-border bg-card px-6 py-4">
 
                                                     <button
-                                                        type="submit"
-                                                        class="inline-flex rounded-lg bg-success/10 px-3 py-2 font-button text-xs font-semibold text-success transition hover:bg-success hover:text-white">
-
-                                                        Reactivate
-
+                                                        type="button"
+                                                        onclick="this.closest('dialog').close()"
+                                                        class="btn-outline">
+                                                        Close
                                                     </button>
 
-                                                @endif
+                                                </div>
 
-                                            </form>
+                                            </dialog>
 
                                         @endif
 
@@ -759,41 +1238,69 @@
 
                                     <td colspan="5" class="px-6 py-16">
 
-                                        <div class="mx-auto max-w-sm text-center">
+                                        <div class="mx-auto flex max-w-md flex-col items-center text-center">
 
-                                            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 text-accent">
+                                            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary ring-1 ring-inset ring-primary/10">
 
                                                 <svg
-                                                    class="h-7 w-7"
+                                                    class="h-6 w-6"
                                                     fill="none"
                                                     stroke="currentColor"
-                                                    viewBox="0 0 24 24">
+                                                    viewBox="0 0 24 24"
+                                                    aria-hidden="true">
 
                                                     <path
                                                         stroke-linecap="round"
                                                         stroke-linejoin="round"
                                                         stroke-width="2"
-                                                        d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8" />
+                                                        d="M17 20h5v-2a4 4 0 00-5-4m-4 6H3v-2a4 4 0 014-4h2a4 4 0 014 4v2zm-5-8a4 4 0 100-8 4 4 0 000 8z" />
 
                                                 </svg>
 
                                             </div>
 
-                                            <h3 class="font-heading text-base font-semibold text-primary">
-                                                No staff accounts found
-                                            </h3>
 
-                                            <p class="mt-1 text-sm text-slate-500">
-                                                No users match the selected filters.
-                                            </p>
+                                            @if (request()->filled('search') || request()->filled('role') || request()->filled('status'))
+
+                                                <h3 class="mt-4 font-heading text-base font-semibold text-primary">
+                                                    No matching staff accounts
+                                                </h3>
+
+                                                <p class="mt-1.5 text-sm leading-6 text-slate-500">
+                                                    No staff members match the current search or filters.
+                                                </p>
+
+                                                <a
+                                                    href="{{ route('users.index') }}"
+                                                    class="btn-outline mt-4 justify-center">
+                                                    Clear Filters
+                                                </a>
+
+                                            @else
+
+                                                <h3 class="mt-4 font-heading text-base font-semibold text-primary">
+                                                    No staff accounts yet
+                                                </h3>
+
+                                                <p class="mt-1.5 text-sm leading-6 text-slate-500">
+                                                    Create the first staff account to begin assigning system access and roles.
+                                                </p>
+
+                                                <button
+                                                    type="button"
+                                                    data-staff-create-open
+                                                    class="btn-secondary mt-4 justify-center">
+                                                    Add Staff
+                                                </button>
+
+                                            @endif
 
                                         </div>
 
                                     </td>
 
                                 </tr>
-
-                            @endforelse
+@endforelse
 
                         </tbody>
 
@@ -807,7 +1314,40 @@
             @if ($staff->hasPages())
 
                 <div class="rounded-2xl border border-border bg-card px-5 py-4 shadow-card">
-                    {{ $staff->withQueryString()->links() }}
+                    <div class="flex flex-col gap-3 border-t border-border bg-background/30 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+
+                            <span class="h-2 w-2 rounded-full bg-accent"></span>
+
+                            <span>
+                                Showing
+                                <span class="font-semibold text-primary">
+                                    {{ $staff->firstItem() ?? 0 }}
+                                </span>
+                                –
+                                <span class="font-semibold text-primary">
+                                    {{ $staff->lastItem() ?? 0 }}
+                                </span>
+                                of
+                                <span class="font-semibold text-primary">
+                                    {{ number_format($staff->total()) }}
+                                </span>
+                                staff accounts
+                            </span>
+
+                        </div>
+
+
+                        @if ($staff->hasPages())
+
+                            <div class="shrink-0">
+                                {{ $staff->withQueryString()->links() }}
+                            </div>
+
+                        @endif
+
+                    </div>
                 </div>
 
             @endif
@@ -929,6 +1469,178 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 });
+</script>
+
+
+
+@include('users._create-modal')
+
+
+
+<script data-staff-create-modal-script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const modal =
+            document.querySelector(
+                '[data-staff-create-modal]'
+            );
+
+        const openButton =
+            document.querySelector(
+                '[data-staff-create-open]'
+            );
+
+        if (! modal || ! openButton) {
+            return;
+        }
+
+
+        const closeButtons =
+            modal.querySelectorAll(
+                '[data-staff-create-close]'
+            );
+
+        const password =
+            modal.querySelector(
+                '#staff_password'
+            );
+
+        const passwordToggle =
+            modal.querySelector(
+                '[data-staff-password-toggle]'
+            );
+
+        let previousFocus = null;
+
+
+        const openModal =
+            () => {
+
+                previousFocus =
+                    document.activeElement;
+
+                modal.classList.remove(
+                    'hidden'
+                );
+
+                document.body.classList.add(
+                    'overflow-hidden'
+                );
+
+                window.setTimeout(
+                    () => {
+                        modal
+                            .querySelector(
+                                '#staff_full_name'
+                            )
+                            ?.focus();
+                    },
+                    50
+                );
+
+            };
+
+
+        const closeModal =
+            () => {
+
+                modal.classList.add(
+                    'hidden'
+                );
+
+                document.body.classList.remove(
+                    'overflow-hidden'
+                );
+
+                previousFocus?.focus?.();
+
+            };
+
+
+        openButton.addEventListener(
+            'click',
+            openModal
+        );
+
+
+        closeButtons.forEach(
+            (button) => {
+
+                button.addEventListener(
+                    'click',
+                    closeModal
+                );
+
+            }
+        );
+
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+
+                if (
+                    event.key === 'Escape' &&
+                    ! modal.classList.contains('hidden')
+                ) {
+                    closeModal();
+                }
+
+            }
+        );
+
+
+        if (
+            password &&
+            passwordToggle
+        ) {
+
+            passwordToggle.addEventListener(
+                'click',
+                () => {
+
+                    const visible =
+                        password.type === 'text';
+
+                    password.type =
+                        visible
+                            ? 'password'
+                            : 'text';
+
+                    passwordToggle.textContent =
+                        visible
+                            ? 'Show'
+                            : 'Hide';
+
+                }
+            );
+
+        }
+
+
+        const shouldOpenFromValidation =
+            @json(
+                $errors->has('full_name')
+                ||
+                $errors->has('email')
+                ||
+                $errors->has('department')
+                ||
+                $errors->has('job_title')
+                ||
+                $errors->has('phone')
+                ||
+                $errors->has('app_role')
+                ||
+                $errors->has('password')
+            );
+
+
+        if (shouldOpenFromValidation) {
+            openModal();
+        }
+
+    });
 </script>
 
 @endsection

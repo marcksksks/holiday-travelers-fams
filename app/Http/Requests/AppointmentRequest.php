@@ -23,10 +23,20 @@ class AppointmentRequest extends FormRequest
             'host_name' => ['nullable', 'string', 'max:255'],
             'date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
+            'end_time' => [
+                'required_with:facility_id',
+                'nullable',
+                'date_format:H:i',
+                'after:start_time',
+            ],
             'purpose' => ['nullable', 'string'],
             'facility_id' => ['nullable', 'exists:facilities,id'],
             'notes' => ['nullable', 'string'],
+            'status' => [
+                'sometimes',
+                'required',
+                'in:scheduled,confirmed,checked_in,completed,cancelled,no_show',
+            ],
         ];
     }
 }

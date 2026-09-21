@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ReservationRequest;
+use App\Models\Appointment;
 use App\Models\Facility;
 use App\Models\Reservation;
 use App\Services\AuditService;
 use App\Services\ReservationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class ReservationController extends Controller
 {
@@ -32,33 +34,27 @@ class ReservationController extends Controller
         }
 
         $counts = [
-            'total' =>
-                (clone $baseQuery)->count(),
+            'total' => (clone $baseQuery)->count(),
 
-            'pending' =>
-                (clone $baseQuery)
-                    ->where('status', 'pending')
-                    ->count(),
+            'pending' => (clone $baseQuery)
+                ->where('status', 'pending')
+                ->count(),
 
-            'approved' =>
-                (clone $baseQuery)
-                    ->where('status', 'approved')
-                    ->count(),
+            'approved' => (clone $baseQuery)
+                ->where('status', 'approved')
+                ->count(),
 
-            'rejected' =>
-                (clone $baseQuery)
-                    ->where('status', 'rejected')
-                    ->count(),
+            'rejected' => (clone $baseQuery)
+                ->where('status', 'rejected')
+                ->count(),
 
-            'cancelled' =>
-                (clone $baseQuery)
-                    ->where('status', 'cancelled')
-                    ->count(),
+            'cancelled' => (clone $baseQuery)
+                ->where('status', 'cancelled')
+                ->count(),
 
-            'completed' =>
-                (clone $baseQuery)
-                    ->where('status', 'completed')
-                    ->count(),
+            'completed' => (clone $baseQuery)
+                ->where('status', 'completed')
+                ->count(),
         ];
 
         $filterFacilityIds =
@@ -68,7 +64,6 @@ class ReservationController extends Controller
                 ->pluck('facility_id');
 
         $filterFacilities = Facility::query()
-            ->whereIn('id', $filterFacilityIds)
             ->orderBy('name')
             ->get();
 
@@ -154,6 +149,146 @@ class ReservationController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        /*
+         * Unified facility schedule.
+         *
+         * This intentionally exposes only facility occupancy
+         * information. Visitor/requester information is not
+         * included because Reservations is accessible more
+         * broadly than the Appointments module.
+         */
+        /*
+         * Calendar occupancy is intentionally independent from
+         * Reservation Request table filters.
+         *
+         * The calendar has its own client-side facility filter,
+         * while PostgreSQL remains the source of truth.
+         */
+        $usageFacilityId = null;
+        $usageDate = null;
+
+        $reservationUsage =
+            Reservation::query()
+                ->whereIn(
+                    'status',
+                    [
+                        'pending',
+                        'approved',
+                    ]
+                )
+                ->when(
+                    $usageFacilityId,
+                    fn ($query) => $query->where(
+                        'facility_id',
+                        $usageFacilityId
+                    )
+                )
+                ->when(
+                    $usageDate !== null,
+                    fn ($query) => $query->whereDate(
+                        'date',
+                        $usageDate
+                    ),
+                    fn ($query) => $query->whereDate(
+                        'date',
+                        '>=',
+                        today()
+                    )
+                )
+                ->orderBy('date')
+                ->orderBy('start_time')
+                ->limit(150)
+                ->get()
+                ->map(
+                    fn (Reservation $reservation) => [
+                        'source' => 'reservation',
+
+                        'facility_id' => $reservation->facility_id,
+
+                        'facility_name' => $reservation->facility_name,
+
+                        'date' => $reservation
+                            ->date
+                            ->toDateString(),
+
+                        'start_time' => $reservation->start_time,
+
+                        'end_time' => $reservation->end_time,
+
+                        'status' => $reservation->status,
+                    ]
+                );
+
+        $appointmentUsage =
+            Appointment::query()
+                ->whereNotNull('facility_id')
+                ->whereIn(
+                    'status',
+                    [
+                        'scheduled',
+                        'confirmed',
+                        'checked_in',
+                    ]
+                )
+                ->when(
+                    $usageFacilityId,
+                    fn ($query) => $query->where(
+                        'facility_id',
+                        $usageFacilityId
+                    )
+                )
+                ->when(
+                    $usageDate !== null,
+                    fn ($query) => $query->whereDate(
+                        'date',
+                        $usageDate
+                    ),
+                    fn ($query) => $query->whereDate(
+                        'date',
+                        '>=',
+                        today()
+                    )
+                )
+                ->orderBy('date')
+                ->orderBy('start_time')
+                ->limit(150)
+                ->get()
+                ->map(
+                    fn (Appointment $appointment) => [
+                        'source' => 'appointment',
+
+                        'facility_id' => $appointment->facility_id,
+
+                        'facility_name' => $appointment->facility_name
+                            ?: 'Facility',
+
+                        'date' => Carbon::parse(
+                            $appointment->date
+                        )->toDateString(),
+
+                        'start_time' => $appointment->start_time,
+
+                        'end_time' => $appointment->end_time,
+
+                        'status' => $appointment->status,
+                    ]
+                );
+
+        $facilityUsage =
+            $reservationUsage
+                ->merge($appointmentUsage)
+                ->sortBy(
+                    fn (array $usage) => $usage['date']
+                        .' '
+                        .substr(
+                            (string) $usage['start_time'],
+                            0,
+                            5
+                        )
+                )
+                ->take(300)
+                ->values();
+
         $facilities = Facility::query()
             ->where('status', 'available')
             ->orderBy('name')
@@ -165,6 +300,7 @@ class ReservationController extends Controller
                 'reservations',
                 'facilities',
                 'filterFacilities',
+                'facilityUsage',
                 'counts',
                 'canDecide'
             )

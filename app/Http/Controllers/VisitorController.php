@@ -23,14 +23,219 @@ class VisitorController extends Controller
 
     public function index(Request $request)
     {
-        abort_unless($request->user()->can('viewVisitors'), 403);
+        abort_unless(
+            $request->user()->can('viewVisitors'),
+            403
+        );
 
-        $visitors = Visitor::with('appointment')
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
-            ->orderByDesc('created_at')
-            ->paginate(20)->withQueryString();
+        /*
+         * Visitor Desk filters.
+         *
+         * Keep these independent from Appointment Management.
+         * Visitor Desk is responsible for reception operations,
+         * while appointments remain their own records.
+         */
+        $allowedStatuses = [
+            'expected',
+            'awaiting_host',
+            'checked_in',
+            'completed',
+            'declined',
+            'cancelled',
+            'no_show',
+        ];
 
-        return view('visitors.index', compact('visitors'));
+        $allowedVisitorTypes = [
+            'customer',
+            'business_partner',
+            'supplier',
+            'government',
+            'applicant',
+            'guest',
+            'other',
+        ];
+
+        $search =
+            trim(
+                (string) $request->query(
+                    'q',
+                    ''
+                )
+            );
+
+        $requestedStatus =
+            (string) $request->query(
+                'status',
+                ''
+            );
+
+        $status =
+            in_array(
+                $requestedStatus,
+                $allowedStatuses,
+                true
+            )
+                ? $requestedStatus
+                : null;
+
+        $requestedVisitorType =
+            (string) $request->query(
+                'visitor_type',
+                ''
+            );
+
+        $visitorType =
+            in_array(
+                $requestedVisitorType,
+                $allowedVisitorTypes,
+                true
+            )
+                ? $requestedVisitorType
+                : null;
+
+        /*
+         * Operational snapshot.
+         *
+         * These counts come directly from PostgreSQL and are not
+         * limited to the current paginator page.
+         */
+        $statusCounts =
+            Visitor::query()
+                ->selectRaw(
+                    'status, COUNT(*) as total'
+                )
+                ->whereIn(
+                    'status',
+                    $allowedStatuses
+                )
+                ->groupBy(
+                    'status'
+                )
+                ->pluck(
+                    'total',
+                    'status'
+                );
+
+        $visitorCounts = [
+            'total' => Visitor::query()->count(),
+
+            'expected' => (int) (
+                $statusCounts['expected']
+                ?? 0
+            ),
+
+            'awaiting_host' => (int) (
+                $statusCounts['awaiting_host']
+                ?? 0
+            ),
+
+            'checked_in' => (int) (
+                $statusCounts['checked_in']
+                ?? 0
+            ),
+
+            'completed' => (int) (
+                $statusCounts['completed']
+                ?? 0
+            ),
+
+            'declined' => (int) (
+                $statusCounts['declined']
+                ?? 0
+            ),
+        ];
+
+        /*
+         * Searchable visitor directory.
+         */
+        $visitors =
+            Visitor::query()
+                ->with(
+                    'appointment'
+                )
+
+                ->when(
+                    $search !== '',
+                    function ($query) use ($search) {
+
+                        $needle =
+                            '%'
+                            .mb_strtolower($search)
+                            .'%';
+
+                        $query->where(
+                            function ($query) use ($needle) {
+
+                                $query
+                                    ->whereRaw(
+                                        'LOWER(full_name) LIKE ?',
+                                        [$needle]
+                                    )
+
+                                    ->orWhereRaw(
+                                        "LOWER(COALESCE(organization, '')) LIKE ?",
+                                        [$needle]
+                                    )
+
+                                    ->orWhereRaw(
+                                        "LOWER(COALESCE(host_name, '')) LIKE ?",
+                                        [$needle]
+                                    )
+
+                                    ->orWhereRaw(
+                                        "LOWER(COALESCE(host_email, '')) LIKE ?",
+                                        [$needle]
+                                    )
+
+                                    ->orWhereRaw(
+                                        "LOWER(COALESCE(email, '')) LIKE ?",
+                                        [$needle]
+                                    )
+
+                                    ->orWhereRaw(
+                                        "LOWER(COALESCE(badge_number, '')) LIKE ?",
+                                        [$needle]
+                                    );
+                            }
+                        );
+                    }
+                )
+
+                ->when(
+                    $status,
+                    fn ($query) => $query->where(
+                        'status',
+                        $status
+                    )
+                )
+
+                ->when(
+                    $visitorType,
+                    fn ($query) => $query->where(
+                        'visitor_type',
+                        $visitorType
+                    )
+                )
+
+                ->orderByDesc(
+                    'created_at'
+                )
+
+                ->paginate(
+                    20
+                )
+
+                ->withQueryString();
+
+        return view(
+            'visitors.index',
+            compact(
+                'visitors',
+                'visitorCounts',
+                'allowedStatuses',
+                'allowedVisitorTypes'
+            )
+        );
     }
 
     public function store(VisitorRequest $request): RedirectResponse

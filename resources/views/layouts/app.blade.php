@@ -90,136 +90,415 @@
 
 @php
     $navItems = [
-        'dashboard' => ['label' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'dashboard'],
-        'facilities.index' => ['label' => 'Facilities Reservation', 'route' => 'facilities.index', 'icon' => 'facilities'],
-        'appointments.index' => ['label' => 'Appointments', 'route' => 'appointments.index', 'icon' => 'appointments'],
-        'visitors.index' => ['label' => 'Visitor Desk', 'route' => 'visitors.index', 'icon' => 'visitors'],
-        'documents.index' => ['label' => 'Document Management', 'route' => 'documents.index', 'icon' => 'documents'],
-        'legal.index' => ['label' => 'Legal Records', 'route' => 'legal.index', 'icon' => 'legal'],
-        'contracts.index' => ['label' => 'Contracts', 'route' => 'contracts.index', 'icon' => 'contracts'],
-        'retention.index' => ['label' => 'Retention', 'route' => 'retention.index', 'icon' => 'retention'],
-        'reports.index' => ['label' => 'Reports', 'route' => 'reports.index', 'icon' => 'reports'],
-        'audit-trail.index' => ['label' => 'Audit Trail', 'route' => 'audit-trail.index', 'icon' => 'audit'],
-        'users.index' => ['label' => 'Staff Accounts', 'route' => 'users.index', 'icon' => 'users'],
+        'dashboard' => [
+            'label' => 'Dashboard',
+            'route' => 'dashboard',
+            'icon' => 'dashboard',
+            'active' => ['dashboard'],
+        ],
+
+        'facilities.index' => [
+            'label' => 'Facilities Reservation',
+            'route' => 'facilities.index',
+            'icon' => 'facilities',
+            'active' => [
+                'facilities.*',
+                'reservations.*',
+            ],
+        ],
+
+        'appointments.index' => [
+            'label' => 'Appointments',
+            'route' => 'appointments.index',
+            'icon' => 'appointments',
+            'active' => ['appointments.*'],
+        ],
+
+        'visitors.index' => [
+            'label' => 'Visitor Desk',
+            'route' => 'visitors.index',
+            'icon' => 'visitors',
+            'active' => ['visitors.*'],
+        ],
+
+        'documents.index' => [
+            'label' => 'Document Management',
+            'route' => 'documents.index',
+            'icon' => 'documents',
+            'active' => ['documents.*'],
+        ],
+
+        'retention.index' => [
+            'label' => 'Retention',
+            'route' => 'retention.index',
+            'icon' => 'retention',
+            'active' => ['retention.*'],
+        ],
+
+        'legal.index' => [
+            'label' => 'Legal Records',
+            'route' => 'legal.index',
+            'icon' => 'legal',
+            'active' => ['legal.*'],
+        ],
+
+        'contracts.index' => [
+            'label' => 'Contracts',
+            'route' => 'contracts.index',
+            'icon' => 'contracts',
+            'active' => ['contracts.*'],
+        ],
+
+        'reports.index' => [
+            'label' => 'Reports',
+            'route' => 'reports.index',
+            'icon' => 'reports',
+            'active' => ['reports.*'],
+        ],
+
+        'audit-trail.index' => [
+            'label' => 'Audit Trail',
+            'route' => 'audit-trail.index',
+            'icon' => 'audit',
+            'active' => ['audit-trail.*'],
+        ],
+
+        'users.index' => [
+            'label' => 'Staff Accounts',
+            'route' => 'users.index',
+            'icon' => 'users',
+            'active' => ['users.*'],
+        ],
     ];
 
-    $allowedNav = \App\Support\Rbac::navFor(auth()->user()->app_role ?? null);
+
+    $navGroups = [
+        [
+            'label' => 'Overview',
+            'items' => [
+                'dashboard',
+            ],
+        ],
+
+        [
+            'label' => 'Operations',
+            'items' => [
+                'facilities.index',
+                'appointments.index',
+                'visitors.index',
+            ],
+        ],
+
+        [
+            'label' => 'Records & Compliance',
+            'items' => [
+                'documents.index',
+                'retention.index',
+            ],
+        ],
+
+        [
+            'label' => 'Legal & Contracts',
+            'items' => [
+                'legal.index',
+                'contracts.index',
+            ],
+        ],
+
+        [
+            'label' => 'Management',
+            'items' => [
+                'reports.index',
+                'audit-trail.index',
+            ],
+        ],
+
+        [
+            'label' => 'Administration',
+            'items' => [
+                'users.index',
+            ],
+        ],
+    ];
+
+
+    $allowedNav =
+        \App\Support\Rbac::navFor(
+            auth()->user()->app_role ?? null
+        );
 @endphp
 
 <div class="flex min-h-screen">
 
     {{-- =========================
-         SIDEBAR
+         MODERN SIDEBAR
     ========================== --}}
     <aside
         data-sidebar
-        class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-primary text-white transition-all duration-300 md:sticky md:top-0 md:bottom-auto md:h-screen md:self-start">
+        class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col bg-primary text-white shadow-2xl transition-all duration-300 ease-out md:sticky md:top-0 md:bottom-auto md:h-screen md:self-start md:translate-x-0">
 
-        {{-- Logo --}}
-        <div class="flex h-20 items-center justify-between border-b border-white/10 px-5">
+        {{-- =====================================================
+             BRAND
+        ====================================================== --}}
+        <div class="shrink-0 border-b border-white/10 px-4 py-4">
 
-            <a
-    href="{{ route('dashboard') }}"
-    class="flex min-w-0 items-center gap-3 overflow-hidden">
+            <div class="flex items-center justify-between gap-3">
 
-    {{-- Company Logo --}}
-    <div
-        data-sidebar-label
-        class="company-logo-shell flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full p-1.5 shadow-sm ring-1 ring-white/20">
+                <a
+                    href="{{ route('dashboard') }}"
+                    class="group flex min-w-0 items-center gap-3">
 
-        <img
-            src="{{ asset('images/holiday-travelers-mark.png') }}"
-            alt="Holiday Travelers logo"
-            class="h-full w-full rounded-full object-contain">
+                    <div
+                        class="company-logo-shell flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 shadow-lg ring-1 ring-white/20">
 
-    </div>
+                        <img
+                            src="{{ asset('images/holiday-travelers-mark.png') }}"
+                            alt="Holiday Travelers logo"
+                            class="h-full w-full object-contain">
+
+                    </div>
 
 
-    {{-- Company Name --}}
-    <div
-        data-sidebar-label
-        class="min-w-0">
+                    <div
+                        data-sidebar-label
+                        class="min-w-0">
 
-        <div class="whitespace-nowrap font-heading text-[16px] font-bold leading-tight tracking-tight text-white">
-            Holiday Travelers
+                        <p class="truncate font-heading text-sm font-bold tracking-tight text-white">
+                            Holiday Travelers
+                        </p>
+
+                        <p class="mt-0.5 truncate text-[9px] font-semibold uppercase tracking-[0.14em] text-secondary">
+                            Facilities & Admin System
+                        </p>
+
+                    </div>
+
+                </a>
+
+
+                {{-- Mobile close --}}
+                <button
+                    type="button"
+                    data-mobile-menu
+                    class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white md:hidden"
+                    aria-label="Close navigation">
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+
+                    </svg>
+
+                </button>
+
+            </div>
+
         </div>
 
-        <div class="mt-1 whitespace-nowrap font-heading text-[10px] font-semibold tracking-wide text-secondary">
-            Travel & Tours Inc.
-        </div>
 
-    </div>
+        {{-- =====================================================
+             NAVIGATION
+        ====================================================== --}}
+        <nav class="min-h-0 flex-1 overflow-y-auto px-3 py-4">
 
-</a>
+            <div class="space-y-5">
 
-            {{-- Mobile close --}}
-            <button
-                type="button"
-                data-mobile-menu
-                class="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white md:hidden"
-                aria-label="Close navigation">
+                @foreach ($navGroups as $group)
 
-                ✕
+                    @php
+                        $visibleNavKeys =
+                            array_values(
+                                array_filter(
+                                    $group['items'],
+                                    fn ($key) =>
+                                        isset($navItems[$key])
+                                        &&
+                                        in_array(
+                                            $key,
+                                            $allowedNav,
+                                            true
+                                        )
+                                )
+                            );
+                    @endphp
 
-            </button>
 
-        </div>
+                    @if (count($visibleNavKeys) > 0)
 
-        {{-- Navigation --}}
-        <nav class="flex-1 space-y-2 overflow-y-auto px-4 pb-10 pt-6">
+                        <section>
 
-            <p data-sidebar-label
-               class="mb-3 px-2 font-button text-[10px] font-semibold uppercase tracking-[0.18em] text-accent">
-                Main Menu
-            </p>
+                            <p
+                                data-sidebar-label
+                                class="mb-1.5 px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/35">
 
-            @foreach ($navItems as $key => $item)
+                                {{ $group['label'] }}
 
-                @if (in_array($key, $allowedNav, true))
+                            </p>
 
-                    <a
-                        href="{{ route($item['route']) }}"
-                        class="group flex items-center gap-3 rounded-xl px-4 py-3 font-button text-sm font-medium transition-all duration-200
-                        {{ request()->routeIs($item['route'])
-                            ? 'border-l-4 border-secondary bg-white/10 text-white shadow-sm'
-                            : 'text-slate-300 hover:bg-white/5 hover:text-white' }}">
 
-                        <x-nav-icon :name="$item['icon']" />
+                            <div class="space-y-1">
 
-                        <span
-                            data-sidebar-label
-                            class="whitespace-nowrap">
-                            {{ $item['label'] }}
-                        </span>
+                                @foreach ($visibleNavKeys as $key)
 
-                    </a>
+                                    @php
+                                        $item =
+                                            $navItems[$key];
 
-                @endif
+                                        $isActive =
+                                            false;
 
-            @endforeach
+                                        foreach (
+                                            $item['active']
+                                                ?? [$item['route']]
+                                            as $activePattern
+                                        ) {
+                                            if (
+                                                request()->routeIs(
+                                                    $activePattern
+                                                )
+                                            ) {
+                                                $isActive =
+                                                    true;
+
+                                                break;
+                                            }
+                                        }
+                                    @endphp
+
+
+                                    <a
+                                        href="{{ route($item['route']) }}"
+                                        @if ($isActive)
+                                            aria-current="page"
+                                        @endif
+                                        @class([
+                                            'group relative flex min-h-11 items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 font-button text-[13px] font-medium transition-all duration-200',
+                                            'bg-white/10 text-white shadow-sm ring-1 ring-inset ring-white/10' => $isActive,
+                                            'text-white/65 hover:bg-white/5 hover:text-white' => ! $isActive,
+                                        ])>
+
+                                        {{-- Active orange rail --}}
+                                        @if ($isActive)
+
+                                            <span class="absolute inset-y-2 left-0 w-1 rounded-r-full bg-secondary">
+                                            </span>
+
+                                        @endif
+
+
+                                        {{-- Icon --}}
+                                        <span
+                                            @class([
+                                                'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-200',
+                                                'bg-secondary/15 text-secondary' => $isActive,
+                                                'bg-white/5 text-white/60 group-hover:bg-white/10 group-hover:text-white' => ! $isActive,
+                                            ])>
+
+                                            <x-nav-icon :name="$item['icon']" />
+
+                                        </span>
+
+
+                                        {{-- Label --}}
+                                        <span
+                                            data-sidebar-label
+                                            class="min-w-0 flex-1 truncate">
+
+                                            {{ $item['label'] }}
+
+                                        </span>
+
+
+                                        {{-- Active indicator --}}
+                                        @if ($isActive)
+
+                                            <span
+                                                data-sidebar-label
+                                                class="h-1.5 w-1.5 shrink-0 rounded-full bg-secondary shadow-sm">
+                                            </span>
+
+                                        @endif
+
+                                    </a>
+
+                                @endforeach
+
+                            </div>
+
+                        </section>
+
+                    @endif
+
+                @endforeach
+
+            </div>
 
         </nav>
 
-        {{-- User information --}}
-        <div class="border-t border-white/10 bg-primary/50 px-4 py-4">
 
-            <div class="flex items-center gap-3">
+        {{-- =====================================================
+             USER
+        ====================================================== --}}
+        <div class="shrink-0 border-t border-white/10 p-3">
 
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-white shadow-md">
-                    {{ strtoupper(substr(auth()->user()->full_name, 0, 1)) }}
-                </div>
+            <div class="rounded-xl border border-white/10 bg-white/5 p-3">
 
-                <div
-                    data-sidebar-label
-                    class="min-w-0">
+                <div class="flex items-center gap-3">
 
-                    <p class="truncate font-button text-sm font-medium text-white">
-                        {{ auth()->user()->full_name }}
-                    </p>
+                    <div class="relative shrink-0">
 
-                    <p class="truncate text-xs text-accent">
-                        {{ \App\Models\User::ROLES[auth()->user()->app_role] ?? auth()->user()->app_role }}
-                    </p>
+                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary font-button text-sm font-semibold text-white shadow-lg">
+
+                            {{
+                                strtoupper(
+                                    substr(
+                                        auth()->user()->full_name,
+                                        0,
+                                        1
+                                    )
+                                )
+                            }}
+
+                        </div>
+
+
+                        <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-primary bg-success">
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        data-sidebar-label
+                        class="min-w-0 flex-1">
+
+                        <p class="truncate font-button text-xs font-semibold text-white">
+
+                            {{ auth()->user()->full_name }}
+
+                        </p>
+
+                        <p class="mt-0.5 truncate text-[10px] text-white/45">
+
+                            {{
+                                \App\Models\User::ROLES[
+                                    auth()->user()->app_role
+                                ]
+                                ??
+                                auth()->user()->app_role
+                            }}
+
+                        </p>
+
+                    </div>
 
                 </div>
 
@@ -293,6 +572,9 @@
 
             {{-- Header right --}}
             <div class="flex items-center gap-3">
+                {{-- Global real-time system clock --}}
+                <x-system-clock />
+
                 {{-- Notifications --}}
                 @php
                     $notificationBaseQuery = \App\Models\AppNotification::where(

@@ -271,6 +271,7 @@
                     id="file"
                     type="file"
                     name="file"
+                    accept="{{ \App\Support\DocumentUploadPolicy::acceptAttribute() }}"
                     class="block w-full rounded-xl border border-border bg-white text-xs text-slate-500 file:mr-3 file:border-0 file:bg-primary/10 file:px-4 file:py-3 file:font-button file:text-xs file:font-semibold file:text-primary hover:file:bg-primary/15">
 
                 <p class="mt-1.5 text-xs text-slate-400">

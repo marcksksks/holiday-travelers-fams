@@ -6,135 +6,158 @@
 
 <div class="space-y-6">
 
-    {{-- Header --}}
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    {{-- =====================================================
+         FACILITIES RESERVATION WORKSPACE HEADER
+    ====================================================== --}}
+    <section class="card overflow-hidden">
 
-        <div class="min-w-0">
+        {{-- Main header --}}
+        <div class="flex flex-col gap-5 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
 
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
+            <div class="min-w-0">
 
-            <h1 class="font-heading text-2xl font-bold text-primary">
-                Facilities Reservation
-            </h1>
+                <div class="flex items-center gap-2">
 
-            <p class="mt-1 max-w-3xl text-sm text-slate-500">
-                Manage reservable rooms, shared spaces, and operational facilities from one organized directory.
-            </p>
+                    <span class="h-2 w-2 rounded-full bg-secondary"></span>
+
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                        Facilities Reservation
+                    </p>
+
+                </div>
+
+
+                <h1 class="mt-2 font-heading text-xl font-bold text-primary sm:text-2xl">
+                    Facilities
+                </h1>
+
+
+                <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+                    Manage reservable rooms, vehicles, shared spaces, and operational resources from one directory.
+                </p>
+
+            </div>
+
+
+            {{-- Primary action --}}
+            @can('manageFacilities')
+
+                <a
+                    href="{{ route('facilities.create') }}"
+                    data-facility-create-open
+                    class="btn-primary inline-flex shrink-0 items-center justify-center gap-2 self-start lg:self-auto">
+
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 4v16m8-8H4" />
+
+                    </svg>
+
+                    Add Facility
+
+                </a>
+
+            @endcan
 
         </div>
 
 
-        @can('manageFacilities')
+        {{-- Unified module navigation --}}
+        <div class="border-t border-border px-3 sm:px-5">
 
-            <a
-                href="{{ route('facilities.create') }}"
-                data-facility-create-open
-                class="btn-primary inline-flex shrink-0 items-center justify-center gap-2">
+            <nav
+                class="flex gap-1"
+                aria-label="Facilities Reservation workspace">
 
-                <svg
-                    class="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
+                {{-- Facilities --}}
+                <a
+                    href="{{ route('facilities.index') }}"
+                    class="relative inline-flex items-center gap-2 px-3 py-3.5 font-button text-sm font-semibold text-primary sm:px-4"
+                    aria-current="page">
 
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 4v16m8-8H4" />
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                </svg>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
 
-                Add Facility
+                    </svg>
 
-            </a>
+                    Facilities
 
-        @endcan
+                    <span class="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-secondary sm:inset-x-4"></span>
 
-    </div>
+                </a>
 
 
-    {{-- Facilities & Reservations workspace tabs --}}
-    <div class="card overflow-hidden p-1">
+                {{-- Reservations --}}
+                <a
+                    href="{{ route('reservations.index') }}"
+                    class="relative inline-flex items-center gap-2 px-3 py-3.5 font-button text-sm font-semibold text-slate-500 transition hover:text-primary sm:px-4">
 
-        <nav
-            class="flex gap-1"
-            aria-label="Facilities and reservations">
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+
+                    </svg>
+
+                    Reservations
+
+                </a>
+
+            </nav>
+
+        </div>
+
+    </section>
+
+    {{-- =====================================================
+         COMPACT FACILITY OVERVIEW
+    ====================================================== --}}
+    <div class="card overflow-hidden">
+
+        <div class="grid sm:grid-cols-3">
+
+            {{-- Total --}}
             <a
                 href="{{ route('facilities.index') }}"
-                class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-button text-sm font-semibold text-white shadow-sm sm:flex-none">
-
-                <svg
-                    class="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
-
-                </svg>
-
-                Facilities
-
-            </a>
-
-
-            <a
-                href="{{ route('reservations.index') }}"
-                class="flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-button text-sm font-semibold text-slate-500 transition hover:bg-background hover:text-primary sm:flex-none">
-
-                <svg
-                    class="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-
-                </svg>
-
-                Reservations
-
-            </a>
-
-        </nav>
-
-    </div>
-
-    {{-- Overview --}}
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-
-        <a
-            href="{{ route('facilities.index') }}"
-            @class([
-                'card group relative overflow-hidden p-5 transition hover:-translate-y-0.5 hover:shadow-soft',
-                'ring-2 ring-primary/15' => ! request()->filled('status'),
-            ])>
-
-            <div class="flex items-start justify-between gap-3">
+                class="group flex items-center justify-between gap-4 border-b border-border px-5 py-4 transition hover:bg-background/70 sm:border-b-0 sm:border-r">
 
                 <div>
 
-                    <p class="text-xs font-medium text-slate-500">
+                    <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                         Total Facilities
                     </p>
 
-                    <p class="mt-2 font-heading text-2xl font-bold text-primary">
+                    <p class="mt-1 font-heading text-2xl font-bold text-primary">
                         {{ number_format($counts['total']) }}
                     </p>
 
                 </div>
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-primary transition group-hover:bg-primary/10">
 
                     <svg
                         class="h-5 w-5"
@@ -152,124 +175,119 @@
 
                 </div>
 
-            </div>
-
-        </a>
+            </a>
 
 
-        <a
-            href="{{ route('facilities.index', ['status' => 'available']) }}"
-            @class([
-                'card p-5 transition hover:-translate-y-0.5 hover:shadow-soft',
-                'ring-2 ring-success/20' => request('status') === 'available',
-            ])>
-
-            <div class="flex items-start justify-between gap-3">
+            {{-- Available --}}
+            <a
+                href="{{ route('facilities.index', ['status' => 'available']) }}"
+                @class([
+                    'group flex items-center justify-between gap-4 border-b border-border px-5 py-4 transition hover:bg-background/70 sm:border-b-0 sm:border-r',
+                    'bg-success/5' => request('status') === 'available',
+                ])>
 
                 <div>
 
-                    <p class="text-xs font-medium text-slate-500">
-                        Available
-                    </p>
+                    <div class="flex items-center gap-2">
 
-                    <p class="mt-2 font-heading text-2xl font-bold text-success">
+                        <span class="h-2 w-2 rounded-full bg-success"></span>
+
+                        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                            Available
+                        </p>
+
+                    </div>
+
+                    <p class="mt-1 font-heading text-2xl font-bold text-success">
                         {{ number_format($counts['available']) }}
                     </p>
 
                 </div>
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success">
+                <span class="text-[10px] font-medium text-slate-400">
+                    Reservable
+                </span>
 
-                    <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M5 13l4 4L19 7" />
-
-                    </svg>
-
-                </div>
-
-            </div>
-
-        </a>
+            </a>
 
 
-        <a
-            href="{{ route('facilities.index', ['status' => 'maintenance']) }}"
-            @class([
-                'card p-5 transition hover:-translate-y-0.5 hover:shadow-soft',
-                'ring-2 ring-warning/20' => request('status') === 'maintenance',
-            ])>
-
-            <div class="flex items-start justify-between gap-3">
+            {{-- Maintenance --}}
+            <a
+                href="{{ route('facilities.index', ['status' => 'maintenance']) }}"
+                @class([
+                    'group flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-background/70',
+                    'bg-warning/5' => request('status') === 'maintenance',
+                ])>
 
                 <div>
 
-                    <p class="text-xs font-medium text-slate-500">
-                        Maintenance
-                    </p>
+                    <div class="flex items-center gap-2">
 
-                    <p class="mt-2 font-heading text-2xl font-bold text-amber-600">
+                        <span class="h-2 w-2 rounded-full bg-warning"></span>
+
+                        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                            Maintenance
+                        </p>
+
+                    </div>
+
+                    <p class="mt-1 font-heading text-2xl font-bold text-amber-600">
                         {{ number_format($counts['maintenance']) }}
                     </p>
 
                 </div>
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 text-amber-600">
+                @if ($counts['maintenance'] > 0)
 
-                    <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
+                    <span class="rounded-full bg-warning/10 px-2.5 py-1 text-[10px] font-semibold text-amber-700">
+                        Attention
+                    </span>
 
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 9v4m0 4h.01M10.3 3.6L2.5 17a2 2 0 001.7 3h15.6a2 2 0 001.7-3L13.7 3.6a2 2 0 00-3.4 0z" />
+                @endif
 
-                    </svg>
+            </a>
 
-                </div>
+        </div>
+
+    </div>
+
+    {{-- =====================================================
+         FACILITY FILTER TOOLBAR
+    ====================================================== --}}
+    <form
+        method="GET"
+        action="{{ route('facilities.index') }}"
+        class="card overflow-hidden">
+
+        <div class="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+            <div>
+
+                <h2 class="font-heading text-sm font-semibold text-primary">
+                    Find Facilities
+                </h2>
+
+                <p class="mt-0.5 text-[11px] text-slate-400">
+                    Search or narrow the directory by type and operational status.
+                </p>
 
             </div>
 
-        </a>
 
+            @if (
+                request()->filled('search')
+                ||
+                request()->filled('type')
+                ||
+                request()->filled('status')
+            )
 
-        <a
-            href="{{ route('facilities.index', ['status' => 'unavailable']) }}"
-            @class([
-                'card p-5 transition hover:-translate-y-0.5 hover:shadow-soft',
-                'ring-2 ring-slate-300' => request('status') === 'unavailable',
-            ])>
-
-            <div class="flex items-start justify-between gap-3">
-
-                <div>
-
-                    <p class="text-xs font-medium text-slate-500">
-                        Unavailable
-                    </p>
-
-                    <p class="mt-2 font-heading text-2xl font-bold text-slate-500">
-                        {{ number_format($counts['unavailable']) }}
-                    </p>
-
-                </div>
-
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+                <a
+                    href="{{ route('facilities.index') }}"
+                    class="inline-flex items-center gap-1.5 self-start text-xs font-semibold text-slate-500 transition hover:text-primary sm:self-auto">
 
                     <svg
-                        class="h-5 w-5"
+                        class="h-3.5 w-3.5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24">
@@ -282,40 +300,26 @@
 
                     </svg>
 
-                </div>
+                    Clear filters
 
-            </div>
+                </a>
 
-        </a>
+            @endif
+
+        </div>
 
 
-        @if ($canViewArchived)
+        <div class="bg-background/35 px-5 py-4">
 
-            <a
-                href="{{ route('facilities.index', ['status' => 'archived']) }}"
-                @class([
-                    'card p-5 transition hover:-translate-y-0.5 hover:shadow-soft',
-                    'ring-2 ring-slate-300' => request('status') === 'archived',
-                ])>
+            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,1.6fr)_220px_200px_auto]">
 
-                <div class="flex items-start justify-between gap-3">
+                {{-- Search --}}
+                <div class="relative">
 
-                    <div>
-
-                        <p class="text-xs font-medium text-slate-500">
-                            Archived
-                        </p>
-
-                        <p class="mt-2 font-heading text-2xl font-bold text-slate-500">
-                            {{ number_format($counts['archived']) }}
-                        </p>
-
-                    </div>
-
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 
                         <svg
-                            class="h-5 w-5"
+                            class="h-4 w-4 text-slate-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -324,289 +328,108 @@
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 stroke-width="2"
-                                d="M5 8h14M7 8v11h10V8M9 4h6l1 4H8l1-4z" />
+                                d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
 
                         </svg>
 
                     </div>
 
-                </div>
-
-            </a>
-
-        @endif
-
-    </div>
-
-
-    {{-- Search and filters --}}
-    <form
-        method="GET"
-        action="{{ route('facilities.index') }}"
-        class="card p-4">
-
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
-
-            <div class="relative min-w-0 flex-1">
-
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-
-                    <svg
-                        class="h-4 w-4 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
-
-                    </svg>
+                    <input
+                        type="search"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Search facilities..."
+                        class="input pl-9"
+                        aria-label="Search facilities">
 
                 </div>
 
-                <input
-                    type="search"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Search by facility name, type, or location..."
-                    class="input pl-10">
 
-            </div>
+                {{-- Facility Type --}}
+                <select
+                    name="type"
+                    class="input"
+                    aria-label="Facility type">
+
+                    <option value="">
+                        All facility types
+                    </option>
+
+                    @foreach ([
+                        'conference_room',
+                        'meeting_room',
+                        'training_room',
+                        'function_room',
+                        'vehicle',
+                        'other'
+                    ] as $type)
+
+                        <option
+                            value="{{ $type }}"
+                            @selected(request('type') === $type)>
+
+                            {{ str($type)->headline() }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
 
 
-            <details class="group relative">
+                {{-- Status --}}
+                <select
+                    name="status"
+                    class="input"
+                    aria-label="Facility status">
 
-                <summary
-                    class="btn-outline flex cursor-pointer list-none items-center justify-center gap-2">
+                    <option value="">
+                        All statuses
+                    </option>
 
-                    <svg
-                        class="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
+                    <option
+                        value="available"
+                        @selected(request('status') === 'available')>
+                        Available
+                    </option>
 
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M3 4h18l-7 9v6l-4 2v-8L3 4z" />
+                    <option
+                        value="maintenance"
+                        @selected(request('status') === 'maintenance')>
+                        Maintenance
+                    </option>
 
-                    </svg>
+                    <option
+                        value="unavailable"
+                        @selected(request('status') === 'unavailable')>
+                        Unavailable
+                    </option>
 
-                    Filters
+                    @if ($canViewArchived)
 
-                    @if (
-                        request()->filled('type')
-                        || request()->filled('status')
-                    )
-
-                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-bold text-white">
-
-                            {{
-                                (request()->filled('type') ? 1 : 0)
-                                +
-                                (request()->filled('status') ? 1 : 0)
-                            }}
-
-                        </span>
+                        <option
+                            value="archived"
+                            @selected(request('status') === 'archived')>
+                            Archived
+                        </option>
 
                     @endif
 
+                </select>
 
-                    <svg
-                        class="h-3.5 w-3.5 transition group-open:rotate-180"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
 
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 9l-7 7-7-7" />
+                {{-- Apply --}}
+                <button
+                    type="submit"
+                    class="btn-primary justify-center whitespace-nowrap">
 
-                    </svg>
+                    Apply
 
-                </summary>
-
-
-                <div class="relative z-30 mt-2 w-full rounded-xl border border-border bg-card p-4 shadow-soft sm:absolute sm:right-0 sm:w-80">
-
-                    <div class="space-y-4">
-
-                        <div>
-
-                            <label class="label">
-                                Facility Type
-                            </label>
-
-                            <select
-                                name="type"
-                                class="input">
-
-                                <option value="">
-                                    All Types
-                                </option>
-
-                                @foreach ([
-                                    'conference_room',
-                                    'meeting_room',
-                                    'training_room',
-                                    'function_room',
-                                                    'vehicle',
-                                                    'other',
-                                ] as $type)
-
-                                    <option
-                                        value="{{ $type }}"
-                                        @selected(request('type') === $type)>
-
-                                        {{ str($type)->headline() }}
-
-                                    </option>
-
-                                @endforeach
-
-                            </select>
-
-                        </div>
-
-
-                        <div>
-
-                            <label class="label">
-                                Status
-                            </label>
-
-                            <select
-                                name="status"
-                                class="input">
-
-                                <option value="">
-                                    All Statuses
-                                </option>
-
-                                <option
-                                    value="available"
-                                    @selected(request('status') === 'available')>
-
-                                    Available
-
-                                </option>
-
-                                <option
-                                    value="maintenance"
-                                    @selected(request('status') === 'maintenance')>
-
-                                    Maintenance
-
-                                </option>
-
-                                <option
-                                    value="unavailable"
-                                    @selected(request('status') === 'unavailable')>
-
-                                    Unavailable
-
-                                </option>
-
-                                @if ($canViewArchived)
-
-                                    <option
-                                        value="archived"
-                                        @selected(request('status') === 'archived')>
-
-                                        Archived
-
-                                    </option>
-
-                                @endif
-
-                            </select>
-
-                        </div>
-
-
-                        <button
-                            type="submit"
-                            class="btn-secondary w-full justify-center">
-
-                            Apply Filters
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </details>
-
-
-            <button
-                type="submit"
-                class="btn-primary justify-center">
-
-                Search
-
-            </button>
-
-        </div>
-
-
-        @if (
-            request()->filled('search')
-            || request()->filled('type')
-            || request()->filled('status')
-        )
-
-            <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-
-                <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                    Active filters
-                </span>
-
-
-                @if (request()->filled('search'))
-
-                    <span class="inline-flex max-w-xs items-center truncate rounded-full bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary">
-                        Search: “{{ request('search') }}”
-                    </span>
-
-                @endif
-
-
-                @if (request()->filled('type'))
-
-                    <span class="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-primary">
-                        {{ str(request('type'))->headline() }}
-                    </span>
-
-                @endif
-
-
-                @if (request()->filled('status'))
-
-                    <span class="rounded-full bg-secondary/10 px-2.5 py-1 text-xs font-medium text-secondary">
-                        {{ str(request('status'))->headline() }}
-                    </span>
-
-                @endif
-
-
-                <a
-                    href="{{ route('facilities.index') }}"
-                    class="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-primary">
-
-                    Clear filters
-
-                </a>
+                </button>
 
             </div>
 
-        @endif
+        </div>
 
     </form>
 
@@ -912,92 +735,90 @@
                             {{-- Actions --}}
                             <td class="px-5 py-4 text-right">
 
-                                <div class="flex items-center justify-end gap-2">
+                                @php
 
-                                    {{-- Reserve is available to staff only when facility is available --}}
-                                    @if ($facility->status === 'available')
+                                    $canEditFacility =
+                                        auth()->user()->can(
+                                            'manageFacilities'
+                                        );
 
-                                        <a
-                                            href="{{ route('reservations.index', ['reserve_facility' => $facility->id]) }}"
-                                            aria-label="Reserve {{ $facility->name }}"
-                                            class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-secondary px-3 font-button text-xs font-semibold text-white transition hover:bg-secondary/90">
-
-                                            <svg
-                                                class="h-3.5 w-3.5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24">
-
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-
-                                            </svg>
-
-                                            Reserve
-
-                                        </a>
-
-                                    @endif
-
-
-                                    {{-- Facility administration remains RBAC protected --}}
-                                    @can('manageFacilities')
-
-                                        <a
-                                            href="{{ route('facilities.edit', $facility) }}"
-                                            data-facility-edit-open
-                                            data-facility-id="{{ $facility->id }}"
-                                            data-facility-name="{{ $facility->name }}"
-                                            data-facility-description="{{ $facility->description }}"
-                                            data-facility-location="{{ $facility->location }}"
-                                            data-facility-capacity="{{ $facility->capacity }}"
-                                            data-facility-type="{{ $facility->facility_type }}"
-                                            data-facility-status="{{ $facility->status }}"
-                                            data-facility-update-url="{{ route('facilities.update', $facility) }}"
-                                            aria-label="Edit {{ $facility->name }}"
-                                            class="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 font-button text-xs font-semibold text-primary transition hover:border-accent hover:bg-accent/5">
-
-                                            <svg
-                                                class="h-3.5 w-3.5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24">
-
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 13H9v-2.828l6.586-6.586z" />
-
-                                            </svg>
-
-                                            Edit
-
-                                        </a>
-
-                                    @endcan
-
-
-                                    @if (
-                                        $facility->status !== 'available'
+                                    $canArchiveFacility =
+                                        $canEditFacility
                                         &&
-                                        ! auth()->user()->can('manageFacilities')
-                                    )
+                                        $facility->status !== 'archived';
 
-                                        <span
-                                            class="text-xs text-slate-400"
-                                            title="This facility cannot currently be reserved">
+                                    $canRestoreFacility =
+                                        $canEditFacility
+                                        &&
+                                        $facility->status === 'archived';
+                                @endphp
 
-                                            —
 
-                                        </span>
+                                <button
+                                    type="button"
+                                    data-facility-actions-open
+                                    data-facility-id="{{ $facility->id }}"
 
-                                    @endif
+                                    data-can-edit="{{ $canEditFacility ? '1' : '0' }}"
+                                    data-can-archive="{{ $canArchiveFacility ? '1' : '0' }}"
+                                    data-can-restore="{{ $canRestoreFacility ? '1' : '0' }}"
 
-                                </div>
+                                    data-archive-url="{{ route('facilities.destroy', $facility) }}"
+                                    data-restore-url="{{ route('facilities.restore', $facility) }}"
+                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-slate-500 transition hover:border-accent/40 hover:bg-accent/5 hover:text-primary focus:outline-none focus:ring-2 focus:ring-accent/20"
+                                    aria-label="Open facility actions">
+
+                                    <svg
+                                        class="h-5 w-5"
+                                        fill="currentColor"
+                                        viewBox="0 0 24 24">
+
+                                        <circle cx="5" cy="12" r="1.7" />
+                                        <circle cx="12" cy="12" r="1.7" />
+                                        <circle cx="19" cy="12" r="1.7" />
+
+                                    </svg>
+
+                                </button>
+
+
+                                {{-- Hidden View Details trigger --}}
+                                <button
+                                    type="button"
+                                    data-facility-view-open
+                                    data-facility-id="{{ $facility->id }}"
+                                    data-facility-name="{{ $facility->name }}"
+                                    data-facility-description="{{ $facility->description }}"
+                                    data-facility-location="{{ $facility->location }}"
+                                    data-facility-capacity="{{ $facility->capacity }}"
+                                    data-facility-type="{{ $facility->facility_type }}"
+                                    data-facility-status="{{ $facility->status }}"
+                                    class="hidden"
+                                    tabindex="-1"
+                                    aria-hidden="true">
+                                </button>
+
+
+                                @can('manageFacilities')
+
+                                    {{-- Hidden existing edit-modal trigger --}}
+                                    <a
+                                        href="{{ route('facilities.edit', $facility) }}"
+                                        data-facility-edit-open
+                                        data-facility-id="{{ $facility->id }}"
+                                        data-facility-name="{{ $facility->name }}"
+                                        data-facility-description="{{ $facility->description }}"
+                                        data-facility-location="{{ $facility->location }}"
+                                        data-facility-capacity="{{ $facility->capacity }}"
+                                        data-facility-type="{{ $facility->facility_type }}"
+                                        data-facility-status="{{ $facility->status }}"
+                                        data-facility-update-url="{{ route('facilities.update', $facility) }}"
+                                        class="hidden"
+                                        tabindex="-1"
+                                        aria-hidden="true">
+                                    </a>
+
+                                @endcan
 
                             </td>
 
@@ -1096,6 +917,8 @@
     </div>
 
 
+    @include('facilities._details-modal')
+    @include('facilities._actions-menu')
     {{-- Pagination --}}
     @if ($facilities->hasPages())
 

@@ -26,26 +26,21 @@ class FacilityController extends Controller
         }
 
         $counts = [
-            'total' =>
-                (clone $baseQuery)->count(),
+            'total' => (clone $baseQuery)->count(),
 
-            'available' =>
-                (clone $baseQuery)
-                    ->where('status', 'available')
-                    ->count(),
+            'available' => (clone $baseQuery)
+                ->where('status', 'available')
+                ->count(),
 
-            'maintenance' =>
-                (clone $baseQuery)
-                    ->where('status', 'maintenance')
-                    ->count(),
+            'maintenance' => (clone $baseQuery)
+                ->where('status', 'maintenance')
+                ->count(),
 
-            'unavailable' =>
-                (clone $baseQuery)
-                    ->where('status', 'unavailable')
-                    ->count(),
+            'unavailable' => (clone $baseQuery)
+                ->where('status', 'unavailable')
+                ->count(),
 
-            'archived' =>
-                $canViewArchived
+            'archived' => $canViewArchived
                     ? (clone $baseQuery)
                         ->where('status', 'archived')
                         ->count()
@@ -200,7 +195,10 @@ class FacilityController extends Controller
     public function destroy(Request $request, Facility $facility): RedirectResponse
     {
         abort_unless($request->user()->can('manageFacilities'), 403);
-        $facility->update(['status' => 'archived']);
+        $facility->update([
+            'status' => 'archived',
+            'updated_by_email' => $request->user()->email,
+        ]);
 
         AuditLog::create([
             'actor_email' => $request->user()->email, 'actor_role' => $request->user()->app_role,
@@ -209,5 +207,50 @@ class FacilityController extends Controller
         ]);
 
         return redirect()->route('facilities.index')->with('status', 'Facility archived.');
+    }
+
+    public function restore(Request $request, Facility $facility): RedirectResponse
+    {
+        abort_unless(
+            $request->user()->can('manageFacilities'),
+            403
+        );
+
+        abort_if(
+            $facility->status !== 'archived',
+            422,
+            'Only archived facilities can be restored.'
+        );
+
+        /*
+         * Restore conservatively as unavailable.
+         *
+         * An administrator can review the facility and explicitly
+         * change it to available through Edit Facility afterward.
+         */
+        $facility->update([
+            'status' => 'unavailable',
+            'updated_by_email' => $request->user()->email,
+        ]);
+
+        AuditLog::create([
+            'actor_email' => $request->user()->email,
+            'actor_role' => $request->user()->app_role,
+            'action' => 'restore',
+            'module' => 'facilities',
+            'record_label' => "Facility • {$facility->name}",
+            'record_id' => $facility->id,
+            'created_at' => now(),
+        ]);
+
+        return redirect()
+            ->route(
+                'facilities.index',
+                ['status' => 'unavailable']
+            )
+            ->with(
+                'status',
+                'Facility restored as unavailable. Review it before making it reservable.'
+            );
     }
 }

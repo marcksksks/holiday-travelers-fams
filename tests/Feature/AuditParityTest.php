@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Appointment;
+use App\Models\ArchiveDocument;
 use App\Models\Contract;
 use App\Models\Facility;
 use App\Models\LegalRecord;
@@ -111,6 +112,24 @@ class AuditParityTest extends TestCase
             'facilities',
             $facility->id
         );
+
+        $this->actingAs($admin, 'sanctum')
+            ->patchJson(
+                "/api/facilities/{$facility->id}/restore"
+            )
+            ->assertOk();
+
+        $this->assertSame(
+            'unavailable',
+            $facility->refresh()->status
+        );
+
+        $this->assertAudit(
+            $admin->email,
+            'restore',
+            'facilities',
+            $facility->id
+        );
     }
 
     public function test_appointment_cancel_and_visitor_registration_api_are_audited(): void
@@ -185,7 +204,7 @@ class AuditParityTest extends TestCase
             ])
             ->assertCreated();
 
-        $document = \App\Models\ArchiveDocument::where(
+        $document = ArchiveDocument::where(
             'title',
             'Audit API Document'
         )->firstOrFail();
@@ -388,22 +407,17 @@ class AuditParityTest extends TestCase
             $appointments->create(
                 $employee,
                 [
-                    'visitor_name' =>
-                        'Unauthorized Service Appointment',
+                    'visitor_name' => 'Unauthorized Service Appointment',
 
-                    'visitor_type' =>
-                        'guest',
+                    'visitor_type' => 'guest',
 
-                    'date' =>
-                        now()
-                            ->addDays(10)
-                            ->toDateString(),
+                    'date' => now()
+                        ->addDays(10)
+                        ->toDateString(),
 
-                    'start_time' =>
-                        '09:00',
+                    'start_time' => '09:00',
 
-                    'end_time' =>
-                        '10:00',
+                    'end_time' => '10:00',
                 ]
             );
 
@@ -418,14 +432,11 @@ class AuditParityTest extends TestCase
         }
 
         $visitor = Visitor::create([
-            'full_name' =>
-                'Unauthorized Service Visitor',
+            'full_name' => 'Unauthorized Service Visitor',
 
-            'visitor_type' =>
-                'guest',
+            'visitor_type' => 'guest',
 
-            'status' =>
-                'expected',
+            'status' => 'expected',
         ]);
 
         $checks = $this->app->make(

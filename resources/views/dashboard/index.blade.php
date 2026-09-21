@@ -294,6 +294,9 @@
     </div>
 
 
+    {{-- Live Operations --}}
+    @include('dashboard._live-operations')
+
     {{-- Documents & Compliance --}}
     @if (
         $canViewDocuments ||

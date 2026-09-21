@@ -30,6 +30,21 @@ class VisitorCheckService
             throw ValidationException::withMessages(['status' => 'This visit is already closed.']);
         }
 
+        if (
+            ! in_array(
+                $visitor->status,
+                [
+                    'expected',
+                    'awaiting_host',
+                ],
+                true
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'status' => 'Only expected or awaiting-host visitors can be checked in.',
+            ]);
+        }
+
         $visitor->update([
             'status' => 'checked_in',
             'check_in_at' => now(),
@@ -44,7 +59,7 @@ class VisitorCheckService
         $this->notifications->notify([[
             'recipient_email' => $visitor->host_email,
             'title' => 'Your visitor has arrived',
-            'body' => "{$visitor->full_name}".($visitor->organization ? " ({$visitor->organization})" : '')." checked in at reception".($badgeNumber ? " — badge {$badgeNumber}" : '').'.',
+            'body' => "{$visitor->full_name}".($visitor->organization ? " ({$visitor->organization})" : '').' checked in at reception'.($badgeNumber ? " — badge {$badgeNumber}" : '').'.',
             'module' => 'visitors',
             'severity' => 'success',
             'link' => '/visitors',
@@ -68,7 +83,7 @@ class VisitorCheckService
         }
 
         $start = $visitor->check_in_at ?? now();
-        $duration = max(0, (int) round(now()->diffInSeconds($start) / 60));
+        $duration = max(0, (int) round($start->diffInSeconds(now()) / 60));
 
         $visitor->update([
             'status' => 'completed',
@@ -100,6 +115,21 @@ class VisitorCheckService
             throw ValidationException::withMessages([
                 'app_role' => 'You are not authorised to operate the visitor desk.',
             ])->status(403);
+        }
+
+        if (
+            ! in_array(
+                $visitor->status,
+                [
+                    'expected',
+                    'awaiting_host',
+                ],
+                true
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'status' => 'Only expected or awaiting-host visitors can be declined.',
+            ]);
         }
 
         $visitor->update([

@@ -26,6 +26,7 @@ class FacilityApiController extends Controller
     public function show(Request $request, Facility $facility)
     {
         abort_if($facility->status === 'archived' && ! $request->user()->can('viewArchivedFacilities'), 404);
+
         return new FacilityResource($facility);
     }
 
@@ -72,7 +73,10 @@ class FacilityApiController extends Controller
     public function destroy(Request $request, Facility $facility)
     {
         abort_unless($request->user()->can('manageFacilities'), 403);
-        $facility->update(['status' => 'archived']);
+        $facility->update([
+            'status' => 'archived',
+            'updated_by_email' => $request->user()->email,
+        ]);
 
         $this->audit->log(
             $request->user(),
@@ -83,5 +87,36 @@ class FacilityApiController extends Controller
         );
 
         return response()->json(null, 204);
+    }
+
+    public function restore(Request $request, Facility $facility)
+    {
+        abort_unless(
+            $request->user()->can('manageFacilities'),
+            403
+        );
+
+        abort_if(
+            $facility->status !== 'archived',
+            422,
+            'Only archived facilities can be restored.'
+        );
+
+        $facility->update([
+            'status' => 'unavailable',
+            'updated_by_email' => $request->user()->email,
+        ]);
+
+        $this->audit->log(
+            $request->user(),
+            'restore',
+            'facilities',
+            "Facility • {$facility->name}",
+            (string) $facility->id
+        );
+
+        return new FacilityResource(
+            $facility->refresh()
+        );
     }
 }

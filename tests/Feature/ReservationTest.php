@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Facility;
-use App\Models\Reservation;
 use App\Models\User;
+use App\Services\AppointmentService;
 use App\Services\ReservationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -37,6 +37,83 @@ class ReservationTest extends TestCase
         ]);
     }
 
+    public function test_appointment_blocks_overlapping_facility_reservation(): void
+    {
+        $facility = Facility::factory()->create([
+            'status' => 'available',
+        ]);
+
+        $manager = User::factory()
+            ->role(User::ROLE_MANAGER)
+            ->create();
+
+        $requester = User::factory()->create();
+
+        $date = now()
+            ->addDay()
+            ->toDateString();
+
+        app(AppointmentService::class)
+            ->create($manager, [
+                'visitor_name' => 'Appointment Visitor',
+                'visitor_type' => 'guest',
+                'date' => $date,
+                'start_time' => '09:00',
+                'end_time' => '10:00',
+                'facility_id' => $facility->id,
+            ]);
+
+        $this->expectException(
+            ValidationException::class
+        );
+
+        app(ReservationService::class)
+            ->submit($requester, [
+                'facility_id' => $facility->id,
+                'date' => $date,
+                'start_time' => '09:30',
+                'end_time' => '10:30',
+            ]);
+    }
+
+    public function test_reservation_blocks_overlapping_facility_appointment(): void
+    {
+        $facility = Facility::factory()->create([
+            'status' => 'available',
+        ]);
+
+        $requester = User::factory()->create();
+
+        $manager = User::factory()
+            ->role(User::ROLE_MANAGER)
+            ->create();
+
+        $date = now()
+            ->addDay()
+            ->toDateString();
+
+        app(ReservationService::class)
+            ->submit($requester, [
+                'facility_id' => $facility->id,
+                'date' => $date,
+                'start_time' => '09:00',
+                'end_time' => '10:00',
+            ]);
+
+        $this->expectException(
+            ValidationException::class
+        );
+
+        app(AppointmentService::class)
+            ->create($manager, [
+                'visitor_name' => 'Appointment Visitor',
+                'visitor_type' => 'guest',
+                'date' => $date,
+                'start_time' => '09:30',
+                'end_time' => '10:30',
+                'facility_id' => $facility->id,
+            ]);
+    }
 
     public function test_employee_cannot_view_another_users_reservation_via_api(): void
     {
@@ -95,7 +172,6 @@ class ReservationTest extends TestCase
             ]);
     }
 
-
     public function test_owner_can_edit_and_resubmit_rejected_reservation(): void
     {
         $facility = Facility::factory()->create([
@@ -142,7 +218,6 @@ class ReservationTest extends TestCase
         $this->assertNull($updated->decision_note);
     }
 
-
     public function test_user_cannot_edit_another_users_reservation(): void
     {
         $facility = Facility::factory()->create([
@@ -177,7 +252,6 @@ class ReservationTest extends TestCase
             ]
         );
     }
-
 
     public function test_approved_reservation_cannot_be_edited_and_resubmitted(): void
     {

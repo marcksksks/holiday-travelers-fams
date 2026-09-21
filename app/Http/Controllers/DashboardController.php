@@ -18,9 +18,14 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $today = now()->toDateString();
+        $now = now();
 
-        $thirtyDaysFromNow = now()
+        $today = $now->toDateString();
+
+        $currentTime = $now->format('H:i:s');
+
+        $thirtyDaysFromNow = $now
+            ->copy()
             ->addDays(30)
             ->toDateString();
 
@@ -44,7 +49,6 @@ class DashboardController extends Controller
 
         $canApproveDisposal =
             $user->can('approveRetentionDisposal');
-
 
         /*
          * Document alert scope.
@@ -99,42 +103,127 @@ class DashboardController extends Controller
                 );
         }
 
+        /*
+         * Live operations.
+         *
+         * These queries are anchored to the same Laravel
+         * server timestamp used throughout this request.
+         */
+        $liveNextAppointment = null;
+
+        if ($canViewAppointments) {
+
+            $liveNextAppointment =
+                Appointment::query()
+                    ->whereIn(
+                        'status',
+                        [
+                            'scheduled',
+                            'confirmed',
+                        ]
+                    )
+                    ->where(function ($query) use (
+                        $today,
+                        $currentTime
+                    ) {
+
+                        $query
+                            ->whereDate(
+                                'date',
+                                '>',
+                                $today
+                            )
+                            ->orWhere(function ($query) use (
+                                $today,
+                                $currentTime
+                            ) {
+
+                                $query
+                                    ->whereDate(
+                                        'date',
+                                        $today
+                                    )
+                                    ->whereTime(
+                                        'start_time',
+                                        '>=',
+                                        $currentTime
+                                    );
+
+                            });
+
+                    })
+                    ->orderBy('date')
+                    ->orderBy('start_time')
+                    ->first();
+
+        }
+
+        $liveReservationsInUse =
+            Reservation::with('facility')
+                ->where(
+                    'status',
+                    'approved'
+                )
+                ->whereDate(
+                    'date',
+                    $today
+                )
+                ->whereTime(
+                    'start_time',
+                    '<=',
+                    $currentTime
+                )
+                ->whereTime(
+                    'end_time',
+                    '>',
+                    $currentTime
+                )
+                ->orderBy('end_time')
+                ->get();
 
         return view('dashboard.index', [
 
             /*
+             * Live operations
+             */
+            'liveNextAppointment' => $liveNextAppointment,
+
+            'liveReservationsInUse' => $liveReservationsInUse,
+
+            'liveFacilitiesInUseCount' => $liveReservationsInUse
+                ->pluck('facility_id')
+                ->filter()
+                ->unique()
+                ->count(),
+
+            /*
              * Main dashboard cards
              */
-            'facilityCount' =>
-                Facility::where(
-                    'status',
-                    'available'
-                )->count(),
+            'facilityCount' => Facility::where(
+                'status',
+                'available'
+            )->count(),
 
-            'pendingReservations' =>
-                Reservation::where(
-                    'status',
-                    'pending'
-                )->count(),
+            'pendingReservations' => Reservation::where(
+                'status',
+                'pending'
+            )->count(),
 
-            'todaysAppointments' =>
-                $canViewAppointments
+            'todaysAppointments' => $canViewAppointments
                     ? Appointment::whereDate(
                         'date',
                         $today
                     )->count()
                     : 0,
 
-            'checkedInVisitors' =>
-                $canViewVisitors
+            'checkedInVisitors' => $canViewVisitors
                     ? Visitor::where(
                         'status',
                         'checked_in'
                     )->count()
                     : 0,
 
-            'contractsExpiringSoon' =>
-                $canViewContracts
+            'contractsExpiringSoon' => $canViewContracts
                     ? Contract::whereIn(
                         'status',
                         [
@@ -155,20 +244,17 @@ class DashboardController extends Controller
                         ->count()
                     : 0,
 
-            'legalActionRequired' =>
-                $canViewLegal
+            'legalActionRequired' => $canViewLegal
                     ? LegalRecord::where(
                         'review_status',
                         'action_required'
                     )->count()
                     : 0,
 
-
             /*
              * Document & compliance alerts
              */
-            'documentNeedsReview' =>
-                $canViewDocuments
+            'documentNeedsReview' => $canViewDocuments
                     ? (clone $documentAlertQuery)
                         ->where(
                             'status',
@@ -177,73 +263,59 @@ class DashboardController extends Controller
                         ->count()
                     : 0,
 
-            'retentionReviewRequired' =>
-                $canManageRetention
+            'retentionReviewRequired' => $canManageRetention
                     ? RecordRetention::where(
                         'status',
                         'review_required'
                     )->count()
                     : 0,
 
-            'pendingDisposalApprovals' =>
-                $canApproveDisposal
+            'pendingDisposalApprovals' => $canApproveDisposal
                     ? RecordRetention::where(
                         'disposition_status',
                         'pending'
                     )->count()
                     : 0,
 
-
             /*
              * Permissions passed to Blade
              */
-            'canViewAppointments' =>
-                $canViewAppointments,
+            'canViewAppointments' => $canViewAppointments,
 
-            'canViewVisitors' =>
-                $canViewVisitors,
+            'canViewVisitors' => $canViewVisitors,
 
-            'canViewContracts' =>
-                $canViewContracts,
+            'canViewContracts' => $canViewContracts,
 
-            'canViewLegal' =>
-                $canViewLegal,
+            'canViewLegal' => $canViewLegal,
 
-            'canViewDocuments' =>
-                $canViewDocuments,
+            'canViewDocuments' => $canViewDocuments,
 
-            'canManageRetention' =>
-                $canManageRetention,
+            'canManageRetention' => $canManageRetention,
 
-            'canApproveDisposal' =>
-                $canApproveDisposal,
-
+            'canApproveDisposal' => $canApproveDisposal,
 
             /*
              * Upcoming reservation list
              */
-            'upcomingReservations' =>
-                Reservation::with('facility')
-                    ->where(
-                        'status',
-                        'approved'
-                    )
-                    ->whereDate(
-                        'date',
-                        '>=',
-                        $today
-                    )
-                    ->orderBy('date')
-                    ->orderBy('start_time')
-                    ->limit(6)
-                    ->get(),
-
+            'upcomingReservations' => Reservation::with('facility')
+                ->where(
+                    'status',
+                    'approved'
+                )
+                ->whereDate(
+                    'date',
+                    '>=',
+                    $today
+                )
+                ->orderBy('date')
+                ->orderBy('start_time')
+                ->limit(6)
+                ->get(),
 
             /*
              * Today's appointment list
              */
-            'recentAppointments' =>
-                $canViewAppointments
+            'recentAppointments' => $canViewAppointments
                     ? Appointment::whereDate(
                         'date',
                         $today

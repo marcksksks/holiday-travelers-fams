@@ -4,452 +4,72 @@
 
 @section('content')
 
-<div class="space-y-6">
+<div class="space-y-4">
 
-    {{-- Page Header --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    {{-- =====================================================
+         MODERN VISITOR DESK HEADER
+    ====================================================== --}}
+    <section class="card overflow-hidden">
 
-        <div>
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
+        <div class="px-5 py-5 sm:px-6">
 
-            <h2 class="font-heading text-2xl font-bold text-primary">
-                Visitor Desk
-            </h2>
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 
-            <p class="mt-1 text-sm text-slate-500">
-                Register visitors, monitor arrivals, and manage check-in and check-out activity.
-            </p>
-        </div>
+                <div class="min-w-0">
 
-
-        <div class="rounded-xl border border-border bg-card px-4 py-2.5 shadow-card">
-
-            <p class="text-xs text-slate-500">
-                Visitor Records
-            </p>
-
-            <p class="mt-0.5 font-heading text-lg font-bold text-primary">
-                {{ $visitors->total() }}
-            </p>
-
-        </div>
-
-    </div>
-
-
-    @can('useAiAssist')
-    {{-- AI Visitor Assistant --}}
-    @php
-        $aiProviderConfigured =
-            config('services.ai_assist.provider', 'none') !== 'none'
-            && filled(config('services.ai_assist.api_key'))
-            && filled(config('services.ai_assist.endpoint'));
-    @endphp
-
-    <section
-        data-ai-visitor-assistant
-        data-ai-endpoint="{{ route('visitors.ai-assist') }}"
-        data-ai-csrf="{{ csrf_token() }}"
-        class="overflow-hidden rounded-2xl border border-accent/30 bg-card shadow-card">
-
-        {{-- AI Header --}}
-        <div class="flex flex-col gap-4 border-b border-border bg-gradient-to-r from-accent/10 via-white to-secondary/5 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-
-            <div class="flex items-center gap-3">
-
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
-
-                    <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M5 3v4M3 5h4M19 17v4M17 19h4M12 3l1.09 3.26L16 7.35l-2.91 1.09L12 12l-1.09-3.56L8 7.35l2.91-1.09L12 3zM7 12l1.17 3.33L11.5 16.5l-3.33 1.17L7 21l-1.17-3.33L2.5 16.5l3.33-1.17L7 12z" />
-
-                    </svg>
-
-                </div>
-
-
-                <div>
-
-                    <div class="flex flex-wrap items-center gap-2">
-
-                        <h3 class="font-heading text-base font-semibold text-primary">
-                            AI Visitor Assistant
-                        </h3>
-
-                        <span class="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                            Human Reviewed
-                        </span>
-
-                    </div>
-
-                    <p class="mt-1 text-xs text-slate-500">
-                        Extract, summarize, and review visitor information before registration.
+                    <p class="text-[9px] font-semibold uppercase tracking-[0.16em] text-secondary">
+                        Reception Operations
                     </p>
 
-                </div>
-
-            </div>
-
-
-            @if ($aiProviderConfigured)
-
-                <div class="inline-flex w-fit items-center gap-2 rounded-full bg-success/10 px-3 py-1.5 text-xs font-semibold text-success">
-
-                    <span class="h-2 w-2 rounded-full bg-success"></span>
-
-                    AI Provider Connected
-
-                </div>
-
-            @else
-
-                <div class="inline-flex w-fit items-center gap-2 rounded-full bg-warning/10 px-3 py-1.5 text-xs font-semibold text-amber-700">
-
-                    <span class="h-2 w-2 rounded-full bg-warning"></span>
-
-                    Safe Fallback Mode
-
-                </div>
-
-            @endif
-
-
-            <button
-                type="button"
-                data-ai-panel-toggle
-                aria-expanded="false"
-                class="btn-outline shrink-0">
-
-                <svg
-                    data-ai-toggle-icon
-                    class="h-4 w-4 transition-transform duration-200"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 9l-7 7-7-7" />
-
-                </svg>
-
-                <span data-ai-toggle-text>
-                    Open Assistant
-                </span>
-
-            </button>
-
-        </div>
-
-
-        <div
-            data-ai-panel-body
-            class="hidden grid lg:grid-cols-2">
-
-            {{-- AI Input --}}
-            <div class="border-b border-border p-6 lg:border-b-0 lg:border-r">
-
-                <label
-                    for="ai_visitor_text"
-                    class="label">
-
-                    Visitor Information
-
-                </label>
-
-
-                <textarea
-                    id="ai_visitor_text"
-                    data-ai-input
-                    rows="6"
-                    class="input"
-                    placeholder="Example: Juan Dela Cruz from ABC Travel is here to meet Maria Santos regarding a supplier agreement."></textarea>
-
-
-                <p class="mt-2 text-xs leading-relaxed text-slate-400">
-                    Enter information provided by the visitor. AI-generated results are suggestions only and must be reviewed by staff.
-                </p>
-
-
-                {{-- AI Actions --}}
-                <div class="mt-4 flex flex-wrap gap-2">
-
-                    <button
-                        type="button"
-                        data-ai-mode="extract"
-                        class="btn-secondary">
-
-                        <svg
-                            class="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 12h6M9 16h6M9 8h3M5 3h10l4 4v14H5V3z" />
-
-                        </svg>
-
-                        Extract Details
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        data-ai-mode="summary"
-                        class="btn-outline">
-
-                        <svg
-                            class="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h10" />
-
-                        </svg>
-
-                        Summarize
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        data-ai-mode="appointment_check"
-                        class="btn-outline">
-
-                        <svg
-                            class="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M8 7V3M16 7V3M4 11h16M9 16l2 2 4-4M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-
-                        </svg>
-
-                        Check Appointment
-
-                    </button>
-
-                </div>
-
-
-                {{-- Safety Message --}}
-                <div class="mt-5 flex gap-3 rounded-xl border border-accent/20 bg-accent/5 p-4">
-
-                    <svg
-                        class="mt-0.5 h-4 w-4 shrink-0 text-accent"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-
-                    </svg>
-
-                    <p class="text-xs leading-relaxed text-slate-500">
-                        The assistant cannot approve, reject, check in, or grant access to visitors. Staff remain responsible for all final decisions.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            {{-- AI Result --}}
-            <div class="relative min-h-[280px] p-6">
-
-                <div class="mb-4 flex items-center justify-between gap-3">
-
-                    <div>
-
-                        <h4 class="font-heading text-sm font-semibold text-primary">
-                            Assistant Suggestion
-                        </h4>
-
-                        <p class="mt-0.5 text-xs text-slate-500">
-                            Review the result before applying anything.
-                        </p>
-
-                    </div>
-
-
-                    <span
-                        data-ai-status
-                        class="hidden rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                    </span>
-
-                </div>
-
-
-                {{-- Empty Result --}}
-                <div
-                    data-ai-empty
-                    class="flex min-h-[180px] flex-col items-center justify-center text-center">
-
-                    <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent">
-
-                        <svg
-                            class="h-6 w-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 6V4m0 16v-2m8-6h-2M6 12H4m13.657-5.657l-1.414 1.414M7.757 16.243l-1.414 1.414m11.314 0l-1.414-1.414M7.757 7.757L6.343 6.343M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-
-                        </svg>
-
-                    </div>
-
-                    <p class="font-button text-sm font-medium text-primary">
-                        Ready to assist
-                    </p>
-
-                    <p class="mt-1 max-w-xs text-xs leading-relaxed text-slate-500">
-                        Enter visitor information and select one of the assistance options.
+                    <h1 class="mt-1 font-heading text-xl font-bold tracking-tight text-primary sm:text-2xl">
+                        Visitor Desk
+                    </h1>
+
+                    <p class="mt-1 max-w-2xl text-xs leading-5 text-slate-500 sm:text-sm">
+                        Manage arriving visitors, host coordination, active visits, and departures.
                     </p>
 
                 </div>
 
 
-                {{-- Loading --}}
-                <div
-                    data-ai-loading
-                    class="hidden min-h-[180px] flex-col items-center justify-center text-center">
+                <div class="flex flex-wrap items-center gap-2">
 
-                    <svg
-                        class="mb-3 h-7 w-7 animate-spin text-secondary"
-                        fill="none"
-                        viewBox="0 0 24 24">
+                    @can('useAiAssist')
 
-                        <circle
-                            class="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="4">
-                        </circle>
-
-                        <path
-                            class="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
-                        </path>
-
-                    </svg>
-
-                    <p class="font-button text-sm font-medium text-primary">
-                        Analyzing visitor information...
-                    </p>
-
-                </div>
-
-
-                {{-- Result Content --}}
-                <div
-                    data-ai-result
-                    class="hidden space-y-4">
-                </div>
-
-
-                @can('operateVisitorDesk')
-                {{-- Apply --}}
-                <div
-                    data-ai-apply-wrap
-                    class="mt-5 hidden border-t border-border pt-4">
-
-                    <button
-                        type="button"
-                        data-ai-apply
-                        class="btn-primary w-full">
-
-                        <svg
-                            class="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M5 13l4 4L19 7" />
-
-                        </svg>
-
-                        Apply Suggested Fields
-
-                    </button>
-
-                    <p class="mt-2 text-center text-[10px] leading-relaxed text-slate-400">
-                        Applying a suggestion only fills the registration form. It does not submit or approve the visitor.
-                    </p>
-
-                </div>
-                @endcan
-
-            </div>
-
-        </div>
-
-    </section>
-    @endcan
-
-
-    {{-- Main Layout --}}
-    <div @class([
-        'grid gap-6',
-        'xl:grid-cols-[370px_minmax(0,1fr)]' => auth()->user()->can('operateVisitorDesk'),
-    ])>
-
-        @can('operateVisitorDesk')
-        {{-- Log Visitor --}}
-        <div>
-
-            <div class="card overflow-hidden xl:sticky xl:top-6">
-
-                {{-- Form Header --}}
-                <div class="border-b border-border bg-background/60 px-5 py-5">
-
-                    <div class="flex items-center gap-3">
-
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+                        <button
+                            type="button"
+                            data-ai-assistant-open
+                            class="btn-outline">
 
                             <svg
-                                class="h-5 w-5"
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 3l1.1 3.3L16 7.4l-2.9 1.1L12 12l-1.1-3.5L8 7.4l2.9-1.1L12 3zM6 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z" />
+
+                            </svg>
+
+                            AI Assistant
+
+                        </button>
+
+                    @endcan
+
+
+                    @can('operateVisitorDesk')
+
+                        <a
+                            href="#register-visitor"
+                            class="btn-primary">
+
+                            <svg
+                                class="h-4 w-4"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24">
@@ -462,132 +82,367 @@
 
                             </svg>
 
-                        </div>
+                            Register Visitor
+
+                        </a>
+
+                    @endcan
+
+                </div>
+
+            </div>
 
 
-                        <div>
+            {{-- Operational snapshot --}}
+            <div class="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-4">
 
-                            <h3 class="font-heading text-base font-semibold text-primary">
-                                Log a Visitor
-                            </h3>
+                {{-- Expected --}}
+                <a
+                    href="{{ route(
+                        'visitors.index',
+                        array_filter([
+                            'status' => 'expected',
+                            'q' => request('q'),
+                            'visitor_type' => request('visitor_type'),
+                        ])
+                    ) }}"
+                    class="group rounded-xl border border-border bg-background/40 px-3 py-3 transition hover:border-accent/40 hover:bg-accent/5">
 
-                            <p class="mt-0.5 text-xs text-slate-500">
-                                Register a walk-in or arriving visitor.
-                            </p>
+                    <div class="flex items-center justify-between gap-2">
 
-                        </div>
+                        <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                            Expected
+                        </p>
+
+                        <span class="h-2 w-2 rounded-full bg-accent"></span>
 
                     </div>
+
+                    <p class="mt-1 font-heading text-xl font-bold text-primary">
+                        {{ $visitorCounts['expected'] }}
+                    </p>
+
+                    <p class="mt-0.5 text-[9px] text-slate-400">
+                        Awaiting arrival
+                    </p>
+
+                </a>
+
+
+                {{-- Awaiting host --}}
+                <a
+                    href="{{ route(
+                        'visitors.index',
+                        array_filter([
+                            'status' => 'awaiting_host',
+                            'q' => request('q'),
+                            'visitor_type' => request('visitor_type'),
+                        ])
+                    ) }}"
+                    class="group rounded-xl border border-border bg-background/40 px-3 py-3 transition hover:border-warning/40 hover:bg-warning/5">
+
+                    <div class="flex items-center justify-between gap-2">
+
+                        <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                            Awaiting Host
+                        </p>
+
+                        <span class="h-2 w-2 rounded-full bg-warning"></span>
+
+                    </div>
+
+                    <p class="mt-1 font-heading text-xl font-bold text-primary">
+                        {{ $visitorCounts['awaiting_host'] }}
+                    </p>
+
+                    <p class="mt-0.5 text-[9px] text-slate-400">
+                        Requires coordination
+                    </p>
+
+                </a>
+
+
+                {{-- On Site --}}
+                <a
+                    href="{{ route(
+                        'visitors.index',
+                        array_filter([
+                            'status' => 'checked_in',
+                            'q' => request('q'),
+                            'visitor_type' => request('visitor_type'),
+                        ])
+                    ) }}"
+                    class="group rounded-xl border border-border bg-background/40 px-3 py-3 transition hover:border-success/40 hover:bg-success/5">
+
+                    <div class="flex items-center justify-between gap-2">
+
+                        <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                            On Site
+                        </p>
+
+                        <span class="h-2 w-2 rounded-full bg-success"></span>
+
+                    </div>
+
+                    <p class="mt-1 font-heading text-xl font-bold text-primary">
+                        {{ $visitorCounts['checked_in'] }}
+                    </p>
+
+                    <p class="mt-0.5 text-[9px] text-slate-400">
+                        Currently checked in
+                    </p>
+
+                </a>
+
+
+                {{-- Completed --}}
+                <a
+                    href="{{ route(
+                        'visitors.index',
+                        array_filter([
+                            'status' => 'completed',
+                            'q' => request('q'),
+                            'visitor_type' => request('visitor_type'),
+                        ])
+                    ) }}"
+                    class="group rounded-xl border border-border bg-background/40 px-3 py-3 transition hover:border-slate-300 hover:bg-background">
+
+                    <div class="flex items-center justify-between gap-2">
+
+                        <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                            Completed
+                        </p>
+
+                        <span class="h-2 w-2 rounded-full bg-slate-400"></span>
+
+                    </div>
+
+                    <p class="mt-1 font-heading text-xl font-bold text-primary">
+                        {{ $visitorCounts['completed'] }}
+                    </p>
+
+                    <p class="mt-0.5 text-[9px] text-slate-400">
+                        Closed visits
+                    </p>
+
+                </a>
+
+            </div>
+
+
+            <div class="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+
+                <p class="text-[10px] text-slate-400">
+                    {{ number_format($visitorCounts['total']) }}
+                    total visitor
+                    {{ $visitorCounts['total'] === 1 ? 'record' : 'records' }}
+                </p>
+
+
+                @if ($visitorCounts['declined'] > 0)
+
+                    <a
+                        href="{{ route('visitors.index', ['status' => 'declined']) }}"
+                        class="text-[10px] font-semibold text-error transition hover:underline">
+
+                        {{ $visitorCounts['declined'] }}
+                        declined
+
+                    </a>
+
+                @endif
+
+            </div>
+
+        </div>
+
+    </section>
+
+    {{-- AI Visitor Assistant Modal --}}
+    @include('visitors._ai-assistant-modal')
+
+    {{-- =====================================================
+         VISITOR DESK WORKSPACE
+    ====================================================== --}}
+    <div class="min-w-0">
+
+        @include('visitors._register-modal')
+
+        @include('visitors._check-in-modal')
+
+        @include('visitors._check-out-modal')
+
+        @include('visitors._decline-modal')
+
+        {{-- Visitor Records --}}
+        <div class="min-w-0 space-y-4">
+
+            {{-- Visitor Activity heading --}}
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+
+                <div>
+
+                    <p class="text-[9px] font-semibold uppercase tracking-[0.16em] text-secondary">
+                        Visitor Queue
+                    </p>
+
+                    <h3 class="mt-0.5 font-heading text-lg font-semibold text-primary">
+                        Visitor Activity
+                    </h3>
+
+                    <p class="mt-0.5 text-xs text-slate-500">
+                        Monitor arrivals, host coordination, active visits, and completed records.
+                    </p>
 
                 </div>
 
 
-                <form
-                    method="POST"
-                    action="{{ route('visitors.store') }}"
-                    class="space-y-5 p-5">
+                <div class="shrink-0 text-left sm:text-right">
 
-                    @csrf
+                    <p class="font-heading text-lg font-bold text-primary">
+                        {{ number_format($visitors->total()) }}
+                    </p>
 
+                    <p class="text-[9px] uppercase tracking-wide text-slate-400">
+                        {{ $visitors->total() === 1 ? 'result' : 'results' }}
+                    </p>
 
-                    {{-- Full Name --}}
-                    <div>
+                </div>
 
-                        <label for="full_name" class="label">
-                            Full Name
-                            <span class="text-error">*</span>
-                        </label>
-
-                        <div class="relative">
-
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-
-                                <svg
-                                    class="h-4 w-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
-
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M15 19a4 4 0 00-8 0M11 11a4 4 0 100-8 4 4 0 000 8z" />
-
-                                </svg>
-
-                            </div>
+            </div>
 
 
-                            <input
-                                id="full_name"
-                                type="text"
-                                name="full_name"
-                                value="{{ old('full_name') }}"
-                                required
-                                placeholder="Visitor's complete name"
-                                class="input pl-10 @error('full_name') border-error focus:border-error focus:ring-error/20 @enderror">
+            {{-- =====================================================
+                 VISITOR DESK FILTER TOOLBAR
+            ====================================================== --}}
+            <form
+                method="GET"
+                action="{{ route('visitors.index') }}"
+                class="card p-3">
+
+                <div class="flex flex-col gap-2 lg:flex-row lg:items-center">
+
+                    {{-- Search --}}
+                    <div class="relative min-w-0 flex-1">
+
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+
+                            <svg
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 110-15 7.5 7.5 0 010 15z" />
+
+                            </svg>
 
                         </div>
 
-                        @error('full_name')
-                            <p class="mt-1.5 text-xs font-medium text-error">
-                                {{ $message }}
-                            </p>
-                        @enderror
-
-                    </div>
-
-
-                    {{-- Organization --}}
-                    <div>
-
-                        <label for="organization" class="label">
-                            Organization
-                        </label>
 
                         <input
-                            id="organization"
-                            type="text"
-                            name="organization"
-                            value="{{ old('organization') }}"
-                            placeholder="Company or organization"
-                            class="input @error('organization') border-error focus:border-error focus:ring-error/20 @enderror">
-
-                        @error('organization')
-                            <p class="mt-1.5 text-xs font-medium text-error">
-                                {{ $message }}
-                            </p>
-                        @enderror
+                            type="search"
+                            name="q"
+                            value="{{ request('q') }}"
+                            placeholder="Search visitor, company, host, email or badge..."
+                            class="input pl-9">
 
                     </div>
 
 
-                    {{-- Visitor Type --}}
-                    <div>
-
-                        <label for="visitor_type" class="label">
-                            Visitor Type
-                        </label>
+                    {{-- Status --}}
+                    <div class="lg:w-44">
 
                         <select
-                            id="visitor_type"
-                            name="visitor_type"
-                            class="input @error('visitor_type') border-error focus:border-error focus:ring-error/20 @enderror">
+                            name="status"
+                            class="input">
 
-                            @foreach ([
-                                'customer',
-                                'business_partner',
-                                'supplier',
-                                'government',
-                                'applicant',
-                                'guest',
-                                'other'
-                            ] as $type)
+                            <option value="">
+                                All statuses
+                            </option>
+
+                            <option
+                                value="expected"
+                                @selected(request('status') === 'expected')>
+
+                                Expected
+
+                            </option>
+
+                            <option
+                                value="awaiting_host"
+                                @selected(request('status') === 'awaiting_host')>
+
+                                Awaiting Host
+
+                            </option>
+
+                            <option
+                                value="checked_in"
+                                @selected(request('status') === 'checked_in')>
+
+                                On Site
+
+                            </option>
+
+                            <option
+                                value="completed"
+                                @selected(request('status') === 'completed')>
+
+                                Completed
+
+                            </option>
+
+                            <option
+                                value="declined"
+                                @selected(request('status') === 'declined')>
+
+                                Declined
+
+                            </option>
+
+                            <option
+                                value="cancelled"
+                                @selected(request('status') === 'cancelled')>
+
+                                Cancelled
+
+                            </option>
+
+
+                            <option
+                                value="no_show"
+                                @selected(request('status') === 'no_show')>
+
+                                No Show
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    {{-- Visitor type --}}
+                    <div class="lg:w-48">
+
+                        <select
+                            name="visitor_type"
+                            class="input">
+
+                            <option value="">
+                                All visitor types
+                            </option>
+
+                            @foreach ($allowedVisitorTypes as $type)
 
                                 <option
                                     value="{{ $type }}"
-                                    @selected(old('visitor_type', 'guest') === $type)>
+                                    @selected(request('visitor_type') === $type)>
 
                                     {{ str($type)->headline() }}
 
@@ -597,595 +452,51 @@
 
                         </select>
 
-                        @error('visitor_type')
-                            <p class="mt-1.5 text-xs font-medium text-error">
-                                {{ $message }}
-                            </p>
-                        @enderror
-
                     </div>
 
 
-                    {{-- Host Email --}}
-                    <div>
+                    <div class="flex gap-2">
 
-                        <label for="host_email" class="label">
-                            Host Email
-                        </label>
+                        <button
+                            type="submit"
+                            class="btn-primary justify-center">
 
-                        <div class="relative">
+                            Apply
 
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                        </button>
 
-                                <svg
-                                    class="h-4 w-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
 
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        @if (
+                            request()->filled('q')
+                            ||
+                            request()->filled('status')
+                            ||
+                            request()->filled('visitor_type')
+                        )
 
-                                </svg>
+                            <a
+                                href="{{ route('visitors.index') }}"
+                                class="btn-outline justify-center">
 
-                            </div>
+                                Clear
 
-                            <input
-                                id="host_email"
-                                type="email"
-                                name="host_email"
-                                value="{{ old('host_email') }}"
-                                placeholder="host@example.com"
-                                class="input pl-10 @error('host_email') border-error focus:border-error focus:ring-error/20 @enderror">
+                            </a>
 
-                        </div>
-
-                        @error('host_email')
-                            <p class="mt-1.5 text-xs font-medium text-error">
-                                {{ $message }}
-                            </p>
-                        @enderror
+                        @endif
 
                     </div>
-
-
-                    {{-- Purpose --}}
-                    <div>
-
-                        <label for="purpose" class="label">
-                            Purpose of Visit
-                        </label>
-
-                        <textarea
-                            id="purpose"
-                            name="purpose"
-                            rows="3"
-                            placeholder="Briefly describe the purpose of the visit..."
-                            class="input @error('purpose') border-error focus:border-error focus:ring-error/20 @enderror">{{ old('purpose') }}</textarea>
-
-                        @error('purpose')
-                            <p class="mt-1.5 text-xs font-medium text-error">
-                                {{ $message }}
-                            </p>
-                        @enderror
-
-                    </div>
-
-
-                    {{-- Walk-in --}}
-                    <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-background/60 p-4 transition hover:border-accent/40">
-
-                        <input
-                            type="checkbox"
-                            name="is_walk_in"
-                            value="1"
-                            @checked(old('is_walk_in', true))
-                            class="mt-0.5 h-4 w-4 rounded border-slate-300 text-secondary focus:ring-secondary">
-
-                        <span>
-
-                            <span class="block font-button text-sm font-medium text-primary">
-                                Walk-in Visitor
-                            </span>
-
-                            <span class="mt-0.5 block text-xs leading-relaxed text-slate-500">
-                                Select this when the visitor does not have a prior appointment.
-                            </span>
-
-                        </span>
-
-                    </label>
-
-
-                    <button
-                        type="submit"
-                        class="btn-secondary w-full">
-
-                        <svg
-                            class="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M5 13l4 4L19 7" />
-
-                        </svg>
-
-                        Log Visitor
-
-                    </button>
-
-                </form>
-
-            </div>
-
-        </div>
-        @endcan
-
-
-        {{-- Visitor Records --}}
-        <div class="min-w-0 space-y-4">
-
-            {{-- Heading --}}
-            <div>
-
-                <h3 class="font-heading text-lg font-semibold text-primary">
-                    Visitor Activity
-                </h3>
-
-                <p class="mt-1 text-xs text-slate-500">
-                    Monitor expected visitors, active check-ins, and completed visits.
-                </p>
-
-            </div>
-
-
-            {{-- Filters --}}
-            <div class="flex flex-wrap gap-2">
-
-                @foreach ([
-                    '' => 'All',
-                    'expected' => 'Expected',
-                    'checked_in' => 'Checked In',
-                    'completed' => 'Completed'
-                ] as $value => $label)
-
-                    <a
-                        href="{{ route('visitors.index', array_filter(['status' => $value])) }}"
-                        class="{{ request('status', '') === $value
-                            ? 'border-primary bg-primary text-white shadow-sm'
-                            : 'border-border bg-white text-slate-600 hover:border-accent hover:bg-accent/5 hover:text-primary'
-                        }} inline-flex items-center rounded-full border px-4 py-2 font-button text-xs font-medium transition">
-
-                        {{ $label }}
-
-                    </a>
-
-                @endforeach
-
-            </div>
-
-
-            {{-- Table --}}
-            <div class="table-shell">
-
-                <div class="overflow-x-auto">
-
-                    <table class="min-w-full text-left text-sm">
-
-                        <thead class="table-header">
-
-                            <tr>
-
-                                <th class="px-5 py-4 font-medium">
-                                    Visitor
-                                </th>
-
-                                <th class="px-5 py-4 font-medium">
-                                    Host
-                                </th>
-
-                                <th class="px-5 py-4 font-medium">
-                                    Status
-                                </th>
-
-                                <th class="px-5 py-4 font-medium">
-                                    Check-in
-                                </th>
-
-                                <th class="px-5 py-4 text-right font-medium">
-                                    Actions
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody class="divide-y divide-border bg-card">
-
-                            @forelse ($visitors as $visitor)
-
-                                <tr class="transition-colors hover:bg-sky-50/40">
-
-                                    {{-- Visitor --}}
-                                    <td class="px-5 py-4">
-
-                                        <div class="flex items-center gap-3">
-
-                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 font-button text-sm font-bold uppercase text-primary">
-
-                                                {{ \Illuminate\Support\Str::substr($visitor->full_name, 0, 1) }}
-
-                                            </div>
-
-
-                                            <div class="min-w-0">
-
-                                                <p class="max-w-[180px] truncate font-button text-sm font-semibold text-primary">
-                                                    {{ $visitor->full_name }}
-                                                </p>
-
-
-                                                @if ($visitor->organization)
-
-                                                    <p class="mt-0.5 max-w-[180px] truncate text-xs text-slate-400">
-                                                        {{ $visitor->organization }}
-                                                    </p>
-
-                                                @elseif ($visitor->visitor_type)
-
-                                                    <p class="mt-0.5 text-xs text-slate-400">
-                                                        {{ str($visitor->visitor_type)->headline() }}
-                                                    </p>
-
-                                                @endif
-
-                                            </div>
-
-                                        </div>
-
-                                    </td>
-
-
-                                    {{-- Host --}}
-                                    <td class="px-5 py-4">
-
-                                        <div class="flex items-center gap-2 text-slate-600">
-
-                                            <svg
-                                                class="h-4 w-4 shrink-0 text-slate-400"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24">
-
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M15 19a4 4 0 00-8 0M11 11a4 4 0 100-8 4 4 0 000 8z" />
-
-                                            </svg>
-
-                                            <span class="max-w-[180px] truncate">
-                                                {{ $visitor->host_name ?: ($visitor->host_email ?: 'Not assigned') }}
-                                            </span>
-
-                                        </div>
-
-                                    </td>
-
-
-                                    {{-- Status --}}
-                                    <td class="px-5 py-4">
-
-                                        @switch($visitor->status)
-
-                                            @case('expected')
-
-                                                <span class="badge badge-info">
-                                                    <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-accent"></span>
-                                                    Expected
-                                                </span>
-
-                                                @break
-
-
-                                            @case('awaiting_host')
-
-                                                <span class="badge badge-warning">
-                                                    <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-warning"></span>
-                                                    Awaiting Host
-                                                </span>
-
-                                                @break
-
-
-                                            @case('checked_in')
-
-                                                <span class="badge badge-success">
-                                                    <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-success"></span>
-                                                    Checked In
-                                                </span>
-
-                                                @break
-
-
-                                            @case('completed')
-
-                                                <span class="badge bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
-                                                    Completed
-                                                </span>
-
-                                                @break
-
-
-                                            @case('declined')
-
-                                                <span class="badge badge-error">
-                                                    Declined
-                                                </span>
-
-                                                @break
-
-
-                                            @default
-
-                                                <span class="badge badge-info">
-                                                    {{ str($visitor->status)->headline() }}
-                                                </span>
-
-                                        @endswitch
-
-                                    </td>
-
-
-                                    {{-- Check-in --}}
-                                    <td class="px-5 py-4">
-
-                                        @if ($visitor->check_in_at)
-
-                                            <div class="flex items-center gap-2 text-slate-600">
-
-                                                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-success/10 text-success">
-
-                                                    <svg
-                                                        class="h-4 w-4"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-
-                                                        <path
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M12 8v4l3 3M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-
-                                                    </svg>
-
-                                                </div>
-
-                                                <div>
-
-                                                    <p class="text-sm font-medium text-slate-700">
-                                                        {{ $visitor->check_in_at->format('h:i A') }}
-                                                    </p>
-
-                                                    <p class="text-[10px] text-slate-400">
-                                                        {{ $visitor->check_in_at->format('M d, Y') }}
-                                                    </p>
-
-                                                </div>
-
-                                            </div>
-
-                                        @else
-
-                                            <span class="text-xs text-slate-400">
-                                                Not checked in
-                                            </span>
-
-                                        @endif
-
-                                    </td>
-
-
-                                    {{-- Actions --}}
-                                    <td class="px-5 py-4 text-right">
-
-                                        <div class="flex items-center justify-end gap-2">
-
-                                            @can('operateVisitorDesk')
-
-                                                @if (in_array($visitor->status, ['expected', 'awaiting_host']))
-
-                                                    <form
-                                                        method="POST"
-                                                        action="{{ route('visitors.check-in', $visitor) }}">
-
-                                                        @csrf
-
-                                                        <button
-                                                            type="submit"
-                                                            class="inline-flex items-center gap-1.5 rounded-lg bg-success/10 px-3 py-2 font-button text-xs font-semibold text-success transition hover:bg-success hover:text-white">
-
-                                                            <svg
-                                                                class="h-3.5 w-3.5"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24">
-
-                                                                <path
-                                                                    stroke-linecap="round"
-                                                                    stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M5 13l4 4L19 7" />
-
-                                                            </svg>
-
-                                                            Check In
-
-                                                        </button>
-
-                                                    </form>
-
-                                                    <form
-                                                        method="POST"
-                                                        action="{{ route('visitors.decline', $visitor) }}"
-                                                        onsubmit="return confirm('Decline this visitor?');">
-
-                                                        @csrf
-
-                                                        <button
-                                                            type="submit"
-                                                            class="inline-flex items-center gap-1.5 rounded-lg bg-error/10 px-3 py-2 font-button text-xs font-semibold text-error transition hover:bg-error hover:text-white">
-
-                                                            <svg
-                                                                class="h-3.5 w-3.5"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24">
-
-                                                                <path
-                                                                    stroke-linecap="round"
-                                                                    stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M6 18L18 6M6 6l12 12" />
-
-                                                            </svg>
-
-                                                            Decline
-
-                                                        </button>
-
-                                                    </form>
-
-                                                @endif
-
-
-                                                @if ($visitor->status === 'checked_in')
-
-                                                    <form
-                                                        method="POST"
-                                                        action="{{ route('visitors.check-out', $visitor) }}"
-                                                        onsubmit="return confirm('Check out this visitor?');">
-
-                                                        @csrf
-
-                                                        <button
-                                                            type="submit"
-                                                            class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 font-button text-xs font-medium text-primary transition hover:border-secondary hover:bg-secondary/5 hover:text-secondary">
-
-                                                            <svg
-                                                                class="h-3.5 w-3.5"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24">
-
-                                                                <path
-                                                                    stroke-linecap="round"
-                                                                    stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
-
-                                                            </svg>
-
-                                                            Check Out
-
-                                                        </button>
-
-                                                    </form>
-
-                                                @endif
-
-                                            @endcan
-
-
-                                            @if (
-                                                !in_array($visitor->status, ['expected', 'awaiting_host', 'checked_in']) ||
-                                                !auth()->user()->can('operateVisitorDesk')
-                                            )
-
-                                                <span class="text-xs text-slate-400">
-                                                    —
-                                                </span>
-
-                                            @endif
-
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-
-                            @empty
-
-                                <tr>
-
-                                    <td colspan="5" class="px-6 py-16">
-
-                                        <div class="mx-auto flex max-w-sm flex-col items-center text-center">
-
-                                            <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 text-accent">
-
-                                                <svg
-                                                    class="h-7 w-7"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M15 19a4 4 0 00-8 0M11 11a4 4 0 100-8 4 4 0 000 8z" />
-
-                                                </svg>
-
-                                            </div>
-
-
-                                            <h3 class="font-heading text-base font-semibold text-primary">
-                                                No visitors found
-                                            </h3>
-
-                                            <p class="mt-1 text-sm text-slate-500">
-
-                                                @if (request('status'))
-
-                                                    No visitors match the selected status.
-
-                                                @else
-
-                                                    Visitor records will appear here once registered.
-
-                                                @endif
-
-                                            </p>
-
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-
-                            @endforelse
-
-                        </tbody>
-
-                    </table>
 
                 </div>
 
-            </div>
+            </form>
 
+            {{-- Modern Visitor Activity --}}
+            @include(
+                'visitors._activity-table',
+                [
+                    'visitors' => $visitors,
+                ]
+            )
 
             {{-- Pagination --}}
             @if ($visitors->hasPages())
@@ -1201,5 +512,1477 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+        const modal =
+            document.querySelector(
+                '[data-visitor-register-modal]'
+            );
+
+        if (! modal) {
+            return;
+        }
+
+
+        const panel =
+            modal.querySelector(
+                '[data-visitor-register-panel]'
+            );
+
+        const backdrop =
+            modal.querySelector(
+                '[data-visitor-register-backdrop]'
+            );
+
+        const closeButtons =
+            modal.querySelectorAll(
+                '[data-visitor-register-close]'
+            );
+
+        const openTriggers =
+            document.querySelectorAll(
+                'a[href="#register-visitor"], [data-visitor-register-open]'
+            );
+
+
+        let previouslyFocused = null;
+
+
+        const openModal = () => {
+
+            previouslyFocused =
+                document.activeElement;
+
+            modal.classList.remove(
+                'hidden'
+            );
+
+            document.body.classList.add(
+                'overflow-hidden'
+            );
+
+
+            requestAnimationFrame(
+                () => {
+
+                    document
+                        .getElementById('full_name')
+                        ?.focus();
+
+                }
+            );
+
+        };
+
+
+        const closeModal = () => {
+
+            modal.classList.add(
+                'hidden'
+            );
+
+            document.body.classList.remove(
+                'overflow-hidden'
+            );
+
+            previouslyFocused?.focus?.();
+
+        };
+
+
+        openTriggers.forEach(
+            (trigger) => {
+
+                trigger.addEventListener(
+                    'click',
+                    (event) => {
+
+                        event.preventDefault();
+
+                        openModal();
+
+                    }
+                );
+
+            }
+        );
+
+
+        closeButtons.forEach(
+            (button) => {
+
+                button.addEventListener(
+                    'click',
+                    closeModal
+                );
+
+            }
+        );
+
+
+        backdrop?.addEventListener(
+            'click',
+            closeModal
+        );
+
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+
+                if (
+                    event.key === 'Escape'
+                    &&
+                    ! modal.classList.contains('hidden')
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+
+        /*
+         * If VisitorRequest validation fails,
+         * reopen only the registration modal.
+         */
+        if (
+            modal.dataset.openOnError === 'true'
+        ) {
+
+            openModal();
+
+        }
+
+
+        /*
+         * AI-assisted extraction still fills the exact
+         * existing visitor form field IDs.
+         *
+         * After "Apply Suggested Fields" is clicked,
+         * show the registration modal so reception staff
+         * can review the suggested values before submitting.
+         */
+        document
+            .querySelectorAll(
+                '[data-ai-apply]'
+            )
+            .forEach(
+                (button) => {
+
+                    button.addEventListener(
+                        'click',
+                        () => {
+
+                            window.setTimeout(
+                                openModal,
+                                80
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+
+        /*
+         * Prevent clicks inside the panel from being
+         * interpreted as backdrop clicks.
+         */
+        panel?.addEventListener(
+            'click',
+            (event) => {
+
+                event.stopPropagation();
+
+            }
+        );
+
+    }
+);
+</script>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+        /*
+         * =====================================================
+         * VISITOR DETAILS MODALS
+         * =====================================================
+         */
+        const closeDetails =
+            (modal) => {
+
+                if (! modal) {
+                    return;
+                }
+
+                modal.classList.add('hidden');
+
+                if (
+                    ! document.querySelector(
+                        '[data-visitor-details-modal]:not(.hidden)'
+                    )
+                ) {
+
+                    document.body.classList.remove(
+                        'overflow-hidden'
+                    );
+
+                }
+
+            };
+
+
+        document
+            .querySelectorAll(
+                '[data-visitor-details-open]'
+            )
+            .forEach(
+                (trigger) => {
+
+                    trigger.addEventListener(
+                        'click',
+                        () => {
+
+                            const id =
+                                trigger.dataset.visitorDetailsOpen;
+
+                            const modal =
+                                document.querySelector(
+                                    `[data-visitor-details-modal="${id}"]`
+                                );
+
+                            if (! modal) {
+                                return;
+                            }
+
+                            modal.classList.remove(
+                                'hidden'
+                            );
+
+                            document.body.classList.add(
+                                'overflow-hidden'
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+
+        document
+            .querySelectorAll(
+                '[data-visitor-details-modal]'
+            )
+            .forEach(
+                (modal) => {
+
+                    modal
+                        .querySelectorAll(
+                            '[data-visitor-details-close]'
+                        )
+                        .forEach(
+                            (button) => {
+
+                                button.addEventListener(
+                                    'click',
+                                    () => closeDetails(modal)
+                                );
+
+                            }
+                        );
+
+
+                    modal
+                        .querySelector(
+                            '[data-visitor-details-backdrop]'
+                        )
+                        ?.addEventListener(
+                            'click',
+                            () => closeDetails(modal)
+                        );
+
+                }
+            );
+
+
+        /*
+         * =====================================================
+         * FIXED VISITOR ACTION MENUS
+         * Prevent clipping inside overflow-x-auto tables.
+         * =====================================================
+         */
+        const menus =
+            Array.from(
+                document.querySelectorAll(
+                    '[data-visitor-menu]'
+                )
+            );
+
+
+        const closeMenus =
+            () => {
+
+                menus.forEach(
+                    (menu) => {
+
+                        menu.classList.add(
+                            'hidden'
+                        );
+
+                    }
+                );
+
+            };
+
+
+        document
+            .querySelectorAll(
+                '[data-visitor-menu-trigger]'
+            )
+            .forEach(
+                (trigger) => {
+
+                    trigger.addEventListener(
+                        'click',
+                        (event) => {
+
+                            event.stopPropagation();
+
+                            const id =
+                                trigger.dataset.visitorMenuTrigger;
+
+                            const menu =
+                                document.querySelector(
+                                    `[data-visitor-menu="${id}"]`
+                                );
+
+                            if (! menu) {
+                                return;
+                            }
+
+
+                            const wasOpen =
+                                ! menu.classList.contains(
+                                    'hidden'
+                                );
+
+                            closeMenus();
+
+                            if (wasOpen) {
+                                return;
+                            }
+
+
+                            menu.classList.remove(
+                                'hidden'
+                            );
+
+
+                            const triggerRect =
+                                trigger.getBoundingClientRect();
+
+                            const menuRect =
+                                menu.getBoundingClientRect();
+
+
+                            let left =
+                                triggerRect.right
+                                -
+                                menuRect.width;
+
+                            let top =
+                                triggerRect.bottom
+                                +
+                                6;
+
+
+                            const viewportPadding =
+                                8;
+
+
+                            if (
+                                left
+                                <
+                                viewportPadding
+                            ) {
+
+                                left =
+                                    viewportPadding;
+
+                            }
+
+
+                            if (
+                                left
+                                +
+                                menuRect.width
+                                >
+                                window.innerWidth
+                                -
+                                viewportPadding
+                            ) {
+
+                                left =
+                                    window.innerWidth
+                                    -
+                                    menuRect.width
+                                    -
+                                    viewportPadding;
+
+                            }
+
+
+                            if (
+                                top
+                                +
+                                menuRect.height
+                                >
+                                window.innerHeight
+                                -
+                                viewportPadding
+                            ) {
+
+                                top =
+                                    triggerRect.top
+                                    -
+                                    menuRect.height
+                                    -
+                                    6;
+
+                            }
+
+
+                            menu.style.left =
+                                `${left}px`;
+
+                            menu.style.top =
+                                `${Math.max(
+                                    viewportPadding,
+                                    top
+                                )}px`;
+
+                        }
+                    );
+
+                }
+            );
+
+
+        document.addEventListener(
+            'click',
+            closeMenus
+        );
+
+
+        menus.forEach(
+            (menu) => {
+
+                menu.addEventListener(
+                    'click',
+                    (event) => {
+
+                        event.stopPropagation();
+
+                    }
+                );
+
+            }
+        );
+
+
+        window.addEventListener(
+            'resize',
+            closeMenus
+        );
+
+
+        window.addEventListener(
+            'scroll',
+            closeMenus,
+            true
+        );
+
+
+        /*
+         * =====================================================
+         * ESCAPE
+         * =====================================================
+         */
+        document.addEventListener(
+            'keydown',
+            (event) => {
+
+                if (
+                    event.key
+                    !==
+                    'Escape'
+                ) {
+                    return;
+                }
+
+                closeMenus();
+
+
+                document
+                    .querySelectorAll(
+                        '[data-visitor-details-modal]:not(.hidden)'
+                    )
+                    .forEach(
+                        (modal) => closeDetails(modal)
+                    );
+
+            }
+        );
+
+    }
+);
+</script>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+        const modal =
+            document.querySelector(
+                '[data-visitor-checkin-modal]'
+            );
+
+        if (! modal) {
+            return;
+        }
+
+
+        const form =
+            modal.querySelector(
+                '[data-visitor-checkin-form]'
+            );
+
+        const backdrop =
+            modal.querySelector(
+                '[data-visitor-checkin-backdrop]'
+            );
+
+        const name =
+            modal.querySelector(
+                '[data-visitor-checkin-name]'
+            );
+
+        const organization =
+            modal.querySelector(
+                '[data-visitor-checkin-organization]'
+            );
+
+        const host =
+            modal.querySelector(
+                '[data-visitor-checkin-host]'
+            );
+
+        const initial =
+            modal.querySelector(
+                '[data-visitor-checkin-initial]'
+            );
+
+        const badge =
+            document.getElementById(
+                'visitor_checkin_badge'
+            );
+
+        const notes =
+            document.getElementById(
+                'visitor_checkin_notes'
+            );
+
+
+        let previousFocus = null;
+
+
+        const closeModal =
+            () => {
+
+                modal.classList.add(
+                    'hidden'
+                );
+
+                document.body.classList.remove(
+                    'overflow-hidden'
+                );
+
+                form?.reset();
+
+                previousFocus?.focus?.();
+
+            };
+
+
+        const openModal =
+            (trigger) => {
+
+                previousFocus =
+                    document.activeElement;
+
+
+                form.action =
+                    trigger.dataset.visitorCheckinAction;
+
+
+                const visitorName =
+                    trigger.dataset.visitorCheckinName
+                    ||
+                    'Visitor';
+
+                const visitorOrganization =
+                    trigger.dataset.visitorCheckinOrganization
+                    ||
+                    'No organization';
+
+                const visitorHost =
+                    trigger.dataset.visitorCheckinHost
+                    ||
+                    'Not assigned';
+
+
+                name.textContent =
+                    visitorName;
+
+                organization.textContent =
+                    visitorOrganization;
+
+                host.textContent =
+                    visitorHost;
+
+                initial.textContent =
+                    visitorName
+                        .trim()
+                        .charAt(0)
+                        .toUpperCase()
+                    ||
+                    'V';
+
+
+                if (badge) {
+                    badge.value = '';
+                }
+
+                if (notes) {
+                    notes.value = '';
+                }
+
+
+                modal.classList.remove(
+                    'hidden'
+                );
+
+                document.body.classList.add(
+                    'overflow-hidden'
+                );
+
+
+                requestAnimationFrame(
+                    () => {
+
+                        badge?.focus();
+
+                    }
+                );
+
+            };
+
+
+        document
+            .querySelectorAll(
+                '[data-visitor-checkin-open]'
+            )
+            .forEach(
+                (trigger) => {
+
+                    trigger.addEventListener(
+                        'click',
+                        () => openModal(trigger)
+                    );
+
+                }
+            );
+
+
+        modal
+            .querySelectorAll(
+                '[data-visitor-checkin-close]'
+            )
+            .forEach(
+                (button) => {
+
+                    button.addEventListener(
+                        'click',
+                        closeModal
+                    );
+
+                }
+            );
+
+
+        backdrop?.addEventListener(
+            'click',
+            closeModal
+        );
+
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+
+                if (
+                    event.key === 'Escape'
+                    &&
+                    ! modal.classList.contains('hidden')
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+    }
+);
+</script>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+        const modal =
+            document.querySelector(
+                '[data-visitor-checkout-modal]'
+            );
+
+        if (! modal) {
+            return;
+        }
+
+
+        const form =
+            modal.querySelector(
+                '[data-visitor-checkout-form]'
+            );
+
+        const name =
+            modal.querySelector(
+                '[data-visitor-checkout-name]'
+            );
+
+        const organization =
+            modal.querySelector(
+                '[data-visitor-checkout-organization]'
+            );
+
+        const initial =
+            modal.querySelector(
+                '[data-visitor-checkout-initial]'
+            );
+
+        const checkinLabel =
+            modal.querySelector(
+                '[data-visitor-checkout-checkin-label]'
+            );
+
+        const duration =
+            modal.querySelector(
+                '[data-visitor-checkout-duration]'
+            );
+
+        const badge =
+            modal.querySelector(
+                '[data-visitor-checkout-badge]'
+            );
+
+        const backdrop =
+            modal.querySelector(
+                '[data-visitor-checkout-backdrop]'
+            );
+
+
+        let previousFocus = null;
+        let durationTimer = null;
+        let activeCheckIn = null;
+
+
+        const formatDuration =
+            (startIso) => {
+
+                if (! startIso) {
+                    return 'Unavailable';
+                }
+
+
+                const start =
+                    new Date(startIso);
+
+                if (
+                    Number.isNaN(
+                        start.getTime()
+                    )
+                ) {
+                    return 'Unavailable';
+                }
+
+
+                const totalMinutes =
+                    Math.max(
+                        0,
+                        Math.floor(
+                            (
+                                Date.now()
+                                -
+                                start.getTime()
+                            )
+                            /
+                            60000
+                        )
+                    );
+
+
+                const hours =
+                    Math.floor(
+                        totalMinutes / 60
+                    );
+
+                const minutes =
+                    totalMinutes % 60;
+
+
+                if (hours > 0) {
+
+                    return `${hours} hr${hours === 1 ? '' : 's'} ${minutes} min`;
+
+                }
+
+
+                return `${minutes} min`;
+
+            };
+
+
+        const refreshDuration =
+            () => {
+
+                if (! duration) {
+                    return;
+                }
+
+                duration.textContent =
+                    formatDuration(
+                        activeCheckIn
+                    );
+
+            };
+
+
+        const stopTimer =
+            () => {
+
+                if (durationTimer) {
+
+                    window.clearInterval(
+                        durationTimer
+                    );
+
+                    durationTimer =
+                        null;
+
+                }
+
+            };
+
+
+        const closeModal =
+            () => {
+
+                stopTimer();
+
+                modal.classList.add(
+                    'hidden'
+                );
+
+                document.body.classList.remove(
+                    'overflow-hidden'
+                );
+
+                activeCheckIn =
+                    null;
+
+                previousFocus?.focus?.();
+
+            };
+
+
+        const openModal =
+            (trigger) => {
+
+                previousFocus =
+                    document.activeElement;
+
+
+                form.action =
+                    trigger.dataset.visitorCheckoutAction;
+
+
+                const visitorName =
+                    trigger.dataset.visitorCheckoutName
+                    ||
+                    'Visitor';
+
+                const visitorOrganization =
+                    trigger.dataset.visitorCheckoutOrganization
+                    ||
+                    'No organization';
+
+                const visitorBadge =
+                    trigger.dataset.visitorCheckoutBadge
+                    ||
+                    'Not assigned';
+
+                activeCheckIn =
+                    trigger.dataset.visitorCheckoutCheckin
+                    ||
+                    null;
+
+
+                name.textContent =
+                    visitorName;
+
+                organization.textContent =
+                    visitorOrganization;
+
+                badge.textContent =
+                    visitorBadge;
+
+                checkinLabel.textContent =
+                    trigger.dataset.visitorCheckoutCheckinLabel
+                    ||
+                    'Unavailable';
+
+                initial.textContent =
+                    visitorName
+                        .trim()
+                        .charAt(0)
+                        .toUpperCase()
+                    ||
+                    'V';
+
+
+                refreshDuration();
+
+                stopTimer();
+
+                durationTimer =
+                    window.setInterval(
+                        refreshDuration,
+                        60000
+                    );
+
+
+                modal.classList.remove(
+                    'hidden'
+                );
+
+                document.body.classList.add(
+                    'overflow-hidden'
+                );
+
+            };
+
+
+        document
+            .querySelectorAll(
+                '[data-visitor-checkout-open]'
+            )
+            .forEach(
+                (trigger) => {
+
+                    trigger.addEventListener(
+                        'click',
+                        () => openModal(trigger)
+                    );
+
+                }
+            );
+
+
+        modal
+            .querySelectorAll(
+                '[data-visitor-checkout-close]'
+            )
+            .forEach(
+                (button) => {
+
+                    button.addEventListener(
+                        'click',
+                        closeModal
+                    );
+
+                }
+            );
+
+
+        backdrop?.addEventListener(
+            'click',
+            closeModal
+        );
+
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+
+                if (
+                    event.key === 'Escape'
+                    &&
+                    ! modal.classList.contains('hidden')
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+    }
+);
+</script>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+        const modal =
+            document.querySelector(
+                '[data-visitor-decline-modal]'
+            );
+
+        if (! modal) {
+            return;
+        }
+
+
+        const form =
+            modal.querySelector(
+                '[data-visitor-decline-form]'
+            );
+
+        const backdrop =
+            modal.querySelector(
+                '[data-visitor-decline-backdrop]'
+            );
+
+        const name =
+            modal.querySelector(
+                '[data-visitor-decline-name]'
+            );
+
+        const organization =
+            modal.querySelector(
+                '[data-visitor-decline-organization]'
+            );
+
+        const host =
+            modal.querySelector(
+                '[data-visitor-decline-host]'
+            );
+
+        const purpose =
+            modal.querySelector(
+                '[data-visitor-decline-purpose]'
+            );
+
+        const initial =
+            modal.querySelector(
+                '[data-visitor-decline-initial]'
+            );
+
+        const notes =
+            document.getElementById(
+                'visitor_decline_notes'
+            );
+
+
+        let previousFocus = null;
+
+
+        const closeModal =
+            () => {
+
+                modal.classList.add(
+                    'hidden'
+                );
+
+                document.body.classList.remove(
+                    'overflow-hidden'
+                );
+
+
+                if (notes) {
+
+                    notes.disabled =
+                        false;
+
+                    notes.value =
+                        '';
+
+                }
+
+
+                previousFocus?.focus?.();
+
+            };
+
+
+        const openModal =
+            (trigger) => {
+
+                previousFocus =
+                    document.activeElement;
+
+
+                form.action =
+                    trigger.dataset.visitorDeclineAction;
+
+
+                const visitorName =
+                    trigger.dataset.visitorDeclineName
+                    ||
+                    'Visitor';
+
+
+                name.textContent =
+                    visitorName;
+
+                organization.textContent =
+                    trigger.dataset.visitorDeclineOrganization
+                    ||
+                    'No organization';
+
+                host.textContent =
+                    trigger.dataset.visitorDeclineHost
+                    ||
+                    'Not assigned';
+
+                purpose.textContent =
+                    trigger.dataset.visitorDeclinePurpose
+                    ||
+                    'Not specified';
+
+                initial.textContent =
+                    visitorName
+                        .trim()
+                        .charAt(0)
+                        .toUpperCase()
+                    ||
+                    'V';
+
+
+                if (notes) {
+
+                    notes.disabled =
+                        false;
+
+                    notes.value =
+                        '';
+
+                }
+
+
+                modal.classList.remove(
+                    'hidden'
+                );
+
+                document.body.classList.add(
+                    'overflow-hidden'
+                );
+
+
+                requestAnimationFrame(
+                    () => {
+
+                        notes?.focus();
+
+                    }
+                );
+
+            };
+
+
+        document
+            .querySelectorAll(
+                '[data-visitor-decline-open]'
+            )
+            .forEach(
+                (trigger) => {
+
+                    trigger.addEventListener(
+                        'click',
+                        () => openModal(trigger)
+                    );
+
+                }
+            );
+
+
+        modal
+            .querySelectorAll(
+                '[data-visitor-decline-close]'
+            )
+            .forEach(
+                (button) => {
+
+                    button.addEventListener(
+                        'click',
+                        closeModal
+                    );
+
+                }
+            );
+
+
+        backdrop?.addEventListener(
+            'click',
+            closeModal
+        );
+
+
+        /*
+         * Important:
+         *
+         * If notes are empty, disable the field before submit.
+         * This prevents notes="" from replacing existing
+         * visitor notes with an empty string.
+         */
+        form?.addEventListener(
+            'submit',
+            () => {
+
+                if (
+                    notes
+                    &&
+                    notes.value.trim() === ''
+                ) {
+
+                    notes.disabled =
+                        true;
+
+                }
+
+            }
+        );
+
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+
+                if (
+                    event.key === 'Escape'
+                    &&
+                    ! modal.classList.contains('hidden')
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+    }
+);
+</script>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+        const modal =
+            document.querySelector(
+                '[data-ai-assistant-modal]'
+            );
+
+        if (! modal) {
+            return;
+        }
+
+
+        const panel =
+            modal.querySelector(
+                '[data-ai-assistant-panel]'
+            );
+
+        const backdrop =
+            modal.querySelector(
+                '[data-ai-assistant-backdrop]'
+            );
+
+        const input =
+            modal.querySelector(
+                '[data-ai-input]'
+            );
+
+
+        let previousFocus =
+            null;
+
+
+        const openAssistant =
+            () => {
+
+                previousFocus =
+                    document.activeElement;
+
+
+                modal.classList.remove(
+                    'hidden'
+                );
+
+                document.body.classList.add(
+                    'overflow-hidden'
+                );
+
+
+                requestAnimationFrame(
+                    () => {
+
+                        input?.focus();
+
+                    }
+                );
+
+            };
+
+
+        const closeAssistant =
+            () => {
+
+                modal.classList.add(
+                    'hidden'
+                );
+
+                document.body.classList.remove(
+                    'overflow-hidden'
+                );
+
+
+                previousFocus?.focus?.();
+
+            };
+
+
+        document
+            .querySelectorAll(
+                '[data-ai-assistant-open]'
+            )
+            .forEach(
+                (button) => {
+
+                    button.addEventListener(
+                        'click',
+                        openAssistant
+                    );
+
+                }
+            );
+
+
+        modal
+            .querySelectorAll(
+                '[data-ai-assistant-close]'
+            )
+            .forEach(
+                (button) => {
+
+                    button.addEventListener(
+                        'click',
+                        closeAssistant
+                    );
+
+                }
+            );
+
+
+        backdrop?.addEventListener(
+            'click',
+            closeAssistant
+        );
+
+
+        panel?.addEventListener(
+            'click',
+            (event) => {
+
+                event.stopPropagation();
+
+            }
+        );
+
+
+        /*
+         * app.js applies the suggestion to the existing
+         * registration field IDs.
+         *
+         * The Visitor registration modal script already
+         * opens registration after this same click.
+         *
+         * Close AI first so registration becomes the
+         * visible human-review step.
+         */
+        modal
+            .querySelector(
+                '[data-ai-apply]'
+            )
+            ?.addEventListener(
+                'click',
+                () => {
+
+                    closeAssistant();
+
+                }
+            );
+
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+
+                if (
+                    event.key === 'Escape'
+                    &&
+                    ! modal.classList.contains('hidden')
+                ) {
+
+                    closeAssistant();
+
+                }
+
+            }
+        );
+
+    }
+);
+</script>
 
 @endsection

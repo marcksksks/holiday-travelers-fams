@@ -1,11 +1,10 @@
 <?php
 
+use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\AppointmentController;
-use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
@@ -14,9 +13,9 @@ use App\Http\Controllers\LegalRecordController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReservationController;
-use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\RetentionController;
 use App\Http\Controllers\RetentionPolicyController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitorController;
 use Illuminate\Support\Facades\Route;
@@ -94,6 +93,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:receptionist,admin_officer,manager,sys_admin')->group(function () {
         Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
         Route::put('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('appointments.update');
+        Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'status'])->name('appointments.status');
         Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.cancel');
     });
 

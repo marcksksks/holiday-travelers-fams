@@ -5,14 +5,15 @@ namespace App\Services;
 use App\Models\Facility;
 use App\Models\Reservation;
 use App\Models\User;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ReservationService
 {
     public function __construct(
         private AuditService $audit,
         private NotificationService $notifications,
+        private FacilityAvailabilityService $availability,
     ) {}
 
     /** Port of base44/functions/submitReservation/entry.ts */
@@ -34,9 +35,22 @@ class ReservationService
                 throw ValidationException::withMessages(['attendees' => "The facility capacity is {$facility->capacity}."]);
             }
 
-            $clash = $this->findClash($facility->id, $data['date'], $data['start_time'], $data['end_time'], ['pending', 'approved']);
-            if ($clash) {
-                throw ValidationException::withMessages(['start_time' => "Time conflict: {$facility->name} is already booked {$clash->start_time}–{$clash->end_time} ({$clash->status})."]);
+            $conflict = $this->availability->findConflict(
+                $facility->id,
+                $data['date'],
+                $data['start_time'],
+                $data['end_time']
+            );
+
+            if ($conflict) {
+                $source =
+                    $conflict['source'] === 'appointment'
+                        ? 'an appointment'
+                        : 'another facility reservation';
+
+                throw ValidationException::withMessages([
+                    'start_time' => "Time conflict: {$facility->name} is already occupied by {$source} from {$conflict['start_time']} to {$conflict['end_time']}.",
+                ]);
             }
 
             $reservation = Reservation::create([
@@ -53,6 +67,7 @@ class ReservationService
                 'module' => 'facilities', 'severity' => 'info', 'link' => '/reservations',
             ])->all());
             $this->audit->log($user, 'create', 'facilities', "Reservation • {$facility->name} {$data['date']}", (string) $reservation->id, "{$data['start_time']}–{$data['end_time']} — ".($data['purpose'] ?? 'no purpose given'));
+
             return $reservation;
         });
     }
@@ -125,22 +140,25 @@ class ReservationService
                     'attendees' => "The facility capacity is {$facility->capacity}.",
                 ]);
             }
-
-            $clash = $this->findClash(
+            $conflict = $this->availability->findConflict(
                 $facility->id,
                 $data['date'],
                 $data['start_time'],
                 $data['end_time'],
-                ['pending', 'approved'],
-                excludeId: $reservation->id
+                excludeReservationId: $reservation->id
             );
 
-            if ($clash) {
-                throw ValidationException::withMessages([
-                    'start_time' => "Time conflict: {$facility->name} is already booked {$clash->start_time}–{$clash->end_time} ({$clash->status}).",
-                ]);
-            }
+            if ($conflict) {
+                $source =
+                    $conflict['source'] === 'appointment'
+                        ? 'an appointment'
+                        : 'another facility reservation';
 
+                throw ValidationException::withMessages([
+                    'start_time' => "Time conflict: {$facility->name} is already occupied by {$source} from {$conflict['start_time']} to {$conflict['end_time']}.",
+                ]);
+
+            }
             $reservation->update([
                 'facility_name' => $facility->name,
                 'date' => $data['date'],
@@ -212,9 +230,24 @@ class ReservationService
                 if ($facility->capacity !== null && $reservation->attendees !== null && $reservation->attendees > $facility->capacity) {
                     throw ValidationException::withMessages(['attendees' => "The facility capacity is {$facility->capacity}."]);
                 }
-                $clash = $this->findClash($reservation->facility_id, $reservation->date->toDateString(), $reservation->start_time, $reservation->end_time, ['approved'], excludeId: $reservation->id);
-                if ($clash) {
-                    throw ValidationException::withMessages(['start_time' => "Cannot approve — an approved booking already occupies {$clash->start_time}–{$clash->end_time}."]);
+                $conflict = $this->availability->findConflict(
+                    $reservation->facility_id,
+                    $reservation->date->toDateString(),
+                    $reservation->start_time,
+                    $reservation->end_time,
+                    excludeReservationId: $reservation->id,
+                    reservationStatuses: ['approved']
+                );
+
+                if ($conflict) {
+                    $source =
+                        $conflict['source'] === 'appointment'
+                            ? 'an appointment'
+                            : 'another approved reservation';
+
+                    throw ValidationException::withMessages([
+                        'start_time' => "Cannot approve because {$source} already occupies {$conflict['start_time']} to {$conflict['end_time']}.",
+                    ]);
                 }
             }
             $reservation->update([
@@ -223,6 +256,7 @@ class ReservationService
                 'decision_at' => now(),
                 'decision_note' => $note ?? '',
             ]);
+
             return $reservation;
         });
 
@@ -233,6 +267,7 @@ class ReservationService
             'module' => 'facilities', 'severity' => $decision === 'approved' ? 'success' : 'warning', 'link' => '/reservations',
         ]]);
         $this->audit->log($user, $decision === 'approved' ? 'approve' : 'reject', 'facilities', "Reservation • {$reservation->facility_name} {$reservation->date->toDateString()}", (string) $reservation->id, $note ?? '');
+
         return $reservation->refresh();
     }
 
