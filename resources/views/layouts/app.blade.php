@@ -136,7 +136,7 @@
         ],
 
         'legal.index' => [
-            'label' => 'Legal Records',
+            'label' => 'Legal Management',
             'route' => 'legal.index',
             'icon' => 'legal',
             'active' => ['legal.*'],
