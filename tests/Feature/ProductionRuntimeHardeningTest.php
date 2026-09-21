@@ -230,4 +230,33 @@ class ProductionRuntimeHardeningTest extends TestCase
             )
         );
     }
+
+    public function test_container_uses_platform_runtime_port(): void
+    {
+        $contents =
+            file_get_contents(
+                base_path(
+                    'docker/start.sh'
+                )
+            );
+
+        $this->assertIsString(
+            $contents
+        );
+
+        $this->assertStringContainsString(
+            'PORT="${PORT:-8080}"',
+            $contents
+        );
+
+        $this->assertStringContainsString(
+            'listen ${PORT};',
+            $contents
+        );
+
+        $this->assertStringContainsString(
+            '/etc/nginx/http.d/default.conf',
+            $contents
+        );
+    }
 }
