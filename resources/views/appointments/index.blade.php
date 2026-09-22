@@ -6,53 +6,47 @@
 
 <div class="space-y-6">
 
-    {{-- Page Header --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
-        <div>
-
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
-
-            <h2 class="font-heading text-2xl font-bold text-primary">
-                Appointments
-            </h2>
-
-            <p class="mt-1 max-w-2xl text-sm text-slate-500">
-                Plan and manage scheduled visitor appointments across the organization.
-            </p>
-
-        </div>
-
+    {{-- =====================================================
+         APPOINTMENTS WORKSPACE HEADER
+    ====================================================== --}}
+    <x-page-header
+        eyebrow="Visitor Scheduling"
+        title="Appointments"
+        badge="Schedule Management"
+        description="Plan visitor appointments, coordinate hosts and facilities, and monitor scheduled visits from one workspace.">
 
         @can('manageAppointments')
 
-            <button
-                type="button"
-                data-appointment-create-open
-                class="btn-secondary shrink-0">
+            <x-slot:actions>
 
-                <svg
-                    class="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
+                <button
+                    type="button"
+                    data-appointment-create-open
+                    class="btn-primary inline-flex items-center justify-center gap-2">
 
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 4v16m8-8H4" />
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                </svg>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 4v16m8-8H4" />
 
-                Schedule Appointment
+                    </svg>
 
-            </button>
+                    Schedule Appointment
+
+                </button>
+
+            </x-slot:actions>
 
         @endcan
 
-    </div>
-
+    </x-page-header>
 
     <div class="min-w-0">
                 @include('appointments._overview')
@@ -64,20 +58,16 @@
         {{-- Appointment Records --}}
         <div class="min-w-0 space-y-4">
 
-            <div>
-
-                <h3 class="font-heading text-lg font-semibold text-primary">
-                    Appointment Schedule
-                </h3>
-
-                <p class="mt-1 text-xs text-slate-500">
-                    View scheduled, completed, and cancelled visitor appointments.
-                </p>
-
-            </div>
+            <x-section-header
+                eyebrow="Schedule"
+                title="Appointment Schedule"
+                description="View scheduled, confirmed, checked-in, completed, cancelled, and no-show visitor appointments." />
 
 
-            <div class="table-shell">
+            @include('appointments._mobile-cards')
+
+
+            <div class="table-shell hidden md:block">
 
                 <div class="overflow-x-auto">
 
@@ -286,7 +276,7 @@
 
                                                 <span class="badge badge-info">
                                                     <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-accent"></span>
-                                                    Appointmentd
+                                                    Scheduled
                                                 </span>
 
                                                 @break

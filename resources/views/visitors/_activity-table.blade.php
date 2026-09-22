@@ -1,4 +1,6 @@
-<div class="table-shell overflow-visible">
+@include('visitors._mobile-cards')
+
+<div class="table-shell hidden overflow-visible md:block">
 
     <div class="overflow-x-auto">
 
@@ -470,6 +472,8 @@
 
     </div>
 
+</div>
+
 {{-- Visitor detail modals live outside the table for valid HTML structure. --}}
 @foreach ($visitors as $visitor)
 
@@ -482,7 +486,7 @@
 
 @endforeach
 
-</div>
+
 
 @once
     <script>

@@ -2,45 +2,25 @@
      APPOINTMENT OVERVIEW
 ====================================================== --}}
 
-<div class="grid gap-3 sm:grid-cols-3">
+<section class="space-y-4">
 
-    {{-- Today --}}
-    <a
-        href="{{ route('appointments.index', ['scope' => 'today']) }}"
-        @if ($scope === 'today')
-            aria-current="page"
-        @endif
-        class="card group relative overflow-hidden p-5 transition
-        {{ $scope === 'today'
-            ? 'ring-2 ring-accent/30'
-            : 'hover:-translate-y-0.5 hover:shadow-md'
-        }}">
-
-        @if ($scope === 'today')
-            <span class="absolute inset-x-0 top-0 h-1 bg-accent"></span>
-        @endif
+    <x-section-header
+        eyebrow="Overview"
+        title="Schedule Overview"
+        description="A current snapshot of today's schedule, upcoming visits, and visitors already checked in." />
 
 
-        <div class="flex items-center justify-between gap-4">
+    <div class="grid gap-3 sm:grid-cols-3">
 
-            <div>
+        <x-metric-card
+            label="Today's Appointments"
+            :value="number_format($todayCount)"
+            :href="route('appointments.index', ['scope' => 'today'])"
+            helper="Appointments scheduled for the current day."
+            tone="accent"
+            class="{{ $scope === 'today' ? 'ring-2 ring-accent/30' : '' }}">
 
-                <p class="text-xs font-medium text-slate-500">
-                    Today
-                </p>
-
-                <p class="mt-1 font-heading text-2xl font-bold text-primary">
-                    {{ number_format($todayCount) }}
-                </p>
-
-                <p class="mt-1 text-[11px] text-slate-400">
-                    Appointments scheduled today
-                </p>
-
-            </div>
-
-
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <x-slot:icon>
 
                 <svg
                     class="h-5 w-5"
@@ -56,51 +36,20 @@
 
                 </svg>
 
-            </div>
+            </x-slot:icon>
 
-        </div>
-
-    </a>
+        </x-metric-card>
 
 
+        <x-metric-card
+            label="Upcoming"
+            :value="number_format($upcomingCount)"
+            :href="route('appointments.index', ['scope' => 'upcoming'])"
+            helper="Scheduled and confirmed visits that are still ahead."
+            tone="warning"
+            class="{{ $scope === 'upcoming' ? 'ring-2 ring-warning/30' : '' }}">
 
-    {{-- Upcoming --}}
-    <a
-        href="{{ route('appointments.index', ['scope' => 'upcoming']) }}"
-        @if ($scope === 'upcoming')
-            aria-current="page"
-        @endif
-        class="card group relative overflow-hidden p-5 transition
-        {{ $scope === 'upcoming'
-            ? 'ring-2 ring-secondary/30'
-            : 'hover:-translate-y-0.5 hover:shadow-md'
-        }}">
-
-        @if ($scope === 'upcoming')
-            <span class="absolute inset-x-0 top-0 h-1 bg-secondary"></span>
-        @endif
-
-
-        <div class="flex items-center justify-between gap-4">
-
-            <div>
-
-                <p class="text-xs font-medium text-slate-500">
-                    Upcoming
-                </p>
-
-                <p class="mt-1 font-heading text-2xl font-bold text-primary">
-                    {{ number_format($upcomingCount) }}
-                </p>
-
-                <p class="mt-1 text-[11px] text-slate-400">
-                    Scheduled and confirmed visits
-                </p>
-
-            </div>
-
-
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+            <x-slot:icon>
 
                 <svg
                     class="h-5 w-5"
@@ -116,51 +65,20 @@
 
                 </svg>
 
-            </div>
+            </x-slot:icon>
 
-        </div>
-
-    </a>
+        </x-metric-card>
 
 
+        <x-metric-card
+            label="Checked In"
+            :value="number_format($checkedInCount)"
+            :href="route('appointments.index', ['status' => 'checked_in'])"
+            helper="Appointment visitors currently recorded on site."
+            tone="success"
+            class="{{ $status === 'checked_in' ? 'ring-2 ring-success/30' : '' }}">
 
-    {{-- Checked In --}}
-    <a
-        href="{{ route('appointments.index', ['status' => 'checked_in']) }}"
-        @if ($status === 'checked_in')
-            aria-current="page"
-        @endif
-        class="card group relative overflow-hidden p-5 transition
-        {{ $status === 'checked_in'
-            ? 'ring-2 ring-success/30'
-            : 'hover:-translate-y-0.5 hover:shadow-md'
-        }}">
-
-        @if ($status === 'checked_in')
-            <span class="absolute inset-x-0 top-0 h-1 bg-success"></span>
-        @endif
-
-
-        <div class="flex items-center justify-between gap-4">
-
-            <div>
-
-                <p class="text-xs font-medium text-slate-500">
-                    Checked In
-                </p>
-
-                <p class="mt-1 font-heading text-2xl font-bold text-primary">
-                    {{ number_format($checkedInCount) }}
-                </p>
-
-                <p class="mt-1 text-[11px] text-slate-400">
-                    Visitors currently on site
-                </p>
-
-            </div>
-
-
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success">
+            <x-slot:icon>
 
                 <svg
                     class="h-5 w-5"
@@ -176,10 +94,10 @@
 
                 </svg>
 
-            </div>
+            </x-slot:icon>
 
-        </div>
+        </x-metric-card>
 
-    </a>
+    </div>
 
-</div>
+</section>

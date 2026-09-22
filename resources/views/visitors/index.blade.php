@@ -7,252 +7,251 @@
 <div class="space-y-4">
 
     {{-- =====================================================
-         MODERN VISITOR DESK HEADER
+         VISITOR DESK HEADER
     ====================================================== --}}
-    <section class="card overflow-hidden">
+    <x-page-header
+        eyebrow="Reception Operations"
+        title="Visitor Desk"
+        badge="Front Desk Operations"
+        description="Manage arrivals, host coordination, active visits, departures, and visitor records from one workspace.">
 
-        <div class="px-5 py-5 sm:px-6">
+        <x-slot:actions>
 
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            @can('useAiAssist')
 
-                <div class="min-w-0">
+                <button
+                    type="button"
+                    data-ai-assistant-open
+                    class="btn-outline inline-flex items-center gap-2">
 
-                    <p class="text-[9px] font-semibold uppercase tracking-[0.16em] text-secondary">
-                        Reception Operations
-                    </p>
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                    <h1 class="mt-1 font-heading text-xl font-bold tracking-tight text-primary sm:text-2xl">
-                        Visitor Desk
-                    </h1>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 3l1.1 3.3L16 7.4l-2.9 1.1L12 12l-1.1-3.5L8 7.4l2.9-1.1L12 3zM6 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z" />
 
-                    <p class="mt-1 max-w-2xl text-xs leading-5 text-slate-500 sm:text-sm">
-                        Manage arriving visitors, host coordination, active visits, and departures.
-                    </p>
+                    </svg>
 
-                </div>
+                    AI Assistant
 
+                </button>
 
-                <div class="flex flex-wrap items-center gap-2">
-
-                    @can('useAiAssist')
-
-                        <button
-                            type="button"
-                            data-ai-assistant-open
-                            class="btn-outline">
-
-                            <svg
-                                class="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
-
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 3l1.1 3.3L16 7.4l-2.9 1.1L12 12l-1.1-3.5L8 7.4l2.9-1.1L12 3zM6 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z" />
-
-                            </svg>
-
-                            AI Assistant
-
-                        </button>
-
-                    @endcan
+            @endcan
 
 
-                    @can('operateVisitorDesk')
+            @can('operateVisitorDesk')
 
-                        <a
-                            href="#register-visitor"
-                            class="btn-primary">
-
-                            <svg
-                                class="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
-
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15 19a4 4 0 00-8 0M11 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6" />
-
-                            </svg>
-
-                            Register Visitor
-
-                        </a>
-
-                    @endcan
-
-                </div>
-
-            </div>
-
-
-            {{-- Operational snapshot --}}
-            <div class="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-4">
-
-                {{-- Expected --}}
                 <a
-                    href="{{ route(
-                        'visitors.index',
-                        array_filter([
-                            'status' => 'expected',
-                            'q' => request('q'),
-                            'visitor_type' => request('visitor_type'),
-                        ])
-                    ) }}"
-                    class="group rounded-xl border border-border bg-background/40 px-3 py-3 transition hover:border-accent/40 hover:bg-accent/5">
+                    href="#register-visitor"
+                    data-visitor-register-open
+                    class="btn-primary inline-flex items-center gap-2">
 
-                    <div class="flex items-center justify-between gap-2">
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                        <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                            Expected
-                        </p>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19a4 4 0 00-8 0M11 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6" />
 
-                        <span class="h-2 w-2 rounded-full bg-accent"></span>
+                    </svg>
 
-                    </div>
-
-                    <p class="mt-1 font-heading text-xl font-bold text-primary">
-                        {{ $visitorCounts['expected'] }}
-                    </p>
-
-                    <p class="mt-0.5 text-[9px] text-slate-400">
-                        Awaiting arrival
-                    </p>
+                    Register Visitor
 
                 </a>
 
+            @endcan
 
-                {{-- Awaiting host --}}
-                <a
-                    href="{{ route(
-                        'visitors.index',
-                        array_filter([
-                            'status' => 'awaiting_host',
-                            'q' => request('q'),
-                            'visitor_type' => request('visitor_type'),
-                        ])
-                    ) }}"
-                    class="group rounded-xl border border-border bg-background/40 px-3 py-3 transition hover:border-warning/40 hover:bg-warning/5">
+        </x-slot:actions>
 
-                    <div class="flex items-center justify-between gap-2">
-
-                        <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                            Awaiting Host
-                        </p>
-
-                        <span class="h-2 w-2 rounded-full bg-warning"></span>
-
-                    </div>
-
-                    <p class="mt-1 font-heading text-xl font-bold text-primary">
-                        {{ $visitorCounts['awaiting_host'] }}
-                    </p>
-
-                    <p class="mt-0.5 text-[9px] text-slate-400">
-                        Requires coordination
-                    </p>
-
-                </a>
+    </x-page-header>
 
 
-                {{-- On Site --}}
-                <a
-                    href="{{ route(
-                        'visitors.index',
-                        array_filter([
-                            'status' => 'checked_in',
-                            'q' => request('q'),
-                            'visitor_type' => request('visitor_type'),
-                        ])
-                    ) }}"
-                    class="group rounded-xl border border-border bg-background/40 px-3 py-3 transition hover:border-success/40 hover:bg-success/5">
+    {{-- =====================================================
+         VISITOR OPERATIONS OVERVIEW
+    ====================================================== --}}
+    <section class="space-y-4">
 
-                    <div class="flex items-center justify-between gap-2">
-
-                        <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                            On Site
-                        </p>
-
-                        <span class="h-2 w-2 rounded-full bg-success"></span>
-
-                    </div>
-
-                    <p class="mt-1 font-heading text-xl font-bold text-primary">
-                        {{ $visitorCounts['checked_in'] }}
-                    </p>
-
-                    <p class="mt-0.5 text-[9px] text-slate-400">
-                        Currently checked in
-                    </p>
-
-                </a>
+        <x-section-header
+            eyebrow="Overview"
+            title="Visitor Status"
+            description="A live operational snapshot of arrivals, host coordination, active visits, and completed visitor records." />
 
 
-                {{-- Completed --}}
-                <a
-                    href="{{ route(
-                        'visitors.index',
-                        array_filter([
-                            'status' => 'completed',
-                            'q' => request('q'),
-                            'visitor_type' => request('visitor_type'),
-                        ])
-                    ) }}"
-                    class="group rounded-xl border border-border bg-background/40 px-3 py-3 transition hover:border-slate-300 hover:bg-background">
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
-                    <div class="flex items-center justify-between gap-2">
+            <x-metric-card
+                label="Expected"
+                :value="number_format($visitorCounts['expected'])"
+                :href="route('visitors.index', array_filter([
+                    'status' => 'expected',
+                    'q' => request('q'),
+                    'visitor_type' => request('visitor_type'),
+                ]))"
+                helper="Visitors registered and currently awaiting arrival."
+                tone="accent">
 
-                        <p class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                            Completed
-                        </p>
+                <x-slot:icon>
 
-                        <span class="h-2 w-2 rounded-full bg-slate-400"></span>
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                    </div>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19a4 4 0 00-8 0M11 11a4 4 0 100-8 4 4 0 000 8z" />
 
-                    <p class="mt-1 font-heading text-xl font-bold text-primary">
-                        {{ $visitorCounts['completed'] }}
-                    </p>
+                    </svg>
 
-                    <p class="mt-0.5 text-[9px] text-slate-400">
-                        Closed visits
-                    </p>
+                </x-slot:icon>
 
-                </a>
-
-            </div>
+            </x-metric-card>
 
 
-            <div class="mt-3 flex items-center justify-between gap-3 border-t border-border pt-3">
+            <x-metric-card
+                label="Awaiting Host"
+                :value="number_format($visitorCounts['awaiting_host'])"
+                :href="route('visitors.index', array_filter([
+                    'status' => 'awaiting_host',
+                    'q' => request('q'),
+                    'visitor_type' => request('visitor_type'),
+                ]))"
+                helper="Arrivals currently requiring host coordination."
+                tone="warning">
 
-                <p class="text-[10px] text-slate-400">
-                    {{ number_format($visitorCounts['total']) }}
-                    total visitor
-                    {{ $visitorCounts['total'] === 1 ? 'record' : 'records' }}
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="On Site"
+                :value="number_format($visitorCounts['checked_in'])"
+                :href="route('visitors.index', array_filter([
+                    'status' => 'checked_in',
+                    'q' => request('q'),
+                    'visitor_type' => request('visitor_type'),
+                ]))"
+                helper="Visitors currently checked in and present on site."
+                tone="success">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Completed"
+                :value="number_format($visitorCounts['completed'])"
+                :href="route('visitors.index', array_filter([
+                    'status' => 'completed',
+                    'q' => request('q'),
+                    'visitor_type' => request('visitor_type'),
+                ]))"
+                helper="Visitor records with a completed visit lifecycle."
+                tone="primary">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+        </div>
+
+
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+
+            <div>
+
+                <p class="text-xs font-semibold text-primary">
+                    Visitor Records
                 </p>
 
+                <p class="mt-0.5 text-[11px] text-slate-500">
 
-                @if ($visitorCounts['declined'] > 0)
+                    {{ number_format($visitorCounts['total']) }}
 
-                    <a
-                        href="{{ route('visitors.index', ['status' => 'declined']) }}"
-                        class="text-[10px] font-semibold text-error transition hover:underline">
+                    total visitor
+                    {{ $visitorCounts['total'] === 1 ? 'record' : 'records' }}
 
-                        {{ $visitorCounts['declined'] }}
-                        declined
-
-                    </a>
-
-                @endif
+                </p>
 
             </div>
+
+
+            @if ($visitorCounts['declined'] > 0)
+
+                <a
+                    href="{{ route('visitors.index', ['status' => 'declined']) }}"
+                    class="text-xs font-semibold text-error transition hover:text-primary">
+
+                    {{ number_format($visitorCounts['declined']) }}
+                    declined →
+
+                </a>
+
+            @endif
 
         </div>
 
@@ -277,39 +276,28 @@
         {{-- Visitor Records --}}
         <div class="min-w-0 space-y-4">
 
-            {{-- Visitor Activity heading --}}
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <x-section-header
+                eyebrow="Visitor Queue"
+                title="Visitor Activity"
+                description="Monitor arrivals, host coordination, active visits, and completed records.">
 
-                <div>
+                <x-slot:actions>
 
-                    <p class="text-[9px] font-semibold uppercase tracking-[0.16em] text-secondary">
-                        Visitor Queue
-                    </p>
+                    <div class="text-left sm:text-right">
 
-                    <h3 class="mt-0.5 font-heading text-lg font-semibold text-primary">
-                        Visitor Activity
-                    </h3>
+                        <p class="font-heading text-lg font-bold text-primary">
+                            {{ number_format($visitors->total()) }}
+                        </p>
 
-                    <p class="mt-0.5 text-xs text-slate-500">
-                        Monitor arrivals, host coordination, active visits, and completed records.
-                    </p>
+                        <p class="text-[9px] uppercase tracking-wide text-slate-400">
+                            {{ $visitors->total() === 1 ? 'result' : 'results' }}
+                        </p>
 
-                </div>
+                    </div>
 
+                </x-slot:actions>
 
-                <div class="shrink-0 text-left sm:text-right">
-
-                    <p class="font-heading text-lg font-bold text-primary">
-                        {{ number_format($visitors->total()) }}
-                    </p>
-
-                    <p class="text-[9px] uppercase tracking-wide text-slate-400">
-                        {{ $visitors->total() === 1 ? 'result' : 'results' }}
-                    </p>
-
-                </div>
-
-            </div>
+            </x-section-header>
 
 
             {{-- =====================================================
