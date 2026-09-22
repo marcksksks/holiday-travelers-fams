@@ -4,46 +4,25 @@
 
 @section('content')
 
-<div class="space-y-4">
+<div class="space-y-6">
 
     {{-- =====================================================
          DOCUMENT MANAGEMENT WORKSPACE HEADER
     ====================================================== --}}
-    <section class="card overflow-hidden">
+    <x-page-header
+        eyebrow="Records Workspace"
+        title="Document Management"
+        badge="Controlled Library"
+        description="Organize, secure, retrieve, version, review, and archive organizational records from one controlled library.">
 
-        <div class="flex flex-col gap-5 px-5 py-5 lg:flex-row lg:items-center lg:justify-between sm:px-6">
+        @can('manageDocuments')
 
-            <div class="min-w-0">
-
-                <div class="flex items-center gap-2">
-
-                    <span class="h-2 w-2 rounded-full bg-secondary"></span>
-
-                    <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">
-                        Records Workspace
-                    </p>
-
-                </div>
-
-
-                <h1 class="mt-2 font-heading text-xl font-bold tracking-tight text-primary sm:text-2xl">
-                    Document Management
-                </h1>
-
-
-                <p class="mt-1 max-w-2xl text-xs leading-5 text-slate-500 sm:text-sm">
-                    Organize, secure, retrieve, version, and archive organizational records from one controlled library.
-                </p>
-
-            </div>
-
-
-            @can('manageDocuments')
+            <x-slot:actions>
 
                 <a
                     href="#upload-document"
                     data-document-upload-open
-                    class="btn-primary inline-flex shrink-0 items-center justify-center gap-2 self-start lg:self-auto">
+                    class="btn-primary inline-flex items-center justify-center gap-2">
 
                     <svg
                         class="h-4 w-4"
@@ -63,108 +42,149 @@
 
                 </a>
 
-            @endcan
+            </x-slot:actions>
 
-        </div>
+        @endcan
 
-
-        {{-- Compact library overview --}}
-        <div class="grid border-t border-border sm:grid-cols-2 xl:grid-cols-4">
-
-            <a
-                href="{{ route('documents.index') }}"
-                class="group flex items-center justify-between gap-3 border-b border-border px-5 py-3 transition hover:bg-primary/5 sm:border-r xl:border-b-0">
-
-                <div>
-
-                    <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Total
-                    </p>
-
-                    <p class="mt-0.5 text-xs font-medium text-slate-500">
-                        Documents
-                    </p>
-
-                </div>
-
-                <span class="font-heading text-xl font-bold text-primary">
-                    {{ number_format($counts['total']) }}
-                </span>
-
-            </a>
+    </x-page-header>
 
 
-            <a
-                href="{{ route('documents.index', ['status' => 'active']) }}"
-                class="group flex items-center justify-between gap-3 border-b border-border px-5 py-3 transition hover:bg-success/5 xl:border-b-0 xl:border-r">
+    {{-- =====================================================
+         DOCUMENT LIBRARY OVERVIEW
+    ====================================================== --}}
+    <section class="space-y-4">
 
-                <div>
-
-                    <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Active
-                    </p>
-
-                    <p class="mt-0.5 text-xs font-medium text-slate-500">
-                        Current records
-                    </p>
-
-                </div>
-
-                <span class="font-heading text-xl font-bold text-success">
-                    {{ number_format($counts['active']) }}
-                </span>
-
-            </a>
+        <x-section-header
+            eyebrow="Overview"
+            title="Library Status"
+            description="A current snapshot of the document records available within your access scope." />
 
 
-            <a
-                href="{{ route('documents.index', ['status' => 'needs_review']) }}"
-                class="group flex items-center justify-between gap-3 border-b border-border px-5 py-3 transition hover:bg-warning/5 sm:border-r xl:border-b-0">
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
-                <div>
+            <x-metric-card
+                label="Total Documents"
+                :value="number_format($counts['total'])"
+                :href="route('documents.index')"
+                helper="All document records currently visible to your role."
+                tone="primary">
 
-                    <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Needs Review
-                    </p>
+                <x-slot:icon>
 
-                    <p class="mt-0.5 text-xs font-medium text-slate-500">
-                        Attention required
-                    </p>
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                </div>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M7 3h7l5 5v13H7V3zm7 0v5h5M10 13h6M10 17h6" />
 
-                <span class="font-heading text-xl font-bold text-amber-600">
-                    {{ number_format($counts['needs_review']) }}
-                </span>
+                    </svg>
 
-            </a>
+                </x-slot:icon>
+
+            </x-metric-card>
 
 
-            <a
-                href="{{ route('documents.index', ['status' => 'archived']) }}"
-                class="group flex items-center justify-between gap-3 px-5 py-3 transition hover:bg-slate-50">
+            <x-metric-card
+                label="Active"
+                :value="number_format($counts['active'])"
+                :href="route('documents.index', ['status' => 'active'])"
+                helper="Current records available for normal operational use."
+                tone="success">
 
-                <div>
+                <x-slot:icon>
 
-                    <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Archived
-                    </p>
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                    <p class="mt-0.5 text-xs font-medium text-slate-500">
-                        Historical records
-                    </p>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7" />
 
-                </div>
+                    </svg>
 
-                <span class="font-heading text-xl font-bold text-slate-500">
-                    {{ number_format($counts['archived']) }}
-                </span>
+                </x-slot:icon>
 
-            </a>
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Needs Review"
+                :value="number_format($counts['needs_review'])"
+                :href="route('documents.index', ['status' => 'needs_review'])"
+                helper="Records currently requiring review or administrative attention."
+                tone="warning">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 9v4m0 4h.01M10.3 4.3L2.8 17.3A2 2 0 004.5 20h15a2 2 0 001.7-2.7L13.7 4.3a2 2 0 00-3.4 0z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Archived"
+                :value="number_format($counts['archived'])"
+                :href="route('documents.index', ['status' => 'archived'])"
+                helper="Historical records retained outside the active document set."
+                tone="accent">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 8h14v12H5V8zm-1-4h16v4H4V4zm5 8h6" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
 
         </div>
 
     </section>
+
+    {{-- =====================================================
+         DOCUMENT LIBRARY
+    ====================================================== --}}
+    <x-section-header
+        eyebrow="Library"
+        title="Document Library"
+        description="Browse folders, locate records, manage document lifecycle, and open related operational records." />
+
 
     {{-- Main Library --}}
     <div class="grid gap-4 xl:grid-cols-[260px_minmax(0,1fr)]">
@@ -1687,7 +1707,9 @@
             {{-- =====================================================
                  MODERN DOCUMENT DIRECTORY
             ====================================================== --}}
-            <div class="table-shell">
+            @include('documents._mobile-cards')
+
+            <div class="table-shell hidden md:block">
 
                 <div class="overflow-x-auto">
 

@@ -6,126 +6,154 @@
 
 <div class="space-y-6">
 
-    {{-- Header --}}
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-
-        <div>
-            <div class="mb-2 flex items-center gap-2">
-                <div class="h-1 w-12 rounded-full bg-secondary"></div>
-
-                <span class="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                    Records Governance
-                </span>
-            </div>
-
-            <h2 class="font-heading text-2xl font-bold tracking-tight text-primary">
-                Records Retention & Compliance
-            </h2>
-
-            <p class="mt-1 max-w-2xl text-sm text-slate-500">
-                Monitor retention periods, compliance conditions, review schedules, and controlled record disposition.
-            </p>
-        </div>
+    {{-- =====================================================
+     RETENTION WORKSPACE HEADER
+====================================================== --}}
+<x-page-header
+    eyebrow="Records Governance"
+    title="Records Retention & Compliance"
+    badge="Governance Workspace"
+    description="Monitor retention periods, compliance conditions, review schedules, policies, and controlled record disposition." />
 
 
-    </div>
+{{-- =====================================================
+     RETENTION OVERVIEW
+====================================================== --}}
+<section class="space-y-4">
 
-    {{-- Summary Cards --}}
-    @php
-        $retentionSummary = [
-            [
-                'label' => 'Tracked Records',
-                'value' => $stats['total'],
-                'description' => 'Under retention control',
-                'numberClass' => 'text-primary',
-                'iconClass' => 'bg-primary/5 text-primary',
-                'barClass' => 'bg-primary',
-            ],
-            [
-                'label' => 'Compliant',
-                'value' => $stats['compliant'],
-                'description' => 'Meeting retention requirements',
-                'numberClass' => 'text-success',
-                'iconClass' => 'bg-success/10 text-success',
-                'barClass' => 'bg-success',
-            ],
-            [
-                'label' => 'At Risk',
-                'value' => $stats['at_risk'],
-                'description' => 'Compliance attention needed',
-                'numberClass' => 'text-amber-600',
-                'iconClass' => 'bg-warning/10 text-amber-600',
-                'barClass' => 'bg-warning',
-            ],
-            [
-                'label' => 'Review Required',
-                'value' => $stats['review_required'],
-                'description' => 'Awaiting retention review',
-                'numberClass' => 'text-error',
-                'iconClass' => 'bg-error/10 text-error',
-                'barClass' => 'bg-error',
-            ],
-        ];
-    @endphp
+    <x-section-header
+        eyebrow="Overview"
+        title="Compliance Status"
+        description="A current snapshot of records under retention control and areas requiring compliance attention." />
+
 
     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
-        @foreach ($retentionSummary as $card)
+        <x-metric-card
+            label="Tracked Records"
+            :value="number_format($stats['total'])"
+            :href="route('retention.index', ['tab' => 'records'])"
+            helper="Records currently operating under retention control."
+            tone="primary">
 
-            <div class="card group overflow-hidden p-4">
+            <x-slot:icon>
 
-                <div class="flex items-center justify-between gap-4">
+                <svg
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
 
-                    <div class="min-w-0">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4m5-4a11 11 0 01-8 3 11 11 0 01-8-3c0 5.25 3.44 10.74 8 12 4.56-1.26 8-6.75 8-12z" />
 
-                        <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                            {{ $card['label'] }}
-                        </p>
+                </svg>
 
-                        <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight {{ $card['numberClass'] }}">
-                            {{ number_format($card['value']) }}
-                        </p>
+            </x-slot:icon>
 
-                        <p class="mt-0.5 truncate text-xs text-slate-500">
-                            {{ $card['description'] }}
-                        </p>
-
-                    </div>
-
-
-                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $card['iconClass'] }}">
-
-                        <svg
-                            class="h-5 w-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            aria-hidden="true">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 12l2 2 4-4m5-4a11 11 0 01-8 3 11 11 0 01-8-3c0 5.25 3.44 10.74 8 12 4.56-1.26 8-6.75 8-12z" />
-
-                        </svg>
-
-                    </div>
-
-                </div>
+        </x-metric-card>
 
 
-                <div class="mt-4 h-1 overflow-hidden rounded-full bg-slate-100">
-                    <div class="h-full w-full rounded-full {{ $card['barClass'] }}"></div>
-                </div>
+        <x-metric-card
+            label="Compliant"
+            :value="number_format($stats['compliant'])"
+            :href="route('retention.index', [
+                'tab' => 'records',
+                'compliance' => 'compliant',
+            ])"
+            helper="Records currently meeting their retention requirements."
+            tone="success">
 
-            </div>
+            <x-slot:icon>
 
-        @endforeach
+                <svg
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7" />
+
+                </svg>
+
+            </x-slot:icon>
+
+        </x-metric-card>
+
+
+        <x-metric-card
+            label="At Risk"
+            :value="number_format($stats['at_risk'])"
+            :href="route('retention.index', [
+                'tab' => 'records',
+                'compliance' => 'at_risk',
+            ])"
+            helper="Records currently requiring compliance attention."
+            tone="warning">
+
+            <x-slot:icon>
+
+                <svg
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 9v4m0 4h.01M10.3 4.3L2.8 17.3A2 2 0 004.5 20h15a2 2 0 001.7-2.7L13.7 4.3a2 2 0 00-3.4 0z" />
+
+                </svg>
+
+            </x-slot:icon>
+
+        </x-metric-card>
+
+
+        <x-metric-card
+            label="Review Required"
+            :value="number_format($stats['review_required'])"
+            :href="route('retention.index', [
+                'tab' => 'records',
+                'status' => 'review_required',
+            ])"
+            helper="Records currently awaiting a retention review decision."
+            tone="error">
+
+            <x-slot:icon>
+
+                <svg
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8v4m0 4h.01M4 6h16v14H4V6zm4-3v3m8-3v3" />
+
+                </svg>
+
+            </x-slot:icon>
+
+        </x-metric-card>
 
     </div>
 
-    {{-- Retention Workspace Navigation --}}
+</section>
+
+{{-- Retention Workspace Navigation --}}
     @php
         $retentionUser = request()->user();
 
@@ -673,7 +701,9 @@
 
             </div>
 
-            <div class="table-shell">
+            @include('retention._mobile-records')
+
+            <div class="table-shell hidden md:block">
 
                 <div class="overflow-x-auto">
 
