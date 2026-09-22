@@ -4,55 +4,238 @@
 
 @section('content')
 
-<div class="mx-auto max-w-7xl space-y-6">
+<div class="space-y-6">
 
-    {{-- Page Header --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    {{-- =====================================================
+         SETTINGS WORKSPACE HEADER
+    ====================================================== --}}
+    <x-page-header
+        eyebrow="Account"
+        title="Settings"
+        badge="Personal Workspace"
+        description="Manage your personal profile, sign-in security, appearance preferences, and application information.">
 
-        <div>
+        <x-slot:actions>
 
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
+            <div class="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card">
 
-            <h2 class="font-heading text-2xl font-bold text-primary">
-                Settings
-            </h2>
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-heading text-sm font-bold text-white">
 
-            <p class="mt-1 text-sm text-slate-500">
-                Manage your personal profile, account security, and view application information.
-            </p>
+                    {{ strtoupper(substr($user->full_name ?: $user->email, 0, 1)) }}
 
-        </div>
+                </div>
 
 
-        <div class="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card">
+                <div class="min-w-0">
 
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-heading text-sm font-bold text-white">
+                    <p class="truncate font-button text-sm font-semibold text-primary">
+                        {{ $user->full_name }}
+                    </p>
 
-                {{ strtoupper(substr($user->full_name ?: $user->email, 0, 1)) }}
+                    <p class="truncate text-xs text-slate-400">
+                        {{ \App\Models\User::ROLES[$user->app_role] ?? str($user->app_role)->headline() }}
+                    </p>
 
-            </div>
-
-            <div>
-
-                <p class="font-button text-sm font-semibold text-primary">
-                    {{ $user->full_name }}
-                </p>
-
-                <p class="text-xs text-slate-400">
-                    {{ \App\Models\User::ROLES[$user->app_role] ?? str($user->app_role)->headline() }}
-                </p>
+                </div>
 
             </div>
 
+        </x-slot:actions>
+
+    </x-page-header>
+
+
+    {{-- =====================================================
+         SETTINGS NAVIGATION
+    ====================================================== --}}
+    <section
+        class="card p-4"
+        aria-label="Settings sections">
+
+        <x-section-header
+            eyebrow="Account Workspace"
+            title="Settings Navigation"
+            description="Jump directly to the account area you want to manage." />
+
+
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+
+            <a
+                href="#settings-profile"
+                class="group rounded-xl border border-border bg-background/40 p-4 transition hover:border-accent hover:bg-accent/5">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8" />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-sm font-semibold text-primary">
+                            Profile
+                        </p>
+
+                        <p class="mt-0.5 text-xs text-slate-500">
+                            Personal details
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+
+            <a
+                href="#settings-security"
+                class="group rounded-xl border border-border bg-background/40 p-4 transition hover:border-accent hover:bg-accent/5">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 3l7 4v5c0 5-3 8-7 9-4-1-7-4-7-9V7l7-4zm-2 9l2 2 4-4" />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-sm font-semibold text-primary">
+                            Security
+                        </p>
+
+                        <p class="mt-0.5 text-xs text-slate-500">
+                            Password & MFA
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+
+            <a
+                href="#settings-appearance"
+                class="group rounded-xl border border-border bg-background/40 p-4 transition hover:border-accent hover:bg-accent/5">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 3v1m0 16v1M4.22 4.22l.7.7m14.16 14.16.7.7M3 12h1m16 0h1M4.22 19.78l.7-.7M19.08 4.92l.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-sm font-semibold text-primary">
+                            Appearance
+                        </p>
+
+                        <p class="mt-0.5 text-xs text-slate-500">
+                            Theme preferences
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+
+            <a
+                href="#settings-system"
+                class="group rounded-xl border border-border bg-background/40 p-4 transition hover:border-accent hover:bg-accent/5">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success">
+
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 5h16v14H4V5zm4 18h8M12 19v4" />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-sm font-semibold text-primary">
+                            System
+                        </p>
+
+                        <p class="mt-0.5 text-xs text-slate-500">
+                            Application info
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </a>
+
         </div>
 
-    </div>
+    </section>
 
+    <div class="grid items-start gap-6 xl:grid-cols-2">
 
-    <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-
+        <div
+            data-settings-primary-column
+            class="space-y-6">
         {{-- Profile --}}
-        <section class="card overflow-hidden">
+        <section
+            id="settings-profile"
+            class="card scroll-mt-24 overflow-hidden">
 
             <div class="border-b border-border bg-background/60 px-6 py-5">
 
@@ -251,11 +434,258 @@
         </section>
 
 
+        {{-- Appearance --}}
+        <section
+            id="settings-appearance"
+            class="card scroll-mt-24 overflow-hidden">
+
+            <div class="border-b border-border bg-background/60 px-6 py-5">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 3v1m0 16v1M4.22 4.22l.7.7m14.16 14.16.7.7M3 12h1m16 0h1M4.22 19.78l.7-.7M19.08 4.92l.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+
+                        </svg>
+
+                    </div>
+
+
+                    <div>
+
+                        <h3 class="font-heading text-base font-semibold text-primary">
+                            Appearance
+                        </h3>
+
+                        <p class="mt-0.5 text-xs text-slate-500">
+                            Choose how Holiday Travelers FAMS appears on this device.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="grid gap-4 p-6 md:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+
+                {{-- Light --}}
+                <button
+                    type="button"
+                    data-theme-option="light"
+                    class="theme-choice rounded-2xl p-5 text-left">
+
+                    <div class="mb-4 flex items-center justify-between">
+
+                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-secondary">
+
+                            <svg
+                                class="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 3v1m0 16v1M4.22 4.22l.7.7m14.16 14.16.7.7M3 12h1m16 0h1M4.22 19.78l.7-.7M19.08 4.92l.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+
+                            </svg>
+
+                        </div>
+
+                        <span
+                            data-theme-check="light"
+                            class="hidden text-secondary">
+
+                            <svg class="h-5 w-5"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2.5"
+                                    d="M5 13l4 4L19 7" />
+
+                            </svg>
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="font-heading text-sm font-semibold text-primary">
+                        Light
+                    </p>
+
+                    <p class="mt-1 text-xs leading-5 text-slate-500">
+                        Sky & Sunset with bright cards and light backgrounds.
+                    </p>
+
+                </button>
+
+
+                {{-- Dark --}}
+                <button
+                    type="button"
+                    data-theme-option="dark"
+                    class="theme-choice rounded-2xl p-5 text-left">
+
+                    <div class="mb-4 flex items-center justify-between">
+
+                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-accent">
+
+                            <svg
+                                class="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+
+                            </svg>
+
+                        </div>
+
+                        <span
+                            data-theme-check="dark"
+                            class="hidden text-secondary">
+
+                            <svg class="h-5 w-5"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2.5"
+                                    d="M5 13l4 4L19 7" />
+
+                            </svg>
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="font-heading text-sm font-semibold text-primary">
+                        Dark
+                    </p>
+
+                    <p class="mt-1 text-xs leading-5 text-slate-500">
+                        Night Sky & Sunset with dark navy and slate surfaces.
+                    </p>
+
+                </button>
+
+
+                {{-- System --}}
+                <button
+                    type="button"
+                    data-theme-option="system"
+                    class="theme-choice rounded-2xl p-5 text-left">
+
+                    <div class="mb-4 flex items-center justify-between">
+
+                        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
+
+                            <svg
+                                class="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M4 5h16v11H4V5zm4 15h8m-4-4v4" />
+
+                            </svg>
+
+                        </div>
+
+                        <span
+                            data-theme-check="system"
+                            class="hidden text-secondary">
+
+                            <svg class="h-5 w-5"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2.5"
+                                    d="M5 13l4 4L19 7" />
+
+                            </svg>
+
+                        </span>
+
+                    </div>
+
+
+                    <p class="font-heading text-sm font-semibold text-primary">
+                        System
+                    </p>
+
+                    <p class="mt-1 text-xs leading-5 text-slate-500">
+                        Automatically follows your Windows or browser appearance.
+                    </p>
+
+                </button>
+
+            </div>
+
+
+            <div class="border-t border-border bg-background/40 px-6 py-4">
+
+                <p class="text-xs text-slate-500">
+                    Current appearance:
+                    <span
+                        data-theme-current
+                        class="font-semibold text-primary">
+                        System
+                    </span>
+                </p>
+
+            </div>
+
+        </section>
+
+        </div>
+
         {{-- Right Column --}}
-        <div class="space-y-6">
+        <div
+            data-settings-security-column
+            class="space-y-6">
 
             {{-- Account --}}
-            <section class="card overflow-hidden">
+            <section
+                id="settings-account"
+                class="card scroll-mt-24 overflow-hidden">
 
                 <div class="border-b border-border px-5 py-4">
 
@@ -335,7 +765,9 @@
 
             </section>
             {{-- Security --}}
-            <section class="card overflow-hidden">
+            <section
+                id="settings-security"
+                class="card scroll-mt-24 overflow-hidden">
 
                 <div class="border-b border-border px-5 py-4">
 
@@ -1123,248 +1555,10 @@
     </div>
 
 
-    {{-- Appearance --}}
-    <section class="card overflow-hidden">
-
-        <div class="border-b border-border bg-background/60 px-6 py-5">
-
-            <div class="flex items-center gap-3">
-
-                <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
-
-                    <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 3v1m0 16v1M4.22 4.22l.7.7m14.16 14.16.7.7M3 12h1m16 0h1M4.22 19.78l.7-.7M19.08 4.92l.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-
-                    </svg>
-
-                </div>
-
-
-                <div>
-
-                    <h3 class="font-heading text-base font-semibold text-primary">
-                        Appearance
-                    </h3>
-
-                    <p class="mt-0.5 text-xs text-slate-500">
-                        Choose how Holiday Travelers FAMS appears on this device.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="grid gap-4 p-6 md:grid-cols-3">
-
-            {{-- Light --}}
-            <button
-                type="button"
-                data-theme-option="light"
-                class="theme-choice rounded-2xl p-5 text-left">
-
-                <div class="mb-4 flex items-center justify-between">
-
-                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-secondary">
-
-                        <svg
-                            class="h-5 w-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 3v1m0 16v1M4.22 4.22l.7.7m14.16 14.16.7.7M3 12h1m16 0h1M4.22 19.78l.7-.7M19.08 4.92l.7-.7M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-
-                        </svg>
-
-                    </div>
-
-                    <span
-                        data-theme-check="light"
-                        class="hidden text-secondary">
-
-                        <svg class="h-5 w-5"
-                             fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2.5"
-                                d="M5 13l4 4L19 7" />
-
-                        </svg>
-
-                    </span>
-
-                </div>
-
-
-                <p class="font-heading text-sm font-semibold text-primary">
-                    Light
-                </p>
-
-                <p class="mt-1 text-xs leading-5 text-slate-500">
-                    Sky & Sunset with bright cards and light backgrounds.
-                </p>
-
-            </button>
-
-
-            {{-- Dark --}}
-            <button
-                type="button"
-                data-theme-option="dark"
-                class="theme-choice rounded-2xl p-5 text-left">
-
-                <div class="mb-4 flex items-center justify-between">
-
-                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-accent">
-
-                        <svg
-                            class="h-5 w-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-
-                        </svg>
-
-                    </div>
-
-                    <span
-                        data-theme-check="dark"
-                        class="hidden text-secondary">
-
-                        <svg class="h-5 w-5"
-                             fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2.5"
-                                d="M5 13l4 4L19 7" />
-
-                        </svg>
-
-                    </span>
-
-                </div>
-
-
-                <p class="font-heading text-sm font-semibold text-primary">
-                    Dark
-                </p>
-
-                <p class="mt-1 text-xs leading-5 text-slate-500">
-                    Night Sky & Sunset with dark navy and slate surfaces.
-                </p>
-
-            </button>
-
-
-            {{-- System --}}
-            <button
-                type="button"
-                data-theme-option="system"
-                class="theme-choice rounded-2xl p-5 text-left">
-
-                <div class="mb-4 flex items-center justify-between">
-
-                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
-
-                        <svg
-                            class="h-5 w-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 5h16v11H4V5zm4 15h8m-4-4v4" />
-
-                        </svg>
-
-                    </div>
-
-                    <span
-                        data-theme-check="system"
-                        class="hidden text-secondary">
-
-                        <svg class="h-5 w-5"
-                             fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2.5"
-                                d="M5 13l4 4L19 7" />
-
-                        </svg>
-
-                    </span>
-
-                </div>
-
-
-                <p class="font-heading text-sm font-semibold text-primary">
-                    System
-                </p>
-
-                <p class="mt-1 text-xs leading-5 text-slate-500">
-                    Automatically follows your Windows or browser appearance.
-                </p>
-
-            </button>
-
-        </div>
-
-
-        <div class="border-t border-border bg-background/40 px-6 py-4">
-
-            <p class="text-xs text-slate-500">
-                Current appearance:
-                <span
-                    data-theme-current
-                    class="font-semibold text-primary">
-                    System
-                </span>
-            </p>
-
-        </div>
-
-    </section>
-
-
     {{-- Application Information --}}
-    <section class="card overflow-hidden">
+    <section
+        id="settings-system"
+        class="card scroll-mt-24 overflow-hidden">
 
         <div class="border-b border-border bg-background/60 px-6 py-5">
 
