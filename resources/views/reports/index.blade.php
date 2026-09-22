@@ -16,305 +16,624 @@
     $contractMax = max(1, (int) ($contractsByStatus->max() ?? 0));
     $contractLegalMax = max(1, (int) ($contractsByLegalReview->max() ?? 0));
     $facilityMax = max(1, (int) ($facilityUtilization->max('bookings') ?? 0));
+
+    $averageVisitMinutes =
+        max(
+            0,
+            (float) $summary['average_visit_minutes']
+        );
+
+    $averageVisitRounded =
+        (int) round(
+            $averageVisitMinutes
+        );
+
+    $averageVisitDays =
+        intdiv(
+            $averageVisitRounded,
+            1440
+        );
+
+    $averageVisitHours =
+        intdiv(
+            $averageVisitRounded % 1440,
+            60
+        );
+
+    $averageVisitRemainderMinutes =
+        $averageVisitRounded % 60;
+
+    if ($averageVisitDays > 0) {
+        $averageVisitDisplay =
+            $averageVisitDays.
+            'd '.
+            $averageVisitHours.
+            'h '.
+            $averageVisitRemainderMinutes.
+            'm';
+    } elseif ($averageVisitHours > 0) {
+        $averageVisitDisplay =
+            $averageVisitHours.
+            'h '.
+            $averageVisitRemainderMinutes.
+            'm';
+    } else {
+        $averageVisitDisplay =
+            $averageVisitRemainderMinutes.
+            'm';
+    }
 @endphp
 
 <div class="space-y-6">
 
-    {{-- Header --}}
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    {{-- =====================================================
+         REPORTS & ANALYTICS HEADER
+    ====================================================== --}}
+    <x-page-header
+        eyebrow="Management Intelligence"
+        title="Reports & Analytics"
+        badge="Operational Intelligence"
+        description="Monitor operational performance, facilities, visitors, records, compliance, legal matters, and contracts from one analytics workspace.">
 
-        <div>
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
+        <x-slot:actions>
 
-            <h2 class="font-heading text-2xl font-bold text-primary">
-                Reports & Analytics
-            </h2>
+            <div class="rounded-xl border border-border bg-card px-4 py-2.5 shadow-card">
 
-            <p class="mt-1 max-w-3xl text-sm text-slate-500">
-                Operational, compliance, legal, contract, document, visitor,
-                appointment, reservation, and facility insights.
-            </p>
-        </div>
+                <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+                    Reporting Period
+                </p>
 
-        <div class="rounded-xl border border-border bg-card px-4 py-2.5 shadow-card">
-            <p class="text-xs text-slate-500">
-                Reporting Period
-            </p>
+                <p class="mt-0.5 whitespace-nowrap text-xs font-semibold text-primary">
+                    {{ $from->format('M d, Y') }}
+                    &ndash;
+                    {{ $to->format('M d, Y') }}
+                </p>
 
-            <p class="mt-0.5 text-sm font-semibold text-primary">
-                {{ $from->format('M d, Y') }}
-                -
-                {{ $to->format('M d, Y') }}
-            </p>
-        </div>
-
-    </div>
-
-
-    {{-- Date Filter --}}
-    <div class="card p-5">
-
-        <form
-            method="GET"
-            action="{{ route('reports.index') }}"
-            class="flex flex-col gap-4 sm:flex-row sm:items-end">
-
-            <div class="flex-1">
-                <label for="from" class="label">
-                    From Date
-                </label>
-
-                <input
-                    id="from"
-                    type="date"
-                    name="from"
-                    value="{{ $from->toDateString() }}"
-                    class="input">
-
-                @error('from')
-                    <p class="mt-1 text-xs font-medium text-error">
-                        {{ $message }}
-                    </p>
-                @enderror
             </div>
 
-            <div class="flex-1">
-                <label for="to" class="label">
-                    To Date
-                </label>
+        </x-slot:actions>
 
-                <input
-                    id="to"
-                    type="date"
-                    name="to"
-                    value="{{ $to->toDateString() }}"
-                    class="input">
+    </x-page-header>
 
-                @error('to')
-                    <p class="mt-1 text-xs font-medium text-error">
-                        {{ $message }}
-                    </p>
-                @enderror
-            </div>
+    {{-- =====================================================
+         REPORTING PERIOD
+    ====================================================== --}}
+    <section class="space-y-4">
 
-            <div class="flex gap-2">
-                <button
-                    type="submit"
-                    class="btn-secondary">
-                    Update Report
-                </button>
+        <x-section-header
+            eyebrow="Reporting Period"
+            title="Report Window"
+            description="Adjust the period used for operational activity metrics and facility-utilization analytics." />
+
+
+        <div class="card overflow-hidden">
+
+            <form
+                method="GET"
+                action="{{ route('reports.index') }}"
+                class="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+
+                <div>
+
+                    <label
+                        for="from"
+                        class="label">
+
+                        From Date
+
+                    </label>
+
+                    <input
+                        id="from"
+                        type="date"
+                        name="from"
+                        value="{{ $from->toDateString() }}"
+                        class="input">
+
+                    @error('from')
+
+                        <p class="mt-1.5 text-xs font-medium text-error">
+                            {{ $message }}
+                        </p>
+
+                    @enderror
+
+                </div>
+
+
+                <div>
+
+                    <label
+                        for="to"
+                        class="label">
+
+                        To Date
+
+                    </label>
+
+                    <input
+                        id="to"
+                        type="date"
+                        name="to"
+                        value="{{ $to->toDateString() }}"
+                        class="input">
+
+                    @error('to')
+
+                        <p class="mt-1.5 text-xs font-medium text-error">
+                            {{ $message }}
+                        </p>
+
+                    @enderror
+
+                </div>
+
+
+                <div class="flex gap-2">
+
+                    <button
+                        type="submit"
+                        class="btn-primary flex-1 justify-center">
+
+                        Update Report
+
+                    </button>
+
+
+                    <a
+                        href="{{ route('reports.index') }}"
+                        class="btn-outline justify-center">
+
+                        Reset
+
+                    </a>
+
+                </div>
+
+            </form>
+
+
+            <div class="flex flex-wrap items-center gap-2 border-t border-border bg-background/40 px-4 py-3">
+
+                <span class="mr-1 text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+                    Quick Range
+                </span>
+
 
                 <a
-                    href="{{ route('reports.index') }}"
-                    class="btn-outline">
-                    Reset
+                    href="{{ route('reports.index', [
+                        'from' => today()->subDays(6)->toDateString(),
+                        'to' => today()->toDateString(),
+                    ]) }}"
+                    class="rounded-lg border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-slate-500 transition hover:border-primary/20 hover:text-primary">
+
+                    Last 7 days
+
                 </a>
-            </div>
-
-        </form>
-
-    </div>
 
 
-    {{-- Executive Summary --}}
-    <section>
+                <a
+                    href="{{ route('reports.index', [
+                        'from' => today()->subDays(29)->toDateString(),
+                        'to' => today()->toDateString(),
+                    ]) }}"
+                    class="rounded-lg border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-slate-500 transition hover:border-primary/20 hover:text-primary">
 
-        <div class="mb-3">
-            <h3 class="font-heading text-base font-semibold text-primary">
-                Executive Summary
-            </h3>
+                    Last 30 days
 
-            <p class="mt-1 text-xs text-slate-500">
-                Key activity recorded during the selected reporting period.
-            </p>
-        </div>
+                </a>
 
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-            <div class="card p-5">
-                <p class="text-xs font-medium text-slate-500">
-                    Reservations
-                </p>
+                <a
+                    href="{{ route('reports.index', [
+                        'from' => today()->startOfMonth()->toDateString(),
+                        'to' => today()->toDateString(),
+                    ]) }}"
+                    class="rounded-lg border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-slate-500 transition hover:border-primary/20 hover:text-primary">
 
-                <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                    {{ $summary['reservations'] }}
-                </p>
+                    This month
 
-                <p class="mt-1 text-xs text-slate-400">
-                    {{ $summary['approved_reservations'] }} approved
-                </p>
-            </div>
+                </a>
 
-            <div class="card p-5">
-                <p class="text-xs font-medium text-slate-500">
-                    Visitors
-                </p>
-
-                <p class="mt-2 font-heading text-3xl font-bold text-success">
-                    {{ $summary['visitors'] }}
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    {{ $summary['walk_in_visitors'] }} walk-in
-                </p>
-            </div>
-
-            <div class="card p-5">
-                <p class="text-xs font-medium text-slate-500">
-                    Appointments
-                </p>
-
-                <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                    {{ $summary['appointments'] }}
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    During selected period
-                </p>
-            </div>
-
-            <div class="card p-5">
-                <p class="text-xs font-medium text-slate-500">
-                    Documents Added
-                </p>
-
-                <p class="mt-2 font-heading text-3xl font-bold text-secondary">
-                    {{ $summary['documents'] }}
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    Created during selected period
-                </p>
-            </div>
-
-            <div class="card p-5">
-                <p class="text-xs font-medium text-slate-500">
-                    Reservation Attendees
-                </p>
-
-                <p class="mt-2 font-heading text-3xl font-bold text-primary">
-                    {{ $summary['reservation_attendees'] }}
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    Total requested attendees
-                </p>
-            </div>
-
-            <div class="card p-5">
-                <p class="text-xs font-medium text-slate-500">
-                    Available Facilities
-                </p>
-
-                <p class="mt-2 font-heading text-3xl font-bold text-success">
-                    {{ $summary['available_facilities'] }}
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    Of {{ $summary['total_facilities'] }} total
-                </p>
-            </div>
-
-            <div class="card p-5">
-                <p class="text-xs font-medium text-slate-500">
-                    Average Visit Duration
-                </p>
-
-                <p class="mt-2 font-heading text-3xl font-bold text-accent">
-                    {{ number_format($summary['average_visit_minutes'], 1) }}
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    Minutes
-                </p>
-            </div>
-
-            <div class="card p-5">
-                <p class="text-xs font-medium text-slate-500">
-                    Active Contracts
-                </p>
-
-                <p class="mt-2 font-heading text-3xl font-bold text-secondary">
-                    {{ $summary['active_contracts'] }}
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    Current contract portfolio
-                </p>
             </div>
 
         </div>
 
     </section>
 
+    {{-- =====================================================
+         EXECUTIVE SUMMARY
+    ====================================================== --}}
+    <section class="space-y-4">
 
-    {{-- Current Compliance Snapshot --}}
-    <section class="card overflow-hidden">
+        <x-section-header
+            eyebrow="Performance"
+            title="Executive Summary"
+            description="Selected-period activity with current portfolio and operational-capacity indicators clearly identified." />
 
-        <div class="border-b border-border px-5 py-4">
-            <h3 class="font-heading text-base font-semibold text-primary">
-                Current Compliance & Deadline Snapshot
-            </h3>
 
-            <p class="mt-1 text-xs text-slate-500">
-                Current lifecycle conditions regardless of the selected reporting period.
-            </p>
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+
+            <x-metric-card
+                label="Reservations"
+                :value="number_format($summary['reservations'])"
+                :helper="number_format($summary['approved_reservations']).' approved during the selected period.'"
+                tone="primary">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Visitors"
+                :value="number_format($summary['visitors'])"
+                :helper="number_format($summary['walk_in_visitors']).' walk-in visitors during the period.'"
+                tone="success">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19a4 4 0 00-8 0M11 11a4 4 0 100-8 4 4 0 000 8z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Appointments"
+                :value="number_format($summary['appointments'])"
+                helper="Appointments scheduled inside the selected reporting period."
+                tone="accent">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Documents Added"
+                :value="number_format($summary['documents'])"
+                helper="Document records created during the selected reporting period."
+                tone="secondary">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M7 3h7l5 5v13H7V3zm7 0v5h5M10 13h6M10 17h6" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Reservation Attendees"
+                :value="number_format($summary['reservation_attendees'])"
+                helper="Total requested attendees across reservations in this period."
+                tone="primary">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17 20a5 5 0 00-10 0M12 11a4 4 0 100-8 4 4 0 000 8z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Available Facilities"
+                :value="number_format($summary['available_facilities'])"
+                :helper="'Current state: '.number_format($summary['available_facilities']).' of '.number_format($summary['total_facilities']).' facilities available.'"
+                tone="success">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Average Visit Duration"
+                :value="$averageVisitDisplay"
+                :helper="number_format($summary['average_visit_minutes'], 1).' average minutes during the selected period.'"
+                tone="accent">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Active Contracts"
+                :value="number_format($summary['active_contracts'])"
+                helper="Current active contract portfolio, independent of the selected reporting period."
+                tone="secondary">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7h8M8 11h8M8 15h5M6 3h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
         </div>
 
-        <div class="grid gap-px bg-border sm:grid-cols-2 xl:grid-cols-4">
+    </section>
 
-            <div class="bg-card p-5">
-                <p class="text-xs text-slate-500">
-                    Retention Issues
-                </p>
+    {{-- =====================================================
+         CURRENT COMPLIANCE WATCH
+    ====================================================== --}}
+    <section class="space-y-4">
 
-                <p class="mt-2 font-heading text-2xl font-bold text-warning">
-                    {{ $summary['retention_issues'] }}
-                </p>
-            </div>
+        <x-section-header
+            eyebrow="Current State"
+            title="Compliance Watch"
+            description="Current lifecycle and deadline conditions. These indicators are not limited by the selected reporting period." />
 
-            <div class="bg-card p-5">
-                <p class="text-xs text-slate-500">
-                    Pending Disposal Approvals
-                </p>
 
-                <p class="mt-2 font-heading text-2xl font-bold text-warning">
-                    {{ $summary['pending_disposals'] }}
-                </p>
-            </div>
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
-            <div class="bg-card p-5">
-                <p class="text-xs text-slate-500">
-                    Legal Action Required
-                </p>
+            <x-metric-card
+                label="Retention Issues"
+                :value="number_format($summary['retention_issues'])"
+                :href="route('retention.index', ['compliance' => 'at_risk'])"
+                helper="Retention records currently at risk or non-compliant."
+                tone="warning">
 
-                <p class="mt-2 font-heading text-2xl font-bold text-error">
-                    {{ $summary['legal_action_required'] }}
-                </p>
-            </div>
+                <x-slot:icon>
 
-            <div class="bg-card p-5">
-                <p class="text-xs text-slate-500">
-                    Contracts Expiring in 30 Days
-                </p>
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                <p class="mt-2 font-heading text-2xl font-bold text-secondary">
-                    {{ $summary['contracts_expiring_soon'] }}
-                </p>
-            </div>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 9v4m0 4h.01M10.3 4.3L2.8 17.3A2 2 0 004.5 20h15a2 2 0 001.7-2.7L13.7 4.3a2 2 0 00-3.4 0z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Disposal Approvals"
+                :value="number_format($summary['pending_disposals'])"
+                :href="route('retention.index', ['tab' => 'disposal'])"
+                helper="Controlled disposition requests currently awaiting approval."
+                tone="warning">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 7h12M9 7V4h6v3m-7 0 1 13h6l1-13" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Legal Action Required"
+                :value="number_format($summary['legal_action_required'])"
+                :href="route('legal.index', ['review_status' => 'action_required'])"
+                helper="Legal matters currently marked for follow-up."
+                tone="error">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 3v18M5 7h14M7 7l-3 6h6L7 7zm10 0-3 6h6l-3-6z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Contracts Expiring"
+                :value="number_format($summary['contracts_expiring_soon'])"
+                :href="route('contracts.index', ['deadline' => 'due_soon'])"
+                helper="Active contracts with recorded end dates within the next 30 days."
+                tone="secondary">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
 
         </div>
 
-        <div class="border-t border-border bg-card px-5 py-3">
-            <p class="text-xs text-slate-500">
-                Legal records expiring within 30 days:
-                <span class="font-semibold text-primary">
-                    {{ $summary['legal_expiring_soon'] }}
+
+        <div class="rounded-xl border border-border bg-card px-4 py-3">
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
+
+                <div>
+
+                    <p class="text-xs font-semibold text-primary">
+                        Legal Deadlines
+                    </p>
+
+                    <p class="mt-0.5 text-[11px] text-slate-500">
+                        Legal records expiring within the next 30 days.
+                    </p>
+
+                </div>
+
+
+                <span class="rounded-full bg-error/10 px-3 py-1 text-xs font-semibold text-error">
+                    {{ number_format($summary['legal_expiring_soon']) }}
                 </span>
-            </p>
+
+            </div>
+
         </div>
 
     </section>
+
+    {{-- =====================================================
+         OPERATIONAL BREAKDOWNS
+    ====================================================== --}}
+    <x-section-header
+        eyebrow="Analytics"
+        title="Operational Breakdowns"
+        description="Distribution views for operational activity and current governance portfolios." />
 
 
     {{-- Operational Breakdowns --}}
@@ -465,6 +784,12 @@
         @endforeach
 
     </div>
+
+
+    <x-section-header
+        eyebrow="Facilities"
+        title="Facility Utilization"
+        description="Approved facility use ranked across the selected reporting period." />
 
 
     {{-- Facility Utilization --}}
