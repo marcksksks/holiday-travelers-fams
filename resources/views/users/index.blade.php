@@ -6,93 +6,73 @@
 
 <div class="space-y-6">
 
-    {{-- Header --}}
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    {{-- =====================================================
+         STAFF ACCOUNTS HEADER
+    ====================================================== --}}
+    <x-page-header
+        eyebrow="Administration"
+        title="Staff Accounts"
+        badge="Access Governance"
+        description="Manage staff identities, system roles, account access, password requirements, and security policy from one administrative workspace.">
 
-        <div>
+        <x-slot:actions>
 
-            <div class="mb-2 flex items-center gap-2">
+            <button
+                type="button"
+                data-staff-create-open
+                class="btn-primary inline-flex items-center justify-center gap-2">
 
-                <div class="h-1 w-12 rounded-full bg-secondary"></div>
+                <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true">
 
-                <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                    Administration
-                </span>
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4" />
 
-            </div>
+                </svg>
 
-            <h2 class="font-heading text-2xl font-bold tracking-tight text-primary">
-                Staff Accounts
-            </h2>
-
-            <p class="mt-1 max-w-2xl text-sm text-slate-500">
-                Manage staff access, system roles, account status, and login security.
-            </p>
-
-        </div>
-
-
-        <button
-            type="button"
-            data-staff-create-open
-            class="btn-secondary inline-flex items-center justify-center gap-2">
-
-            <svg
-                class="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true">
-
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 4v16m8-8H4" />
-
-            </svg>
-
-            <span>
                 Add Staff
-            </span>
 
-        </button>
+            </button>
 
-    </div>
+        </x-slot:actions>
 
-    {{-- Statistics --}}
-    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-
-        {{-- Total Staff --}}
-        <div class="card group overflow-hidden p-4">
-
-            <div class="flex items-center justify-between gap-4">
-
-                <div class="min-w-0">
-
-                    <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                        Total Staff
-                    </p>
-
-                    <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight text-primary">
-                        {{ number_format($stats['total']) }}
-                    </p>
-
-                    <p class="mt-0.5 text-xs text-slate-500">
-                        Registered accounts
-                    </p>
-
-                </div>
+    </x-page-header>
 
 
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary ring-1 ring-inset ring-primary/10 transition group-hover:bg-primary/10">
+    {{-- =====================================================
+         ACCESS OVERVIEW
+    ====================================================== --}}
+    <section class="space-y-4">
+
+        <x-section-header
+            eyebrow="Overview"
+            title="Access Overview"
+            description="A current snapshot of registered accounts, access availability, and login requirements." />
+
+
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+
+            <x-metric-card
+                label="Total Staff"
+                :value="number_format($stats['total'])"
+                :href="route('users.index')"
+                helper="Registered staff identities managed by the system."
+                tone="primary">
+
+                <x-slot:icon>
 
                     <svg
                         class="h-5 w-5"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true">
+                        viewBox="0 0 24 24">
 
                         <path
                             stroke-linecap="round"
@@ -102,116 +82,53 @@
 
                     </svg>
 
-                </div>
+                </x-slot:icon>
 
-            </div>
-
-            <div class="mt-4 h-1 rounded-full bg-primary/10">
-
-                <div class="h-1 w-full rounded-full bg-primary"></div>
-
-            </div>
-
-        </div>
+            </x-metric-card>
 
 
-        {{-- Active --}}
-        <div class="card group overflow-hidden p-4">
+            <x-metric-card
+                label="Active Accounts"
+                :value="number_format($stats['active'])"
+                :href="route('users.index', ['status' => 'active'])"
+                helper="Staff accounts currently permitted to sign in."
+                tone="success">
 
-            <div class="flex items-center justify-between gap-4">
-
-                <div class="min-w-0">
-
-                    <div class="flex items-center gap-2">
-
-                        <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                            Active
-                        </p>
-
-                        <span class="h-1.5 w-1.5 rounded-full bg-success"></span>
-
-                    </div>
-
-                    <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight text-success">
-                        {{ number_format($stats['active']) }}
-                    </p>
-
-                    <p class="mt-0.5 text-xs text-slate-500">
-                        Can access the system
-                    </p>
-
-                </div>
-
-
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success transition group-hover:bg-success/15">
+                <x-slot:icon>
 
                     <svg
                         class="h-5 w-5"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true">
+                        viewBox="0 0 24 24">
 
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            d="M5 13l4 4L19 7" />
 
                     </svg>
 
-                </div>
+                </x-slot:icon>
 
-            </div>
-
-            <div class="mt-4 h-1 rounded-full bg-success/10">
-
-                @php
-                    $activePercentage = $stats['total'] > 0
-                        ? min(100, ($stats['active'] / $stats['total']) * 100)
-                        : 0;
-                @endphp
-
-                <div
-                    class="h-1 rounded-full bg-success"
-                    style="width: {{ $activePercentage }}%">
-                </div>
-
-            </div>
-
-        </div>
+            </x-metric-card>
 
 
-        {{-- Deactivated --}}
-        <div class="card group overflow-hidden p-4">
+            <x-metric-card
+                label="Deactivated"
+                :value="number_format($stats['inactive'])"
+                :href="route('users.index', ['status' => 'inactive'])"
+                helper="Accounts whose system sign-in access is currently disabled."
+                tone="accent">
 
-            <div class="flex items-center justify-between gap-4">
-
-                <div class="min-w-0">
-
-                    <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                        Deactivated
-                    </p>
-
-                    <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight text-slate-600">
-                        {{ number_format($stats['inactive']) }}
-                    </p>
-
-                    <p class="mt-0.5 text-xs text-slate-500">
-                        Access currently disabled
-                    </p>
-
-                </div>
-
-
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition group-hover:bg-slate-200/70">
+                <x-slot:icon>
 
                     <svg
                         class="h-5 w-5"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true">
+                        viewBox="0 0 24 24">
 
                         <path
                             stroke-linecap="round"
@@ -221,122 +138,104 @@
 
                     </svg>
 
-                </div>
+                </x-slot:icon>
 
-            </div>
-
-            <div class="mt-4 h-1 rounded-full bg-slate-100">
-
-                @php
-                    $inactivePercentage = $stats['total'] > 0
-                        ? min(100, ($stats['inactive'] / $stats['total']) * 100)
-                        : 0;
-                @endphp
-
-                <div
-                    class="h-1 rounded-full bg-slate-400"
-                    style="width: {{ $inactivePercentage }}%">
-                </div>
-
-            </div>
-
-        </div>
+            </x-metric-card>
 
 
-        {{-- Password Change --}}
-        <div class="card group overflow-hidden p-4">
+            <x-metric-card
+                label="Password Change"
+                :value="number_format($stats['password_change'])"
+                helper="Accounts required to replace their temporary password at login."
+                tone="warning">
 
-            <div class="flex items-center justify-between gap-4">
-
-                <div class="min-w-0">
-
-                    <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                        Password Change
-                    </p>
-
-                    <p class="mt-1.5 font-heading text-2xl font-bold tracking-tight text-amber-600">
-                        {{ number_format($stats['password_change']) }}
-                    </p>
-
-                    <p class="mt-0.5 text-xs text-slate-500">
-                        Action required at login
-                    </p>
-
-                </div>
-
-
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-amber-600 transition group-hover:bg-warning/15">
+                <x-slot:icon>
 
                     <svg
                         class="h-5 w-5"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true">
+                        viewBox="0 0 24 24">
 
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
-                            d="M12 11c1.657 0 3-1.343 3-3V6a3 3 0 10-6 0v2c0 1.657 1.343 3 3 3zm-5 0h10a2 2 0 012 2v6H5v-6a2 2 0 012-2z" />
+                            d="M12 11V7a4 4 0 118 0v4m-12 0V7a4 4 0 018 0v4m-9 0h10a2 2 0 012 2v6H5v-6a2 2 0 012-2z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+        </div>
+
+
+        <div class="rounded-xl border border-accent/20 bg-accent/5 px-4 py-3">
+
+            <div class="flex items-start gap-3">
+
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 3l7 4v5c0 4.4-2.9 8.4-7 9.7C7.9 20.4 5 16.4 5 12V7l7-4zM9 12l2 2 4-4" />
 
                     </svg>
 
                 </div>
 
-            </div>
 
-            <div class="mt-4 h-1 rounded-full bg-warning/10">
+                <div>
 
-                @php
-                    $passwordPercentage = $stats['total'] > 0
-                        ? min(100, ($stats['password_change'] / $stats['total']) * 100)
-                        : 0;
-                @endphp
+                    <p class="text-xs font-semibold text-primary">
+                        Privileged Account Security
+                    </p>
 
-                <div
-                    class="h-1 rounded-full bg-warning"
-                    style="width: {{ $passwordPercentage }}%">
+                    <p class="mt-1 text-[11px] leading-5 text-slate-500">
+                        Administrative Officers, General Managers, Legal Officers, and System Administrators are subject to mandatory multi-factor authentication before normal application access is allowed.
+                    </p>
+
                 </div>
 
             </div>
 
         </div>
 
-    </div>
+    </section>
 
-    <div class="min-w-0">
+<div class="min-w-0">
         {{-- Directory --}}
         <div class="min-w-0 space-y-4">
 
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <x-section-header
+                eyebrow="Directory"
+                title="Staff Directory"
+                description="Search staff, review assigned roles and security requirements, and manage account access.">
 
-                <div>
+                <x-slot:actions>
 
-                    <h3 class="font-heading text-lg font-semibold text-primary">
-                        Staff Directory
-                    </h3>
+                    <span class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-medium text-slate-500">
 
-                    <p class="mt-1 text-xs text-slate-500">
-                        Search staff, review account status, and manage system roles.
-                    </p>
+                        <span class="h-2 w-2 rounded-full bg-accent"></span>
 
-                </div>
-
-
-                <div class="inline-flex self-start items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 sm:self-auto">
-
-                    <span class="h-2 w-2 rounded-full bg-accent"></span>
-
-                    <span class="text-xs font-medium text-slate-500">
                         {{ number_format($staff->total()) }}
                         {{ \Illuminate\Support\Str::plural('account', $staff->total()) }}
+
                     </span>
 
-                </div>
+                </x-slot:actions>
 
-            </div>
-
+            </x-section-header>
 
             {{-- Automatic Filters --}}
 <form
@@ -611,8 +510,10 @@
 </form>
 
 
+@include('users._mobile-cards')
+
 {{-- Staff Table --}}
-            <div class="table-shell">
+            <div class="table-shell hidden md:block">
 
                 <div class="overflow-x-auto rounded-xl">
 
@@ -631,7 +532,7 @@
                                 </th>
 
                                 <th class="hidden px-5 py-3.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 lg:table-cell">
-                                    Password
+                                    Security
                                 </th>
 
                                 <th class="px-5 py-3.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
@@ -743,27 +644,61 @@
 
                                     </td>
 
-{{-- Password --}}
-                                    <td class="px-5 py-4">
+                                    {{-- Security --}}
+                                    <td class="hidden px-5 py-4 lg:table-cell">
 
-                                        @if ($person->force_password_change)
+                                        <div class="flex flex-col items-start gap-1.5">
 
-                                            <span class="badge badge-warning">
-                                                Change Required
-                                            </span>
+                                            @if ($person->force_password_change)
 
-                                        @else
+                                                <span class="badge badge-warning">
+                                                    Password Change
+                                                </span>
 
-                                            <span class="badge badge-success">
-                                                Password Set
-                                            </span>
+                                            @else
 
-                                        @endif
+                                                <span class="badge badge-success">
+                                                    Password Set
+                                                </span>
+
+                                            @endif
+
+
+                                            @if ($person->requiresMandatoryMfa())
+
+                                                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-primary">
+
+                                                    <svg
+                                                        class="h-3.5 w-3.5"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 3l7 4v5c0 4.4-2.9 8.4-7 9.7C7.9 20.4 5 16.4 5 12V7l7-4z" />
+
+                                                    </svg>
+
+                                                    MFA Required
+
+                                                </span>
+
+                                            @else
+
+                                                <span class="text-[10px] font-medium text-slate-400">
+                                                    MFA Optional
+                                                </span>
+
+                                            @endif
+
+                                        </div>
 
                                     </td>
 
-
-                                    {{-- Status --}}
+{{-- Status --}}
                                     <td class="px-5 py-4">
 
                                         @if ($person->is_active)
@@ -1100,7 +1035,7 @@
                                                                         </h4>
 
                                                                         <p class="mt-1 text-xs text-slate-500">
-                                                                            Current password status for this staff account.
+                                                                            Current password state and multi-factor authentication policy for this staff account.
                                                                         </p>
                                                                     </div>
 
@@ -1133,6 +1068,49 @@
                                                                     </p>
 
                                                                 @endif
+
+
+                                                                <div class="mt-3 border-t border-border pt-3">
+
+                                                                    <div class="flex flex-wrap items-center justify-between gap-2">
+
+                                                                        <span class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                                                                            MFA Policy
+                                                                        </span>
+
+
+                                                                        @if ($person->requiresMandatoryMfa())
+
+                                                                            <span class="badge badge-info">
+                                                                                Required
+                                                                            </span>
+
+                                                                        @else
+
+                                                                            <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
+                                                                                Optional
+                                                                            </span>
+
+                                                                        @endif
+
+                                                                    </div>
+
+
+                                                                    <p class="mt-2 text-[11px] leading-5 text-slate-500">
+
+                                                                        @if ($person->requiresMandatoryMfa())
+
+                                                                            This role must complete multi-factor authentication setup before normal application access is permitted.
+
+                                                                        @else
+
+                                                                            Multi-factor authentication is optional for this role under the current access policy.
+
+                                                                        @endif
+
+                                                                    </p>
+
+                                                                </div>
 
                                                             </div>
 
