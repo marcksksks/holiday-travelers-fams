@@ -10,375 +10,238 @@
 
 <div class="space-y-6">
 
-    {{-- Page Header --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    {{-- =====================================================
+         CONTRACT MANAGEMENT HEADER
+    ====================================================== --}}
+    <x-page-header
+        eyebrow="Legal & Contracts"
+        title="Contract Management"
+        badge="Contract Portfolio"
+        description="Create, review, approve, monitor, and renew organizational contracts through one controlled workflow.">
 
-        <div>
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
-
-            <h2 class="font-heading text-2xl font-bold text-primary">
-                Contract Management
-            </h2>
-
-            <p class="mt-1 text-sm text-slate-500">
-                Create, review, approve, monitor, and renew organizational contracts.
-            </p>
-        </div>
-
-        <div class="rounded-xl border border-border bg-card px-4 py-2.5 shadow-card">
-            <p class="text-xs text-slate-500">
-                Total Contracts
-            </p>
-
-            <p class="mt-0.5 font-heading text-lg font-bold text-primary">
-                {{ $contracts->total() }}
-            </p>
-        </div>
-
-    </div>
-
-
-    <div class="grid gap-6 xl:grid-cols-[410px_minmax(0,1fr)]">
-
-        {{-- New Contract --}}
         @can('manageContracts')
 
-            <div>
+            <x-slot:actions>
 
-                <div class="card overflow-hidden xl:sticky xl:top-6">
+                <button
+                    type="button"
+                    onclick="document.getElementById('createContractDialog').showModal()"
+                    class="btn-primary inline-flex items-center justify-center gap-2">
 
-                    <div class="border-b border-border bg-background/60 px-5 py-5">
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                        <div class="flex items-center gap-3">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 4v16m8-8H4" />
 
-                            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+                    </svg>
 
-                                <svg class="h-5 w-5"
-                                     fill="none"
-                                     stroke="currentColor"
-                                     viewBox="0 0 24 24">
+                    New Contract
 
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
-                                          d="M8 7h8M8 11h8M8 15h5M6 3h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                </button>
 
-                                </svg>
-
-                            </div>
-
-                            <div>
-                                <h3 class="font-heading text-base font-semibold text-primary">
-                                    New Contract
-                                </h3>
-
-                                <p class="mt-0.5 text-xs text-slate-500">
-                                    Contracts begin as drafts before legal review.
-                                </p>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <form
-                        method="POST"
-                        action="{{ route('contracts.store') }}"
-                        enctype="multipart/form-data"
-                        class="space-y-5 p-5">
-
-                        @csrf
-
-
-                        {{-- Contract Number --}}
-                        <div>
-
-                            <label for="contract_number" class="label">
-                                Contract Number
-                            </label>
-
-                            <input
-                                id="contract_number"
-                                type="text"
-                                name="contract_number"
-                                value="{{ old('contract_number') }}"
-                                placeholder="e.g. HT-CTR-2026-001"
-                                class="input">
-
-                        </div>
-
-
-                        {{-- Title --}}
-                        <div>
-
-                            <label for="title" class="label">
-                                Contract Title
-                                <span class="text-error">*</span>
-                            </label>
-
-                            <input
-                                id="title"
-                                type="text"
-                                name="title"
-                                value="{{ old('title') }}"
-                                required
-                                placeholder="e.g. Hotel Partnership Agreement"
-                                class="input @error('title') border-error @enderror">
-
-                            @error('title')
-                                <p class="mt-1.5 text-xs font-medium text-error">
-                                    {{ $message }}
-                                </p>
-                            @enderror
-
-                        </div>
-
-
-                        {{-- Type --}}
-                        <div>
-
-                            <label for="contract_type" class="label">
-                                Contract Type
-                            </label>
-
-                            <select
-                                id="contract_type"
-                                name="contract_type"
-                                class="input">
-
-                                @foreach ([
-                                    'hotel',
-                                    'tour_operator',
-                                    'transportation',
-                                    'supplier',
-                                    'partnership',
-                                    'service',
-                                    'other'
-                                ] as $type)
-
-                                    <option
-                                        value="{{ $type }}"
-                                        @selected(old('contract_type', 'service') === $type)>
-
-                                        {{ str($type)->headline() }}
-
-                                    </option>
-
-                                @endforeach
-
-                            </select>
-
-                        </div>
-
-
-                        {{-- Counterparty --}}
-                        <div>
-
-                            <label for="party" class="label">
-                                Counterparty / Partner
-                            </label>
-
-                            <input
-                                id="party"
-                                type="text"
-                                name="parties[]"
-                                value="{{ old('parties.0') }}"
-                                placeholder="e.g. Sunrise Hotel Corporation"
-                                class="input">
-
-                        </div>
-
-
-                        {{-- Dates --}}
-                        <div class="grid gap-4 sm:grid-cols-2">
-
-                            <div>
-                                <label for="start_date" class="label">
-                                    Start Date
-                                </label>
-
-                                <input
-                                    id="start_date"
-                                    type="date"
-                                    name="start_date"
-                                    value="{{ old('start_date') }}"
-                                    class="input">
-                            </div>
-
-
-                            <div>
-                                <label for="end_date" class="label">
-                                    End Date
-                                </label>
-
-                                <input
-                                    id="end_date"
-                                    type="date"
-                                    name="end_date"
-                                    value="{{ old('end_date') }}"
-                                    class="input">
-
-                                @error('end_date')
-                                    <p class="mt-1.5 text-xs font-medium text-error">
-                                        {{ $message }}
-                                    </p>
-                                @enderror
-                            </div>
-
-                        </div>
-
-
-                        {{-- Value --}}
-                        <div class="grid grid-cols-[1fr_110px] gap-3">
-
-                            <div>
-                                <label for="value" class="label">
-                                    Contract Value
-                                </label>
-
-                                <input
-                                    id="value"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    name="value"
-                                    value="{{ old('value') }}"
-                                    placeholder="0.00"
-                                    class="input">
-                            </div>
-
-
-                            <div>
-                                <label for="currency" class="label">
-                                    Currency
-                                </label>
-
-                                <input
-                                    id="currency"
-                                    type="text"
-                                    name="currency"
-                                    maxlength="8"
-                                    value="{{ old('currency', 'PHP') }}"
-                                    class="input uppercase">
-                            </div>
-
-                        </div>
-
-
-                        {{-- Officer --}}
-                        <div>
-
-                            <label for="responsible_officer_email" class="label">
-                                Responsible Officer
-                            </label>
-
-                            <input
-                                id="responsible_officer_email"
-                                type="email"
-                                name="responsible_officer_email"
-                                value="{{ old('responsible_officer_email', auth()->user()->email) }}"
-                                class="input">
-
-                        </div>
-
-
-                        {{-- Description --}}
-                        <div>
-
-                            <label for="description" class="label">
-                                Description
-                            </label>
-
-                            <textarea
-                                id="description"
-                                name="description"
-                                rows="3"
-                                placeholder="Briefly describe the purpose and scope of this contract..."
-                                class="input">{{ old('description') }}</textarea>
-
-                        </div>
-
-
-                        {{-- File --}}
-                        <div>
-
-                            <label for="file" class="label">
-                                Contract File
-                            </label>
-
-                            <input
-                                id="file"
-                                type="file"
-                                name="file"
-                                accept="{{ \App\Support\DocumentUploadPolicy::acceptAttribute() }}"
-                                class="block w-full rounded-xl border border-border bg-white text-xs text-slate-500 file:mr-3 file:border-0 file:bg-primary/10 file:px-4 file:py-3 file:font-button file:text-xs file:font-semibold file:text-primary hover:file:bg-primary/15">
-
-                            <p class="mt-1.5 text-xs text-slate-400">
-                                Maximum file size: 20 MB.
-                            </p>
-
-                            @error('file')
-                                <p class="mt-1.5 text-xs font-medium text-error">
-                                    {{ $message }}
-                                </p>
-                            @enderror
-
-                        </div>
-
-
-                        <button type="submit" class="btn-secondary w-full">
-
-                            <svg class="h-4 w-4"
-                                 fill="none"
-                                 stroke="currentColor"
-                                 viewBox="0 0 24 24">
-
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      stroke-width="2"
-                                      d="M5 13l4 4L19 7" />
-
-                            </svg>
-
-                            Save Contract Draft
-
-                        </button>
-
-                    </form>
-
-                </div>
-
-            </div>
+            </x-slot:actions>
 
         @endcan
 
+    </x-page-header>
+
+
+    {{-- =====================================================
+         CONTRACT PORTFOLIO OVERVIEW
+    ====================================================== --}}
+    <section class="space-y-4">
+
+        <x-section-header
+            eyebrow="Overview"
+            title="Contract Portfolio"
+            description="A current snapshot of contract workflow, active agreements, and upcoming renewal attention." />
+
+
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+
+            <x-metric-card
+                label="Total Contracts"
+                :value="number_format($contractStats['total'])"
+                :href="route('contracts.index')"
+                helper="All organizational contracts recorded in the system."
+                tone="primary">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7h8M8 11h8M8 15h5M6 3h12a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Active Contracts"
+                :value="number_format($contractStats['active'])"
+                :href="route('contracts.index', ['status' => 'active'])"
+                helper="Contracts whose current workflow status is active."
+                tone="success">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Workflow Review"
+                :value="number_format($contractStats['workflow'])"
+                helper="Contracts requiring legal review, management approval, or objection resolution."
+                tone="warning">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4m0 4h.01M4 6h16v14H4V6zm4-3v3m8-3v3" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Renewal Attention"
+                :value="number_format($contractStats['renewal_attention'])"
+                :href="route('contracts.index', ['deadline' => 'attention'])"
+                helper="Active or renewed contracts near or beyond their recorded end date."
+                tone="error">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+        </div>
+
+    </section>
+
+
+    <div class="space-y-6">
+
+        @can('manageContracts')
+
+            @include('contracts._create-modal')
+
+        @endcan
 
         {{-- Contract Register --}}
         <div class="min-w-0 space-y-4">
 
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
-                <div>
-                    <h3 class="font-heading text-lg font-semibold text-primary">
-                        Contract Register
-                    </h3>
-
-                    <p class="mt-1 text-xs text-slate-500">
-                        Track each contract through legal review, approval, activation, and renewal.
-                    </p>
-                </div>
+            <x-section-header
+                eyebrow="Contracts"
+                title="Contract Register"
+                description="Track each contract through legal review, management approval, activation, term monitoring, and renewal." />
 
 
-                <form method="GET" action="{{ route('contracts.index') }}">
+            <div class="card p-4">
+
+                <form
+                    method="GET"
+                    action="{{ route('contracts.index') }}"
+                    class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px_auto]">
+
+                    <div class="relative">
+
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+
+                            <svg
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24">
+
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
+
+                            </svg>
+
+                        </div>
+
+                        <input
+                            type="search"
+                            name="q"
+                            maxlength="120"
+                            value="{{ $search }}"
+                            placeholder="Search title, contract number, or responsible officer..."
+                            class="input w-full pl-10">
+
+                    </div>
+
 
                     <select
                         name="status"
-                        onchange="this.form.submit()"
-                        class="input min-w-[190px]">
+                        class="input">
 
                         <option value="">
-                            All Statuses
+                            All workflow statuses
                         </option>
 
                         @foreach ([
@@ -387,14 +250,14 @@
                             'pending_approval',
                             'active',
                             'renewed',
-                            'expired'
-                        ] as $status)
+                            'expired',
+                        ] as $value)
 
                             <option
-                                value="{{ $status }}"
-                                @selected(request('status') === $status)>
+                                value="{{ $value }}"
+                                @selected($status === $value)>
 
-                                {{ str($status)->headline() }}
+                                {{ str($value)->headline() }}
 
                             </option>
 
@@ -402,10 +265,109 @@
 
                     </select>
 
+
+                    <select
+                        name="deadline"
+                        class="input">
+
+                        <option value="">
+                            All contract terms
+                        </option>
+
+                        <option
+                            value="attention"
+                            @selected($deadline === 'attention')>
+
+                            Renewal attention
+
+                        </option>
+
+
+                        <option
+                            value="due_soon"
+                            @selected($deadline === 'due_soon')>
+
+                            Ending within 30 days
+
+                        </option>
+
+                        <option
+                            value="expired"
+                            @selected($deadline === 'expired')>
+
+                            End date passed
+
+                        </option>
+
+                        <option
+                            value="open_ended"
+                            @selected($deadline === 'open_ended')>
+
+                            No end date
+
+                        </option>
+
+                    </select>
+
+
+                    <div class="flex gap-2">
+
+                        <button
+                            type="submit"
+                            class="btn-primary flex-1 justify-center">
+
+                            Apply
+
+                        </button>
+
+
+                        @if (
+                            $search !== ''
+                            ||
+                            $status !== ''
+                            ||
+                            $deadline !== ''
+                        )
+
+                            <a
+                                href="{{ route('contracts.index') }}"
+                                class="btn-outline justify-center">
+
+                                Clear
+
+                            </a>
+
+                        @endif
+
+                    </div>
+
                 </form>
 
-            </div>
 
+                @if (
+                    $search !== ''
+                    ||
+                    $status !== ''
+                    ||
+                    $deadline !== ''
+                )
+
+                    <div class="mt-3 border-t border-border pt-3 text-xs text-slate-500">
+
+                        Showing
+
+                        <span class="font-semibold text-primary">
+                            {{ number_format($contracts->total()) }}
+                        </span>
+
+                        matching
+                        {{ $contracts->total() === 1 ? 'contract' : 'contracts' }}
+
+                    </div>
+
+                @endif
+
+            </div>
 
             @forelse ($contracts as $contract)
 
@@ -483,58 +445,102 @@
 
 
                         {{-- Main Status --}}
-                        <div>
+                        <div class="flex flex-wrap items-center justify-end gap-2">
 
                             @switch($contract->status)
 
                                 @case('draft')
+
                                     <span class="badge bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
                                         Draft
                                     </span>
+
                                     @break
 
+
                                 @case('under_review')
+
                                     <span class="badge badge-info">
                                         Under Review
                                     </span>
+
                                     @break
 
+
                                 @case('pending_approval')
+
                                     <span class="badge badge-warning">
                                         Pending Approval
                                     </span>
+
                                     @break
+
 
                                 @case('active')
+
                                     <span class="badge badge-success">
+
                                         <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-success"></span>
+
                                         Active
+
                                     </span>
+
                                     @break
 
+
                                 @case('renewed')
+
                                     <span class="badge badge-info">
                                         Renewed
                                     </span>
+
                                     @break
+
 
                                 @case('expired')
+
                                     <span class="badge badge-error">
-                                        Expired
+                                        Expired Workflow
                                     </span>
+
                                     @break
 
+
                                 @default
+
                                     <span class="badge badge-info">
                                         {{ str($contract->status)->headline() }}
                                     </span>
 
                             @endswitch
 
+
+                            @if ($daysToEnd !== null && $daysToEnd < 0)
+
+                                <span class="badge badge-error">
+                                    End Date Passed
+                                </span>
+
+
+                            @elseif ($daysToEnd === 0)
+
+                                <span class="badge badge-error">
+                                    Ends Today
+                                </span>
+
+
+                            @elseif ($daysToEnd !== null && $daysToEnd <= 30)
+
+                                <span class="badge badge-warning">
+                                    Ending Soon
+                                </span>
+
+                            @endif
+
                         </div>
 
                     </div>
-
 
                     {{-- Contract Details --}}
                     <div class="grid gap-5 px-5 py-5 sm:grid-cols-2 xl:grid-cols-4">
@@ -606,19 +612,19 @@
                             @if ($daysToEnd < 0)
 
                                 <p class="text-xs font-semibold text-error">
-                                    Contract ended {{ abs($daysToEnd) }} days ago.
+                                    End date passed {{ abs($daysToEnd) }} days ago.
                                 </p>
 
                             @elseif ($daysToEnd === 0)
 
                                 <p class="text-xs font-semibold text-error">
-                                    Contract ends today.
+                                    The recorded contract end date is today.
                                 </p>
 
                             @else
 
                                 <p class="text-xs font-semibold text-amber-700">
-                                    Contract expires in {{ $daysToEnd }} days.
+                                    Recorded end date is in {{ $daysToEnd }} days.
                                 </p>
 
                             @endif

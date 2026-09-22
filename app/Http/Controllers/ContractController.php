@@ -19,10 +19,190 @@ class ContractController extends Controller
 
     public function index(Request $request)
     {
-        $contracts = Contract::when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
-            ->orderByDesc('updated_at')->paginate(15)->withQueryString();
+        $search =
+            trim(
+                $request
+                    ->string('q')
+                    ->toString()
+            );
 
-        return view('contracts.index', compact('contracts'));
+        $status =
+            $request
+                ->string('status')
+                ->toString();
+
+        $deadline =
+            $request
+                ->string('deadline')
+                ->toString();
+
+        $contracts =
+            Contract::query()
+                ->when(
+                    $search !== '',
+                    function ($query) use ($search): void {
+                        $needle =
+                            '%'.
+                            mb_strtolower(
+                                $search
+                            ).
+                            '%';
+
+                        $query->where(
+                            function ($searchQuery) use ($needle): void {
+                                $searchQuery
+                                    ->whereRaw(
+                                        'LOWER(title) LIKE ?',
+                                        [$needle]
+                                    )
+                                    ->orWhereRaw(
+                                        'LOWER(COALESCE(contract_number, ?)) LIKE ?',
+                                        ['', $needle]
+                                    )
+                                    ->orWhereRaw(
+                                        'LOWER(COALESCE(responsible_officer_email, ?)) LIKE ?',
+                                        ['', $needle]
+                                    );
+                            }
+                        );
+                    }
+                )
+                ->when(
+                    $status !== '',
+                    fn ($query) => $query->where(
+                        'status',
+                        $status
+                    )
+                )
+                ->when(
+                    $deadline === 'attention',
+                    fn ($query) => $query
+                        ->whereIn(
+                            'status',
+                            [
+                                'active',
+                                'renewed',
+                                'expired',
+                            ]
+                        )
+                        ->whereNotNull(
+                            'end_date'
+                        )
+                        ->whereDate(
+                            'end_date',
+                            '<=',
+                            today()
+                                ->addDays(30)
+                                ->toDateString()
+                        )
+                )
+                ->when(
+                    $deadline === 'due_soon',
+                    fn ($query) => $query
+                        ->whereNotNull(
+                            'end_date'
+                        )
+                        ->whereDate(
+                            'end_date',
+                            '>=',
+                            today()
+                                ->toDateString()
+                        )
+                        ->whereDate(
+                            'end_date',
+                            '<=',
+                            today()
+                                ->addDays(30)
+                                ->toDateString()
+                        )
+                )
+                ->when(
+                    $deadline === 'expired',
+                    fn ($query) => $query
+                        ->whereNotNull(
+                            'end_date'
+                        )
+                        ->whereDate(
+                            'end_date',
+                            '<',
+                            today()
+                                ->toDateString()
+                        )
+                )
+                ->when(
+                    $deadline === 'open_ended',
+                    fn ($query) => $query->whereNull(
+                        'end_date'
+                    )
+                )
+                ->orderByDesc(
+                    'updated_at'
+                )
+                ->paginate(15)
+                ->withQueryString();
+
+        $contractStats = [
+            'total' => Contract::query()
+                ->count(),
+
+            'active' => Contract::query()
+                ->where(
+                    'status',
+                    'active'
+                )
+                ->count(),
+
+            'workflow' => Contract::query()
+                ->where(
+                    function ($query): void {
+                        $query
+                            ->whereIn(
+                                'status',
+                                [
+                                    'under_review',
+                                    'pending_approval',
+                                ]
+                            )
+                            ->orWhere(
+                                'legal_review_status',
+                                'objections'
+                            );
+                    }
+                )
+                ->count(),
+
+            'renewal_attention' => Contract::query()
+                ->whereIn(
+                    'status',
+                    [
+                        'active',
+                        'renewed',
+                        'expired',
+                    ]
+                )
+                ->whereNotNull(
+                    'end_date'
+                )
+                ->whereDate(
+                    'end_date',
+                    '<=',
+                    today()
+                        ->addDays(30)
+                        ->toDateString()
+                )
+                ->count(),
+        ];
+
+        return view(
+            'contracts.index',
+            compact(
+                'contracts',
+                'contractStats',
+                'search',
+                'status',
+                'deadline'
+            )
+        );
     }
 
     public function edit(Request $request, Contract $contract)
@@ -108,6 +288,7 @@ class ContractController extends Controller
                 'Contract created as draft.'
             );
     }
+
     public function update(
         ContractRequest $request,
         Contract $contract
@@ -165,6 +346,7 @@ class ContractController extends Controller
                 'Contract updated.'
             );
     }
+
     public function submitForReview(Request $request, Contract $contract): RedirectResponse
     {
         $this->workflow->submitForReview($request->user(), $contract);
