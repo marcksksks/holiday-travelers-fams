@@ -86,7 +86,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-background font-body text-slate-700 antialiased">
+<body class="overflow-x-hidden bg-background font-body text-slate-700 antialiased">
+
+<a
+    href="#main-content"
+    class="fams-skip-link">
+    Skip to main content
+</a>
 
 @php
     $navItems = [
@@ -228,13 +234,16 @@
         );
 @endphp
 
-<div class="flex min-h-screen">
+<div class="flex min-h-dvh">
 
     {{-- =========================
          MODERN SIDEBAR
     ========================== --}}
     <aside
+        id="application-sidebar"
+        aria-label="Primary navigation"
         data-sidebar
+        data-collapsed="false"
         class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col bg-primary text-white shadow-2xl transition-all duration-300 ease-out md:sticky md:top-0 md:bottom-auto md:h-screen md:self-start md:translate-x-0">
 
         {{-- =====================================================
@@ -246,6 +255,8 @@
 
                 <a
                     href="{{ route('dashboard') }}"
+                    data-sidebar-tooltip="Holiday Travelers"
+                    aria-label="Holiday Travelers Dashboard"
                     class="group flex min-w-0 items-center gap-3">
 
                     <div
@@ -281,6 +292,8 @@
                     type="button"
                     data-mobile-menu
                     class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white md:hidden"
+                    aria-controls="application-sidebar"
+                    aria-expanded="false"
                     aria-label="Close navigation">
 
                     <svg
@@ -307,7 +320,9 @@
         {{-- =====================================================
              NAVIGATION
         ====================================================== --}}
-        <nav class="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+        <nav
+            aria-label="Primary"
+            class="min-h-0 flex-1 overflow-y-auto px-3 py-4">
 
             <div class="space-y-5">
 
@@ -376,6 +391,9 @@
 
                                     <a
                                         href="{{ route($item['route']) }}"
+                                        data-sidebar-nav-link
+                                        data-sidebar-tooltip="{{ $item['label'] }}"
+                                        aria-label="{{ $item['label'] }}"
                                         @if ($isActive)
                                             aria-current="page"
                                         @endif
@@ -449,7 +467,7 @@
         ====================================================== --}}
         <div class="shrink-0 border-t border-white/10 p-3">
 
-            <div class="rounded-xl border border-white/10 bg-white/5 p-3">
+            <div data-sidebar-user-card class="rounded-xl border border-white/10 bg-white/5 p-3">
 
                 <div class="flex items-center gap-3">
 
@@ -516,7 +534,8 @@
 
         {{-- Header --}}
         <header
-            class="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-border bg-card px-4 shadow-sm md:px-8">
+            data-app-header
+            class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card px-4 shadow-sm md:h-20 md:px-8">
 
             <div class="flex items-center gap-3">
 
@@ -525,8 +544,10 @@
                     type="button"
                     data-sidebar-toggle
                     class="hidden rounded-lg p-2 text-primary transition hover:bg-primary/5 md:block"
-                    aria-label="Toggle sidebar"
-                    title="Toggle sidebar">
+                    aria-controls="application-sidebar"
+                    aria-expanded="true"
+                    aria-label="Collapse sidebar"
+                    title="Collapse sidebar">
 
                     <svg
                         class="h-5 w-5"
@@ -548,10 +569,25 @@
                 <button
                     type="button"
                     data-mobile-menu
-                    class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-xl text-primary transition hover:bg-primary/5 md:hidden"
+                    aria-controls="application-sidebar"
+                    aria-expanded="false"
                     aria-label="Open navigation">
 
-                    ☰
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+
+                    </svg>
 
                 </button>
 
@@ -601,6 +637,7 @@
                             type="button"
                             data-notification-button
                             class="relative rounded-lg p-2 text-slate-500 transition hover:bg-accent/10 hover:text-primary"
+                            aria-controls="notification-menu"
                             aria-label="{{ $unreadNotificationCount > 0 ? $unreadNotificationCount . ' unread notifications' : 'Notifications' }}"
                             aria-expanded="false"
                             title="Notifications">
@@ -635,7 +672,10 @@
 
                         {{-- Dropdown --}}
                         <div
+                            id="notification-menu"
                             data-notification-menu
+                            role="region"
+                            aria-label="Recent notifications"
                             class="absolute right-0 z-50 mt-3 hidden w-96 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
 
                             {{-- Header --}}
@@ -907,7 +947,10 @@
                     <button
                         type="button"
                         data-profile-button
-                        class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-primary/5">
+                        class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-primary/5"
+                        aria-controls="profile-menu"
+                        aria-expanded="false"
+                        aria-haspopup="menu">
 
                         <div class="hidden text-right sm:block">
 
@@ -932,8 +975,11 @@
 
                     {{-- Profile dropdown --}}
                     <div
+                        id="profile-menu"
                         data-profile-menu
-                        class="absolute right-0 mt-2 hidden w-52 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
+                        role="menu"
+                        aria-label="Account menu"
+                        class="absolute right-0 mt-2 hidden w-56 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
 
                         <div class="border-b border-slate-100 px-4 py-3">
 
@@ -1011,12 +1057,16 @@
         {{-- Mobile overlay --}}
         <div
             data-sidebar-overlay
-            class="fixed inset-0 z-40 hidden bg-slate-950/50 md:hidden">
+            aria-hidden="true"
+            class="fixed inset-0 z-40 hidden bg-slate-950/55 backdrop-blur-[1px] md:hidden">
         </div>
 
 
         {{-- Page content --}}
-        <main class="flex-1 bg-background p-4 md:p-8 lg:p-10">
+        <main
+            id="main-content"
+            tabindex="-1"
+            class="flex-1 bg-background p-4 outline-none md:p-8 lg:p-10">
 
                         {{-- Success --}}
             @if (session('status'))

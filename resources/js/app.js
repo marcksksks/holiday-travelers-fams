@@ -136,172 +136,687 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ==========================================
-    // DESKTOP SIDEBAR HIDE / SHOW
+    // DESKTOP SIDEBAR COMPACT / EXPANDED
     // ==========================================
 
-    const sidebar = document.querySelector('[data-sidebar]');
-    const sidebarToggles = document.querySelectorAll('[data-sidebar-toggle]');
+    const sidebar =
+        document.querySelector(
+            '[data-sidebar]'
+        );
 
-    const sidebarStorageKey = 'fams-sidebar-hidden';
+    const sidebarToggles =
+        document.querySelectorAll(
+            '[data-sidebar-toggle]'
+        );
 
-    let sidebarHidden =
-        localStorage.getItem(sidebarStorageKey) === 'true';
+    const sidebarStorageKey =
+        'fams-sidebar-collapsed';
+
+    const legacySidebarStorageKey =
+        'fams-sidebar-hidden';
+
+    let sidebarCollapsed =
+        localStorage.getItem(
+            sidebarStorageKey
+        ) === 'true';
+
+
+    /*
+     * Migrate the previous fully-hidden sidebar preference
+     * to the compact navigation rail.
+     */
+    if (
+        localStorage.getItem(
+            sidebarStorageKey
+        ) === null
+        &&
+        localStorage.getItem(
+            legacySidebarStorageKey
+        ) === 'true'
+    ) {
+        sidebarCollapsed = true;
+
+        localStorage.setItem(
+            sidebarStorageKey,
+            'true'
+        );
+
+        localStorage.removeItem(
+            legacySidebarStorageKey
+        );
+    }
+
+
+    /*
+     * Compact-rail tooltip.
+     *
+     * It is rendered outside the sidebar so the independently
+     * scrolling navigation cannot clip the tooltip.
+     */
+    const sidebarTooltip =
+        document.createElement(
+            'div'
+        );
+
+    sidebarTooltip.className =
+        'fams-sidebar-tooltip';
+
+    sidebarTooltip.setAttribute(
+        'role',
+        'tooltip'
+    );
+
+    sidebarTooltip.setAttribute(
+        'aria-hidden',
+        'true'
+    );
+
+    document.body.appendChild(
+        sidebarTooltip
+    );
+
+
+    let sidebarTooltipTarget =
+        null;
+
+
+    const hideSidebarTooltip = () => {
+
+        sidebarTooltipTarget =
+            null;
+
+        sidebarTooltip.dataset.visible =
+            'false';
+
+        sidebarTooltip.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+    };
+
+
+    const showSidebarTooltip =
+        (target) => {
+
+            if (
+                !sidebar
+                ||
+                sidebar.dataset.collapsed !== 'true'
+                ||
+                window.innerWidth < 768
+            ) {
+                hideSidebarTooltip();
+                return;
+            }
+
+
+            const label =
+                target.dataset.sidebarTooltip;
+
+            if (!label) {
+                hideSidebarTooltip();
+                return;
+            }
+
+
+            sidebarTooltipTarget =
+                target;
+
+            sidebarTooltip.textContent =
+                label;
+
+            sidebarTooltip.dataset.visible =
+                'true';
+
+            sidebarTooltip.setAttribute(
+                'aria-hidden',
+                'false'
+            );
+
+
+            const targetRect =
+                target.getBoundingClientRect();
+
+            const tooltipRect =
+                sidebarTooltip.getBoundingClientRect();
+
+
+            const horizontalGap =
+                12;
+
+            const viewportPadding =
+                12;
+
+
+            let left =
+                targetRect.right
+                +
+                horizontalGap;
+
+            let top =
+                targetRect.top
+                +
+                (
+                    targetRect.height
+                    -
+                    tooltipRect.height
+                ) / 2;
+
+
+            left =
+                Math.min(
+                    left,
+                    window.innerWidth
+                    -
+                    tooltipRect.width
+                    -
+                    viewportPadding
+                );
+
+
+            top =
+                Math.max(
+                    viewportPadding,
+                    Math.min(
+                        top,
+                        window.innerHeight
+                        -
+                        tooltipRect.height
+                        -
+                        viewportPadding
+                    )
+                );
+
+
+            sidebarTooltip.style.left =
+                `${Math.round(left)}px`;
+
+            sidebarTooltip.style.top =
+                `${Math.round(top)}px`;
+        };
+
+
+    document
+        .querySelectorAll(
+            '[data-sidebar-tooltip]'
+        )
+        .forEach(
+            (target) => {
+
+                target.addEventListener(
+                    'mouseenter',
+                    () => {
+                        showSidebarTooltip(
+                            target
+                        );
+                    }
+                );
+
+
+                target.addEventListener(
+                    'mouseleave',
+                    hideSidebarTooltip
+                );
+
+
+                target.addEventListener(
+                    'focus',
+                    () => {
+                        showSidebarTooltip(
+                            target
+                        );
+                    }
+                );
+
+
+                target.addEventListener(
+                    'blur',
+                    hideSidebarTooltip
+                );
+            }
+        );
+
+
+    window.addEventListener(
+        'resize',
+        hideSidebarTooltip
+    );
+
+
+    document.addEventListener(
+        'scroll',
+        hideSidebarTooltip,
+        true
+    );
+
 
     const updateDesktopSidebar = () => {
 
-        if (!sidebar) return;
-
-        if (sidebarHidden) {
-
-            // Completely hide the sidebar on desktop
-            sidebar.classList.add(
-                'md:w-0',
-                'md:opacity-0',
-                'md:overflow-hidden',
-                'md:pointer-events-none'
-            );
-
-        } else {
-
-            // Restore the sidebar
-            sidebar.classList.remove(
-                'md:w-0',
-                'md:opacity-0',
-                'md:overflow-hidden',
-                'md:pointer-events-none'
-            );
-
+        if (!sidebar) {
+            return;
         }
 
-        sidebarToggles.forEach((button) => {
 
-            button.setAttribute(
-                'aria-expanded',
-                String(!sidebarHidden)
-            );
+        sidebar.dataset.collapsed =
+            sidebarCollapsed
+                ? 'true'
+                : 'false';
 
-            button.setAttribute(
-                'aria-label',
-                sidebarHidden ? 'Show sidebar' : 'Hide sidebar'
-            );
 
-            button.setAttribute(
-                'title',
-                sidebarHidden ? 'Show sidebar' : 'Hide sidebar'
-            );
+        sidebarToggles.forEach(
+            (button) => {
 
-        });
+                button.setAttribute(
+                    'aria-expanded',
+                    String(
+                        !sidebarCollapsed
+                    )
+                );
 
+                button.setAttribute(
+                    'aria-label',
+                    sidebarCollapsed
+                        ? 'Expand sidebar'
+                        : 'Collapse sidebar'
+                );
+
+                button.setAttribute(
+                    'title',
+                    sidebarCollapsed
+                        ? 'Expand sidebar'
+                        : 'Collapse sidebar'
+                );
+            }
+        );
+
+
+        if (!sidebarCollapsed) {
+            hideSidebarTooltip();
+        }
     };
 
-    sidebarToggles.forEach((button) => {
 
-        button.addEventListener('click', () => {
+    sidebarToggles.forEach(
+        (button) => {
 
-            sidebarHidden = !sidebarHidden;
+            button.addEventListener(
+                'click',
+                () => {
 
-            localStorage.setItem(
-                sidebarStorageKey,
-                String(sidebarHidden)
+                    sidebarCollapsed =
+                        !sidebarCollapsed;
+
+
+                    localStorage.setItem(
+                        sidebarStorageKey,
+                        String(
+                            sidebarCollapsed
+                        )
+                    );
+
+
+                    updateDesktopSidebar();
+                }
             );
-
-            updateDesktopSidebar();
-
-        });
-
-    });
-
+        }
+    );
 
 
     updateDesktopSidebar();
-
 
     // ==========================================
     // MOBILE SIDEBAR
     // ==========================================
 
-    const overlay = document.querySelector('[data-sidebar-overlay]');
-    const menuButtons = document.querySelectorAll('[data-mobile-menu]');
+    const overlay =
+        document.querySelector(
+            '[data-sidebar-overlay]'
+        );
+
+    const menuButtons =
+        document.querySelectorAll(
+            '[data-mobile-menu]'
+        );
+
+    const mobileNavigation =
+        window.matchMedia(
+            '(max-width: 767px)'
+        );
+
+
+    const setMobileNavigationState =
+        (open) => {
+
+            menuButtons.forEach(
+                (button) => {
+
+                    button.setAttribute(
+                        'aria-expanded',
+                        String(open)
+                    );
+                }
+            );
+
+            if (overlay) {
+
+                overlay.setAttribute(
+                    'aria-hidden',
+                    String(!open)
+                );
+            }
+        };
+
 
     const openSidebar = () => {
 
-        if (!sidebar) return;
-
-        sidebar.classList.remove('-translate-x-full');
-
-        if (overlay) {
-            overlay.classList.remove('hidden');
+        if (!sidebar) {
+            return;
         }
 
+        sidebar.classList.remove(
+            '-translate-x-full'
+        );
+
+        overlay?.classList.remove(
+            'hidden'
+        );
+
+        document.body.classList.add(
+            'fams-mobile-nav-open'
+        );
+
+        setMobileNavigationState(
+            true
+        );
+
+
+        window.requestAnimationFrame(
+            () => {
+
+                sidebar
+                    .querySelector(
+                        '[data-sidebar-nav-link]'
+                    )
+                    ?.focus();
+            }
+        );
     };
+
 
     const closeSidebar = () => {
 
-        if (!sidebar) return;
-
-        sidebar.classList.add('-translate-x-full');
-
-        if (overlay) {
-            overlay.classList.add('hidden');
+        if (!sidebar) {
+            return;
         }
 
+        sidebar.classList.add(
+            '-translate-x-full'
+        );
+
+        overlay?.classList.add(
+            'hidden'
+        );
+
+        document.body.classList.remove(
+            'fams-mobile-nav-open'
+        );
+
+        setMobileNavigationState(
+            false
+        );
     };
 
-    menuButtons.forEach((button) => {
 
-        button.addEventListener('click', () => {
+    menuButtons.forEach(
+        (button) => {
 
-            if (sidebar?.classList.contains('-translate-x-full')) {
+            button.addEventListener(
+                'click',
+                () => {
 
-                openSidebar();
+                    const isInsideSidebar =
+                        Boolean(
+                            button.closest(
+                                '[data-sidebar]'
+                            )
+                        );
 
-            } else {
+                    if (isInsideSidebar) {
 
+                        closeSidebar();
+                        return;
+                    }
+
+
+                    if (
+                        sidebar?.classList.contains(
+                            '-translate-x-full'
+                        )
+                    ) {
+                        openSidebar();
+                    } else {
+                        closeSidebar();
+                    }
+                }
+            );
+        }
+    );
+
+
+    overlay?.addEventListener(
+        'click',
+        closeSidebar
+    );
+
+
+    sidebar
+        ?.querySelectorAll(
+            '[data-sidebar-nav-link]'
+        )
+        .forEach(
+            (link) => {
+
+                link.addEventListener(
+                    'click',
+                    () => {
+
+                        if (
+                            mobileNavigation.matches
+                        ) {
+                            closeSidebar();
+                        }
+                    }
+                );
+            }
+        );
+
+
+    document.addEventListener(
+        'keydown',
+        (event) => {
+
+            if (
+                event.key === 'Escape'
+                &&
+                mobileNavigation.matches
+                &&
+                sidebar
+                &&
+                !sidebar.classList.contains(
+                    '-translate-x-full'
+                )
+            ) {
                 closeSidebar();
 
+                document
+                    .querySelector(
+                        'header [data-mobile-menu]'
+                    )
+                    ?.focus();
             }
+        }
+    );
 
-        });
 
-    });
+    const handleNavigationViewport =
+        (event) => {
 
-    if (overlay) {
-        overlay.addEventListener('click', closeSidebar);
+            if (!event.matches) {
+                closeSidebar();
+            }
+        };
+
+
+    if (
+        typeof mobileNavigation.addEventListener
+        === 'function'
+    ) {
+        mobileNavigation.addEventListener(
+            'change',
+            handleNavigationViewport
+        );
     }
 
+
+    setMobileNavigationState(
+        false
+    );
 
     // ==========================================
     // PROFILE DROPDOWN
     // ==========================================
 
-    const profileButton = document.querySelector('[data-profile-button]');
-    const profileMenu = document.querySelector('[data-profile-menu]');
+    const profileButton =
+        document.querySelector(
+            '[data-profile-button]'
+        );
 
-    if (profileButton && profileMenu) {
+    const profileMenu =
+        document.querySelector(
+            '[data-profile-menu]'
+        );
 
-        profileButton.addEventListener('click', (event) => {
 
-            event.stopPropagation();
+    const closeProfileMenu = () => {
 
-            toggleFamsPopover(profileMenu);
+        if (
+            !profileButton
+            ||
+            !profileMenu
+        ) {
+            return;
+        }
 
-        });
+        hideFamsPopover(
+            profileMenu
+        );
 
-        document.addEventListener('click', (event) => {
+        profileButton.setAttribute(
+            'aria-expanded',
+            'false'
+        );
+    };
 
-            if (
-                !profileMenu.contains(event.target) &&
-                !profileButton.contains(event.target)
-            ) {
 
-                hideFamsPopover(profileMenu);
+    const openProfileMenu = () => {
 
+        if (
+            !profileButton
+            ||
+            !profileMenu
+        ) {
+            return;
+        }
+
+        window.dispatchEvent(
+            new CustomEvent(
+                'fams:close-notification-menu'
+            )
+        );
+
+        showFamsPopover(
+            profileMenu
+        );
+
+        profileButton.setAttribute(
+            'aria-expanded',
+            'true'
+        );
+    };
+
+
+    if (
+        profileButton
+        &&
+        profileMenu
+    ) {
+        profileButton.addEventListener(
+            'click',
+            (event) => {
+
+                event.stopPropagation();
+
+                const closed =
+                    profileMenu.classList.contains(
+                        'hidden'
+                    )
+                    ||
+                    profileMenu.classList.contains(
+                        'fams-popover-exit'
+                    );
+
+                if (closed) {
+                    openProfileMenu();
+                } else {
+                    closeProfileMenu();
+                }
             }
+        );
 
-        });
 
+        document.addEventListener(
+            'click',
+            (event) => {
+
+                if (
+                    !profileMenu.contains(
+                        event.target
+                    )
+                    &&
+                    !profileButton.contains(
+                        event.target
+                    )
+                ) {
+                    closeProfileMenu();
+                }
+            }
+        );
+
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+
+                if (
+                    event.key === 'Escape'
+                    &&
+                    !profileMenu.classList.contains(
+                        'hidden'
+                    )
+                ) {
+                    closeProfileMenu();
+
+                    profileButton.focus();
+                }
+            }
+        );
+
+
+        window.addEventListener(
+            'fams:close-profile-menu',
+            closeProfileMenu
+        );
     }
-
 
     // ==========================================
     // TOAST NOTIFICATIONS
@@ -461,6 +976,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showNotifications = () => {
 
+        window.dispatchEvent(
+            new CustomEvent(
+                'fams:close-profile-menu'
+            )
+        );
+
         if (closeTimer) {
             window.clearTimeout(closeTimer);
             closeTimer = null;
@@ -611,6 +1132,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 notificationButton.focus();
             }
         }
+    );
+
+
+    window.addEventListener(
+        'fams:close-notification-menu',
+        hideNotifications
     );
 });
 
