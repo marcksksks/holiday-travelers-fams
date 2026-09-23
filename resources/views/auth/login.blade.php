@@ -4,7 +4,7 @@
 
 @section('content')
 
-<div class="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
+<div data-auth-workspace="login" class="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
 
     {{-- Header --}}
     <div class="border-b border-border px-8 pb-6 pt-8 text-center">
@@ -175,10 +175,4 @@
     </form>
 
 </div>
-
-
-<p class="mt-5 text-center text-xs text-slate-400">
-    Secure Facilities & Administrative Management Portal
-</p>
-
 @endsection

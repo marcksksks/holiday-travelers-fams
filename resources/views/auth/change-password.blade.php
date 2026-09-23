@@ -25,7 +25,7 @@
 @endif
 
 
-<div class="{{ $isForced ? 'overflow-hidden rounded-2xl border border-border bg-card shadow-soft' : 'max-w-xl overflow-hidden rounded-2xl border border-border bg-card shadow-card' }}">
+<div data-auth-workspace="change-password" class="{{ $isForced ? 'overflow-hidden rounded-2xl border border-border bg-card shadow-soft' : 'max-w-xl overflow-hidden rounded-2xl border border-border bg-card shadow-card' }}">
 
     {{-- Card Header --}}
     <div class="border-b border-border px-6 pb-6 pt-7 sm:px-8">
