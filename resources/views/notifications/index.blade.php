@@ -4,61 +4,145 @@
 
 @section('content')
 
-<div class="mx-auto max-w-6xl space-y-5">
+<div class="space-y-6">
 
     {{-- =====================================================
-         PAGE HEADER
+         NOTIFICATIONS WORKSPACE HEADER
     ====================================================== --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <x-page-header
+        eyebrow="Activity Center"
+        title="Notifications"
+        badge="Notification Center"
+        description="Review alerts, approvals, requests, and recent system activity from one centralized feed.">
 
-        <div>
+        <x-slot:actions>
 
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
+            @if ($unreadCount > 0)
 
-            <div class="flex flex-wrap items-center gap-3">
+                <form
+                    method="POST"
+                    action="{{ route('notifications.read-all') }}">
 
-                <h2 class="font-heading text-2xl font-bold text-primary">
-                    Notifications
-                </h2>
+                    @csrf
 
-                @if ($unreadCount > 0)
+                    <button
+                        type="submit"
+                        class="btn-outline whitespace-nowrap">
 
-                    <span class="rounded-full bg-secondary/10 px-2.5 py-1 font-button text-[11px] font-semibold text-secondary">
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true">
 
-                        {{ number_format($unreadCount) }}
-                        unread
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 13l4 4L19 7" />
 
-                    </span>
+                        </svg>
 
-                @endif
+                        Mark all as read
 
-            </div>
+                    </button>
+
+                </form>
+
+            @endif
+
+        </x-slot:actions>
+
+    </x-page-header>
 
 
-            <p class="mt-1 max-w-2xl text-sm text-slate-500">
-                Review alerts, approvals, requests, and recent system activity.
-            </p>
+    {{-- =====================================================
+         ACTIVITY SUMMARY
+    ====================================================== --}}
+    <section class="space-y-4">
 
-        </div>
+        <x-section-header
+            eyebrow="Overview"
+            title="Activity Summary"
+            description="A quick view of notification volume and unread activity for your account." />
 
 
-        @if ($unreadCount > 0)
+        <div class="grid gap-3 sm:grid-cols-3">
 
-            <form
-                method="POST"
-                action="{{ route('notifications.read-all') }}">
+            <x-metric-card
+                label="Total Notifications"
+                :value="number_format($totalCount)"
+                :href="route('notifications.index', ['status' => 'all'])"
+                helper="All notifications currently available in your personal activity feed."
+                tone="primary">
 
-                @csrf
-
-                <button
-                    type="submit"
-                    class="btn-outline whitespace-nowrap">
+                <x-slot:icon>
 
                     <svg
-                        class="h-4 w-4"
+                        class="h-5 w-5"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24">
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.66V5a2 2 0 10-4 0v.34A6 6 0 006 11v3.2c0 .53-.21 1.04-.59 1.41L4 17h5m6 0a3 3 0 01-6 0" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Unread"
+                :value="number_format($unreadCount)"
+                :href="route('notifications.index', ['status' => 'unread'])"
+                helper="Notifications that have not yet been opened."
+                :tone="$unreadCount > 0 ? 'warning' : 'success'">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+
+                    </svg>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
+
+            <x-metric-card
+                label="Read"
+                :value="number_format($readCount)"
+                :href="route('notifications.index', ['status' => 'read'])"
+                helper="Notifications you have already reviewed."
+                tone="success">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
 
                         <path
                             stroke-linecap="round"
@@ -68,17 +152,19 @@
 
                     </svg>
 
-                    Mark all as read
+                </x-slot:icon>
 
-                </button>
+            </x-metric-card>
 
-            </form>
+        </div>
 
-        @endif
-
-    </div>
+    </section>
 
 
+    <x-section-header
+        eyebrow="Inbox"
+        title="Notification Feed"
+        description="Search and filter your personal notification history." />
 
     {{-- =====================================================
          NOTIFICATION CENTER
