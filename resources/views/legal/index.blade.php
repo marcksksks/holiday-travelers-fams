@@ -18,33 +18,16 @@
 
 <div class="space-y-6">
 
-    {{-- Header --}}
-    <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    {{-- =====================================================
+         LEGAL MANAGEMENT HEADER
+    ====================================================== --}}
+    <x-page-header
+        eyebrow="Legal & Compliance"
+        title="Legal Management"
+        badge="Legal Workspace"
+        description="Manage legal matters, permits, licenses, compliance obligations, reviews, deadlines, assignments, and supporting records.">
 
-        <div class="min-w-0">
-
-            <div class="mb-2 h-1 w-12 rounded-full bg-secondary"></div>
-
-            <div class="flex flex-wrap items-center gap-3">
-
-                <h2 class="font-heading text-2xl font-bold text-primary">
-                    Legal Management
-                </h2>
-
-                <span class="rounded-full border border-secondary/20 bg-secondary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-secondary">
-                    Legal Workspace
-                </span>
-
-            </div>
-
-            <p class="mt-1 max-w-3xl text-sm text-slate-500">
-                Manage legal matters, permits, licenses, compliance obligations, reviews, deadlines, assignments, and supporting records.
-            </p>
-
-        </div>
-
-
-        <div class="flex flex-wrap items-center gap-2">
+        <x-slot:actions>
 
             @if ($activeFilters > 0)
 
@@ -87,120 +70,165 @@
 
             @endcan
 
-        </div>
+        </x-slot:actions>
 
-    </div>
+    </x-page-header>
 
 
-    {{-- KPI Overview --}}
-    <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+    {{-- =====================================================
+         LEGAL PORTFOLIO OVERVIEW
+    ====================================================== --}}
+    <section class="space-y-4">
 
-        <div class="card p-4">
-            <div class="flex items-center justify-between gap-3">
-                <div>
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        Total Matters
-                    </p>
-                    <p class="mt-1 font-heading text-2xl font-bold text-primary">
-                        {{ number_format($kpis['total']) }}
-                    </p>
-                </div>
+        <x-section-header
+            eyebrow="Overview"
+            title="Legal Portfolio"
+            description="A current snapshot of legal matters, review obligations, and deadline exposure." />
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-primary">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+
+        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+
+            <x-metric-card
+                label="Total Matters"
+                :value="number_format($kpis['total'])"
+                :href="route('legal.index')"
+                helper="All legal and compliance matters within your current access scope."
+                tone="primary">
+
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
                             d="M6 3h9l3 3v15H6V3zm3 5h6M9 12h6M9 16h4" />
+
                     </svg>
-                </div>
-            </div>
-        </div>
+
+                </x-slot:icon>
+
+            </x-metric-card>
 
 
-        <div class="card p-4">
-            <div class="flex items-center justify-between gap-3">
-                <div>
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        Active
-                    </p>
-                    <p class="mt-1 font-heading text-2xl font-bold text-success">
-                        {{ number_format($kpis['active']) }}
-                    </p>
-                </div>
+            <x-metric-card
+                label="Active"
+                :value="number_format($kpis['active'])"
+                :href="route('legal.index', ['status' => 'active'])"
+                helper="Legal matters currently active in the management lifecycle."
+                tone="success">
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
                             d="M5 13l4 4L19 7" />
+
                     </svg>
-                </div>
-            </div>
-        </div>
+
+                </x-slot:icon>
+
+            </x-metric-card>
 
 
-        <div class="card p-4">
-            <div class="flex items-center justify-between gap-3">
-                <div>
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        Action Required
-                    </p>
-                    <p class="mt-1 font-heading text-2xl font-bold text-error">
-                        {{ number_format($kpis['action_required']) }}
-                    </p>
-                </div>
+            <x-metric-card
+                label="Action Required"
+                :value="number_format($kpis['action_required'])"
+                :href="route('legal.index', ['review_status' => 'action_required'])"
+                helper="Matters currently requiring legal review or follow-up."
+                tone="error">
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-error/10 text-error">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
                             d="M12 9v4m0 4h.01M10.3 3.8L2.5 18a2 2 0 001.8 3h15.4a2 2 0 001.8-3L13.7 3.8a2 2 0 00-3.4 0z" />
+
                     </svg>
-                </div>
-            </div>
-        </div>
+
+                </x-slot:icon>
+
+            </x-metric-card>
 
 
-        <div class="card p-4">
-            <div class="flex items-center justify-between gap-3">
-                <div>
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        Due Soon
-                    </p>
-                    <p class="mt-1 font-heading text-2xl font-bold text-warning">
-                        {{ number_format($kpis['due_soon']) }}
-                    </p>
-                </div>
+            <x-metric-card
+                label="Due Soon"
+                :value="number_format($kpis['due_soon'])"
+                :href="route('legal.index', ['deadline' => 'due_soon'])"
+                helper="Matters with required actions due within the next seven days."
+                tone="warning">
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 text-warning">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
                             d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+
                     </svg>
-                </div>
-            </div>
-        </div>
+
+                </x-slot:icon>
+
+            </x-metric-card>
 
 
-        <div class="card p-4">
-            <div class="flex items-center justify-between gap-3">
-                <div>
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        Overdue / Expired
-                    </p>
-                    <p class="mt-1 font-heading text-2xl font-bold text-error">
-                        {{ number_format($kpis['overdue']) }}
-                    </p>
-                </div>
+            <x-metric-card
+                label="Overdue / Expired"
+                :value="number_format($kpis['overdue'])"
+                helper="Matters whose due date or validity period has already elapsed."
+                tone="error">
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-error/10 text-error">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                <x-slot:icon>
+
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
                             d="M12 6v6l4 2M5 3l14 18" />
+
                     </svg>
-                </div>
-            </div>
+
+                </x-slot:icon>
+
+            </x-metric-card>
+
         </div>
 
-    </div>
-
+    </section>
 
     {{-- Search + Filters --}}
     <div class="card overflow-hidden">

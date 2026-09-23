@@ -39,6 +39,9 @@ class LegalManagementWorkspaceTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Legal Management')
+            ->assertSee('Legal &amp; Compliance', false)
+            ->assertSee('Legal Workspace')
+            ->assertSee('Legal Portfolio')
             ->assertSee('Legal Record Register')
             ->assertSee('New Legal Record')
             ->assertSee('Total Matters')
@@ -184,6 +187,49 @@ class LegalManagementWorkspaceTest extends TestCase
             )
             ->assertSee(
                 'Legal Basis / Regulation'
+            );
+    }
+
+    public function test_legal_workspace_preserves_responsive_mobile_and_desktop_registers(): void
+    {
+        $admin =
+            $this->user(
+                User::ROLE_ADMIN_OFFICER
+            );
+
+        LegalRecord::create([
+            'title' => 'Responsive Legal Matter',
+
+            'record_type' => 'permit',
+
+            'status' => 'active',
+
+            'priority' => 'medium',
+
+            'confidentiality_level' => 'internal',
+
+            'review_status' => 'not_reviewed',
+        ]);
+
+        $response =
+            $this
+                ->actingAs($admin)
+                ->get(
+                    route('legal.index')
+                );
+
+        $response
+            ->assertOk()
+            ->assertSee(
+                'Responsive Legal Matter'
+            )
+            ->assertSee(
+                'hidden overflow-x-auto lg:block',
+                false
+            )
+            ->assertSee(
+                'divide-y divide-border lg:hidden',
+                false
             );
     }
 }
