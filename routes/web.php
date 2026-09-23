@@ -11,6 +11,7 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FacilityController;
+use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\LegalRecordController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
@@ -101,6 +102,11 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')-
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Role-aware global header search.
+    Route::get('/global-search', [GlobalSearchController::class, 'index'])
+        ->middleware('throttle:120,1')
+        ->name('global-search.index');
 
     Route::get('/change-password', [ChangePasswordController::class, 'edit'])->name('password.change');
     Route::put('/change-password', [ChangePasswordController::class, 'update'])->name('password.change.update');

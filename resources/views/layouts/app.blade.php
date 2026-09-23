@@ -454,7 +454,7 @@
 
                                             <span
                                                 data-sidebar-label
-                                                class="h-1.5 w-1.5 shrink-0 rounded-full bg-secondary shadow-sm">
+                                                class="hidden h-1.5 w-1.5 shrink-0 rounded-full bg-secondary shadow-sm">
                                             </span>
 
                                         @endif
@@ -622,6 +622,175 @@
 
             {{-- Header right --}}
             <div class="flex items-center gap-3">
+                {{-- Global search --}}
+                <x-global-search />
+
+                {{-- Light / dark appearance toggle --}}
+                <button
+                    type="button"
+                    data-theme-toggle
+                    aria-label="Switch to dark mode"
+                    aria-pressed="false"
+                    title="Switch to dark mode"
+                    class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-background hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40">
+
+                    {{-- Moon: shown while interface is light --}}
+                    <svg
+                        data-theme-icon-dark
+                        class="h-[17px] w-[17px]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.8"
+                            d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+
+                    </svg>
+
+
+                    {{-- Sun: shown while interface is dark --}}
+                    <svg
+                        data-theme-icon-light
+                        class="hidden h-[18px] w-[18px]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true">
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="4"
+                            stroke-width="1.8">
+                        </circle>
+
+                        <path
+                            stroke-linecap="round"
+                            stroke-width="1.8"
+                            d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42">
+                        </path>
+
+                    </svg>
+
+                </button>
+
+
+                @once
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+
+                            const button =
+                                document.querySelector(
+                                    '[data-theme-toggle]'
+                                );
+
+                            if (! button) {
+                                return;
+                            }
+
+                            const moon =
+                                button.querySelector(
+                                    '[data-theme-icon-dark]'
+                                );
+
+                            const sun =
+                                button.querySelector(
+                                    '[data-theme-icon-light]'
+                                );
+
+
+                            const effectiveTheme = () =>
+                                document
+                                    .documentElement
+                                    .dataset
+                                    .themeEffective
+                                ===
+                                'dark'
+                                    ? 'dark'
+                                    : 'light';
+
+
+                            const syncToggle = () => {
+
+                                const dark =
+                                    effectiveTheme()
+                                    ===
+                                    'dark';
+
+                                moon?.classList.toggle(
+                                    'hidden',
+                                    dark
+                                );
+
+                                sun?.classList.toggle(
+                                    'hidden',
+                                    ! dark
+                                );
+
+                                const label =
+                                    dark
+                                        ? 'Switch to light mode'
+                                        : 'Switch to dark mode';
+
+                                button.setAttribute(
+                                    'aria-label',
+                                    label
+                                );
+
+                                button.setAttribute(
+                                    'title',
+                                    label
+                                );
+
+                                button.setAttribute(
+                                    'aria-pressed',
+                                    String(dark)
+                                );
+                            };
+
+
+                            button.addEventListener(
+                                'click',
+                                () => {
+
+                                    if (! window.FAMSTheme) {
+                                        return;
+                                    }
+
+                                    const nextMode =
+                                        effectiveTheme()
+                                        ===
+                                        'dark'
+                                            ? 'light'
+                                            : 'dark';
+
+                                    window
+                                        .FAMSTheme
+                                        .set(
+                                            nextMode
+                                        );
+
+                                    syncToggle();
+                                }
+                            );
+
+
+                            window.addEventListener(
+                                'fams-theme-change',
+                                syncToggle
+                            );
+
+                            syncToggle();
+
+                        });
+                    </script>
+                @endonce
+
+
                 {{-- Global real-time system clock --}}
                 <x-system-clock />
 
@@ -690,7 +859,7 @@
                             data-notification-menu
                             role="region"
                             aria-label="Recent notifications"
-                            class="absolute right-0 z-50 mt-3 hidden w-96 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
+                            class="fixed inset-x-4 top-[4.5rem] z-[70] hidden w-auto overflow-hidden rounded-xl border border-border bg-card shadow-soft sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-3 sm:w-96 sm:max-w-[calc(100vw-2rem)] sm:rounded-2xl">
 
                             {{-- Header --}}
                             <div class="border-b border-border px-5 py-4">
@@ -1006,16 +1175,6 @@
                             </p>
 
                         </div>
-
-                        @if (Route::has('password.change'))
-
-                            <a
-                                href="{{ route('password.change') }}"
-                                class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">
-                                Change Password
-                            </a>
-
-                        @endif
 
                         <form method="POST" action="{{ route('logout') }}">
 

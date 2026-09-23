@@ -734,6 +734,12 @@ document.addEventListener('DOMContentLoaded', () => {
             )
         );
 
+        window.dispatchEvent(
+            new CustomEvent(
+                'fams:close-global-search'
+            )
+        );
+
         showFamsPopover(
             profileMenu
         );
@@ -982,6 +988,12 @@ document.addEventListener('DOMContentLoaded', () => {
             )
         );
 
+        window.dispatchEvent(
+            new CustomEvent(
+                'fams:close-global-search'
+            )
+        );
+
         if (closeTimer) {
             window.clearTimeout(closeTimer);
             closeTimer = null;
@@ -1137,7 +1149,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener(
         'fams:close-notification-menu',
-        hideNotifications
+        () => {
+
+            if (closeTimer) {
+                window.clearTimeout(closeTimer);
+                closeTimer = null;
+            }
+
+            notificationMenu.classList.add(
+                'hidden'
+            );
+
+            notificationMenu.classList.remove(
+                'fams-popover-enter',
+                'fams-popover-exit'
+            );
+
+            notificationButton.setAttribute(
+                'aria-expanded',
+                'false'
+            );
+        }
     );
 });
 
