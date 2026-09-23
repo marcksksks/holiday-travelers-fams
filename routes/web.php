@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminAccountRecoveryController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\Auth\AccountRecoveryController;
 use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -29,12 +31,64 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store']);
 
-    Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
+    // Secure Account Recovery.
+    Route::get(
+        '/forgot-password',
+        [AccountRecoveryController::class, 'requestForm']
+    )->name('password.request');
+
+    Route::post(
+        '/account-recovery/request',
+        [AccountRecoveryController::class, 'requestAdministrator']
+    )
+        ->middleware('throttle:5,10')
+        ->name('account-recovery.request');
+
+    Route::post(
+        '/account-recovery/recovery-code',
+        [AccountRecoveryController::class, 'requestWithRecoveryCode']
+    )
+        ->middleware('throttle:8,10')
+        ->name('account-recovery.recovery-code');
+
+    Route::get(
+        '/account-recovery/status',
+        [AccountRecoveryController::class, 'status']
+    )->name('account-recovery.status');
+
+    Route::get(
+        '/account-recovery/reset',
+        [AccountRecoveryController::class, 'resetForm']
+    )->name('account-recovery.reset');
+
+    Route::post(
+        '/account-recovery/reset',
+        [AccountRecoveryController::class, 'reset']
+    )
+        ->middleware('throttle:10,10')
+        ->name('account-recovery.update');
+
+    /*
+     * Legacy email reset endpoints remain available internally
+     * for compatibility and existing security regression tests.
+     * They are no longer exposed by the Forgot Password UI.
+     */
+    Route::post(
+        '/forgot-password/email',
+        [PasswordResetController::class, 'sendResetLink']
+    )
         ->middleware('throttle:password-reset-link')
         ->name('password.email');
-    Route::get('/reset-password/{token}', [PasswordResetController::class, 'resetForm'])->name('password.reset');
-    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
+
+    Route::get(
+        '/reset-password/{token}',
+        [PasswordResetController::class, 'resetForm']
+    )->name('password.reset');
+
+    Route::post(
+        '/reset-password',
+        [PasswordResetController::class, 'reset']
+    )->name('password.update');
 });
 
 Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
@@ -193,6 +247,25 @@ Route::middleware('auth')->group(function () {
 
     // User management (sys_admin only)
     Route::middleware('role:sys_admin')->group(function () {
+        Route::get(
+            '/account-recovery-requests',
+            [AdminAccountRecoveryController::class, 'index']
+        )->name('account-recovery.admin.index');
+
+        Route::post(
+            '/account-recovery-requests/{recovery}/approve',
+            [AdminAccountRecoveryController::class, 'approve']
+        )
+            ->middleware('throttle:20,1')
+            ->name('account-recovery.admin.approve');
+
+        Route::post(
+            '/account-recovery-requests/{recovery}/reject',
+            [AdminAccountRecoveryController::class, 'reject']
+        )
+            ->middleware('throttle:20,1')
+            ->name('account-recovery.admin.reject');
+
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::post('/users/{user}/role', [UserController::class, 'setRole'])->name('users.set-role');

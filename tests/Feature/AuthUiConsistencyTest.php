@@ -34,9 +34,15 @@ class AuthUiConsistencyTest extends TestCase
         $this
             ->get(route('password.request'))
             ->assertOk()
-            ->assertSee('Account Recovery')
-            ->assertSee('Forgot your password?')
-            ->assertSee('Send Reset Link')
+            ->assertSee('Secure Account Recovery')
+            ->assertSee('Recover your account')
+            ->assertSee('Request Administrator Recovery')
+            ->assertSee('Use Recovery Code')
+            ->assertSee(
+                'data-auth-workspace="account-recovery"',
+                false
+            )
+            ->assertDontSee('Send Reset Link')
             ->assertSee('Back to sign in');
     }
 
