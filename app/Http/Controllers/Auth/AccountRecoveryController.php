@@ -306,7 +306,7 @@ class AccountRecoveryController extends Controller
                 'password' => [
                     'required',
                     'confirmed',
-                    PasswordRule::min(8),
+                    PasswordRule::defaults(),
                 ],
             ]);
 

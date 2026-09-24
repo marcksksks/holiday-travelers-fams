@@ -334,9 +334,9 @@
                                         type="password"
                                         name="password"
                                         required
-                                        minlength="8"
+                                        minlength="12"
                                         autocomplete="new-password"
-                                        placeholder="Minimum 8 characters"
+                                        placeholder="Minimum 12 characters"
                                         class="input pr-36">
 
 
@@ -408,7 +408,7 @@
 
 
                                 <p class="mt-2 text-xs leading-5 text-slate-500">
-                                    Use a temporary password with uppercase and lowercase letters, numbers, and a symbol. The staff member must replace it after first login.
+                                    Use a temporary password with at least 12 characters, uppercase and lowercase letters, a number, and a symbol. The staff member must replace it after first login.
                                 </p>
 
 
@@ -537,10 +537,6 @@
 
                 let score = 0;
 
-                if (value.length >= 8) {
-                    score++;
-                }
-
                 if (value.length >= 12) {
                     score++;
                 }
@@ -552,10 +548,11 @@
                     score++;
                 }
 
-                if (
-                    /\d/.test(value) &&
-                    /[^A-Za-z0-9]/.test(value)
-                ) {
+                if (/\d/.test(value)) {
+                    score++;
+                }
+
+                if (/[^A-Za-z0-9]/.test(value)) {
                     score++;
                 }
 

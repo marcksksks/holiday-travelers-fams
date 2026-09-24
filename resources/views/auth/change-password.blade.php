@@ -184,6 +184,7 @@
                     type="password"
                     name="password"
                     required
+                    minlength="12"
                     autocomplete="new-password"
                     placeholder="Create a new password"
                     class="input pl-11 pr-11">
@@ -235,7 +236,7 @@
             </div>
 
             <p class="mt-1.5 text-[11px] leading-relaxed text-slate-400">
-                Use at least 8 characters and combine uppercase, lowercase, numbers, and symbols.
+                Use at least 12 characters and combine uppercase, lowercase, numbers, and symbols.
             </p>
 
         </div>
@@ -273,6 +274,7 @@
                     type="password"
                     name="password_confirmation"
                     required
+                    minlength="12"
                     autocomplete="new-password"
                     placeholder="Re-enter your new password"
                     class="input pl-11 pr-11">
@@ -442,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let score = 0;
 
-            if (value.length >= 8) score++;
+            if (value.length >= 12) score++;
             if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
             if (/\d/.test(value)) score++;
             if (/[^A-Za-z0-9]/.test(value)) score++;

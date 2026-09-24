@@ -93,12 +93,13 @@
                 type="password"
                 name="password"
                 required
+                minlength="12"
                 autocomplete="new-password"
                 placeholder="Create a new password"
                 class="input">
 
             <p class="mt-1.5 text-[11px] leading-5 text-slate-400">
-                Use at least 8 characters and combine uppercase, lowercase, numbers, and symbols.
+                Use at least 12 characters and combine uppercase, lowercase, numbers, and symbols.
             </p>
 
         </div>
@@ -119,6 +120,7 @@
                 type="password"
                 name="password_confirmation"
                 required
+                minlength="12"
                 autocomplete="new-password"
                 placeholder="Re-enter your new password"
                 class="input">

@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +28,17 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        /*
+         * One authoritative password policy for every password
+         * creation, change, and recovery workflow.
+         */
+        Password::defaults(
+            fn () => Password::min(12)
+                ->mixedCase()
+                ->numbers()
+                ->symbols()
+        );
+
         RateLimiter::for(
             'api',
             function (Request $request): Limit {
@@ -46,11 +58,10 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for(
             'password-reset-link',
-            fn (Request $request): Limit =>
-                Limit::perMinute(5)
-                    ->by(
-                        'password-reset-link:'.$request->ip()
-                    )
+            fn (Request $request): Limit => Limit::perMinute(5)
+                ->by(
+                    'password-reset-link:'.$request->ip()
+                )
         );
 
         RateLimiter::for(
@@ -88,16 +99,14 @@ class AppServiceProvider extends ServiceProvider
         );
 
         foreach (
-            array_keys(Rbac::PERMISSIONS)
-            as $permission
+            array_keys(Rbac::PERMISSIONS) as $permission
         ) {
             Gate::define(
                 $permission,
-                fn (User $user) =>
-                    Rbac::can(
-                        $permission,
-                        $user->app_role
-                    )
+                fn (User $user) => Rbac::can(
+                    $permission,
+                    $user->app_role
+                )
             );
         }
 
@@ -105,8 +114,7 @@ class AppServiceProvider extends ServiceProvider
             fn (
                 User $user,
                 string $ability
-            ) =>
-                $user->isSysAdmin()
+            ) => $user->isSysAdmin()
                     ? true
                     : null
         );

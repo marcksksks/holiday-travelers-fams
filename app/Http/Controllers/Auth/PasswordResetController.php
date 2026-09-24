@@ -67,7 +67,7 @@ class PasswordResetController extends Controller
             'password' => [
                 'required',
                 'confirmed',
-                PasswordRule::min(8),
+                PasswordRule::defaults(),
             ],
         ]);
 
@@ -88,12 +88,10 @@ class PasswordResetController extends Controller
                         $password
                     ): void {
                         $user->forceFill([
-                            'password' =>
-                                Hash::make(
-                                    $password
-                                ),
-                            'force_password_change' =>
-                                false,
+                            'password' => Hash::make(
+                                $password
+                            ),
+                            'force_password_change' => false,
                         ])->save();
 
                         $this->credentials

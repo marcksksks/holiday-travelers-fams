@@ -107,6 +107,7 @@
                 type="password"
                 name="password"
                 required
+                minlength="12"
                 autofocus
                 autocomplete="new-password"
                 placeholder="Create a new password"
@@ -114,7 +115,7 @@
 
             <p
                 class="mt-1.5 text-[11px] leading-5 text-slate-400">
-                Use at least 8 characters. A longer unique passphrase is recommended.
+                Use at least 12 characters with uppercase, lowercase, a number, and a symbol.
             </p>
 
         </div>
@@ -133,6 +134,7 @@
                 type="password"
                 name="password_confirmation"
                 required
+                minlength="12"
                 autocomplete="new-password"
                 placeholder="Re-enter your new password"
                 class="input">

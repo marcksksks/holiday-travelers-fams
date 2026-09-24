@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class UserManagementService
@@ -26,11 +29,17 @@ class UserManagementService
             ])->status(403);
         }
 
-        if (strlen($password) < 8) {
-            throw ValidationException::withMessages([
-                'password' => 'Password must be at least 8 characters.',
-            ]);
-        }
+        Validator::make(
+            [
+                'password' => $password,
+            ],
+            [
+                'password' => [
+                    'required',
+                    Password::defaults(),
+                ],
+            ]
+        )->validate();
 
         $user = User::create([
             'full_name' => $fullName,
@@ -128,7 +137,7 @@ class UserManagementService
             ]);
         }
 
-        return \Illuminate\Support\Facades\DB::transaction(
+        return DB::transaction(
             function () use (
                 $admin,
                 $target,
@@ -147,7 +156,7 @@ class UserManagementService
                     ->save();
 
                 if (! $active) {
-                    \Illuminate\Support\Facades\DB::connection(
+                    DB::connection(
                         config('session.connection')
                     )
                         ->table(
