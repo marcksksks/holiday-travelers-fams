@@ -17,6 +17,12 @@
     $contractLegalMax = max(1, (int) ($contractsByLegalReview->max() ?? 0));
     $facilityMax = max(1, (int) ($facilityUtilization->max('bookings') ?? 0));
 
+    $reportQuery = [
+        'from' => $from->toDateString(),
+        'to' => $to->toDateString(),
+        'facility_sort' => $facilitySort,
+    ];
+
     $averageVisitMinutes =
         max(
             0,
@@ -95,6 +101,146 @@
 
     </x-page-header>
 
+
+    {{-- =====================================================
+         EXPORT & PRINT
+    ====================================================== --}}
+    <section
+        class="card overflow-hidden"
+        aria-labelledby="report-export-title">
+
+        <div class="flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between">
+
+            <div class="min-w-0">
+
+                <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+                    Report Delivery
+                </p>
+
+                <h2
+                    id="report-export-title"
+                    class="mt-1 font-heading text-base font-semibold text-primary">
+
+                    Export &amp; Print
+
+                </h2>
+
+                <p class="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
+
+                    Download the currently filtered management report as PDF,
+                    Excel, or CSV, or open the print-optimized report.
+
+                </p>
+
+            </div>
+
+
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:flex lg:flex-wrap">
+
+                <a
+                    href="{{ route('reports.export.pdf', $reportQuery) }}"
+                    class="btn-outline justify-center"
+                    data-report-export
+                    data-report-format="PDF"
+                    aria-label="Download report as PDF">
+
+                    <span
+                        data-export-label
+                        aria-live="polite">
+
+                        Download PDF
+
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="{{ route('reports.export.xlsx', $reportQuery) }}"
+                    class="btn-outline justify-center"
+                    data-report-export
+                    data-report-format="Excel"
+                    aria-label="Download report as Excel workbook">
+
+                    <span
+                        data-export-label
+                        aria-live="polite">
+
+                        Download Excel
+
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="{{ route('reports.export.csv', $reportQuery) }}"
+                    class="btn-outline justify-center"
+                    data-report-export
+                    data-report-format="CSV"
+                    aria-label="Download report as CSV">
+
+                    <span
+                        data-export-label
+                        aria-live="polite">
+
+                        Download CSV
+
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="{{ route('reports.print', $reportQuery) }}"
+                    target="_blank"
+                    rel="noopener"
+                    class="btn-primary justify-center"
+                    data-report-export
+                    data-report-format="Print"
+                    aria-label="Open printable report">
+
+                    <span
+                        data-export-label
+                        aria-live="polite">
+
+                        Print Report
+
+                    </span>
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="border-t border-border bg-background/40 px-4 py-3">
+
+            <p class="text-[11px] leading-5 text-slate-500">
+
+                <span class="font-semibold text-primary">
+                    Current export:
+                </span>
+
+                {{ $from->format('M d, Y') }}
+                &ndash;
+                {{ $to->format('M d, Y') }}
+
+                <span aria-hidden="true">
+                    &bull;
+                </span>
+
+                Facility order:
+                {{ str($facilitySort)->replace('_', ' ')->headline() }}
+
+            </p>
+
+        </div>
+
+    </section>
+
+
     {{-- =====================================================
          REPORTING PERIOD
     ====================================================== --}}
@@ -111,7 +257,7 @@
             <form
                 method="GET"
                 action="{{ route('reports.index') }}"
-                class="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+                class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-end">
 
                 <div>
 
@@ -169,7 +315,67 @@
                 </div>
 
 
-                <div class="flex gap-2">
+                <div>
+
+                    <label
+                        for="facility_sort"
+                        class="label">
+
+                        Facility Sort
+
+                    </label>
+
+                    <select
+                        id="facility_sort"
+                        name="facility_sort"
+                        class="input">
+
+                        <option
+                            value="bookings_desc"
+                            @selected($facilitySort === 'bookings_desc')>
+
+                            Most Booked First
+
+                        </option>
+
+                        <option
+                            value="bookings_asc"
+                            @selected($facilitySort === 'bookings_asc')>
+
+                            Least Booked First
+
+                        </option>
+
+                        <option
+                            value="name_asc"
+                            @selected($facilitySort === 'name_asc')>
+
+                            Facility Name A-Z
+
+                        </option>
+
+                        <option
+                            value="name_desc"
+                            @selected($facilitySort === 'name_desc')>
+
+                            Facility Name Z-A
+
+                        </option>
+
+                    </select>
+
+                    @error('facility_sort')
+
+                        <p class="mt-1.5 text-xs font-medium text-error">
+                            {{ $message }}
+                        </p>
+
+                    @enderror
+
+                </div>
+
+
+                <div class="flex gap-2 md:col-span-2 xl:col-span-1">
 
                     <button
                         type="submit"
@@ -204,6 +410,7 @@
                     href="{{ route('reports.index', [
                         'from' => today()->subDays(6)->toDateString(),
                         'to' => today()->toDateString(),
+                        'facility_sort' => $facilitySort,
                     ]) }}"
                     class="rounded-lg border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-slate-500 transition hover:border-primary/20 hover:text-primary">
 
@@ -216,6 +423,7 @@
                     href="{{ route('reports.index', [
                         'from' => today()->subDays(29)->toDateString(),
                         'to' => today()->toDateString(),
+                        'facility_sort' => $facilitySort,
                     ]) }}"
                     class="rounded-lg border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-slate-500 transition hover:border-primary/20 hover:text-primary">
 
@@ -228,6 +436,7 @@
                     href="{{ route('reports.index', [
                         'from' => today()->startOfMonth()->toDateString(),
                         'to' => today()->toDateString(),
+                        'facility_sort' => $facilitySort,
                     ]) }}"
                     class="rounded-lg border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-slate-500 transition hover:border-primary/20 hover:text-primary">
 
@@ -901,5 +1110,73 @@
     </div>
 
 </div>
+
+
+<script>
+    document
+        .querySelectorAll(
+            '[data-report-export]'
+        )
+        .forEach((link) => {
+
+            link.addEventListener(
+                'click',
+                () => {
+
+                    const label =
+                        link.querySelector(
+                            '[data-export-label]'
+                        );
+
+                    if (! label) {
+                        return;
+                    }
+
+                    const original =
+                        label.textContent.trim();
+
+                    const format =
+                        link.dataset.reportFormat
+                        || 'Report';
+
+                    link.setAttribute(
+                        'aria-busy',
+                        'true'
+                    );
+
+                    link.classList.add(
+                        'pointer-events-none',
+                        'opacity-70'
+                    );
+
+                    label.textContent =
+                        format === 'Print'
+                            ? 'Opening...'
+                            : 'Preparing...';
+
+                    window.setTimeout(
+                        () => {
+
+                            label.textContent =
+                                original;
+
+                            link.removeAttribute(
+                                'aria-busy'
+                            );
+
+                            link.classList.remove(
+                                'pointer-events-none',
+                                'opacity-70'
+                            );
+
+                        },
+                        2500
+                    );
+
+                }
+            );
+
+        });
+</script>
 
 @endsection

@@ -15,6 +15,7 @@ use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\LegalRecordController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\RetentionController;
 use App\Http\Controllers\RetentionPolicyController;
@@ -244,8 +245,34 @@ Route::middleware('auth')->group(function () {
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
 
     // Reports
-    Route::middleware('role:admin_officer,manager,sys_admin')
-        ->get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::middleware(
+        'role:admin_officer,manager,sys_admin'
+    )->group(function () {
+        Route::get(
+            '/reports',
+            [ReportController::class, 'index']
+        )->name('reports.index');
+
+        Route::get(
+            '/reports/export/pdf',
+            [ReportExportController::class, 'pdf']
+        )->name('reports.export.pdf');
+
+        Route::get(
+            '/reports/export/xlsx',
+            [ReportExportController::class, 'xlsx']
+        )->name('reports.export.xlsx');
+
+        Route::get(
+            '/reports/export/csv',
+            [ReportExportController::class, 'csv']
+        )->name('reports.export.csv');
+
+        Route::get(
+            '/reports/print',
+            [ReportExportController::class, 'print']
+        )->name('reports.print');
+    });
 
     // Audit trail
     Route::middleware('role:manager,sys_admin')

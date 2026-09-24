@@ -16,8 +16,29 @@ RUN npm run build
 
 FROM php:8.3-fpm-alpine AS app
 
-RUN apk add --no-cache nginx postgresql-dev supervisor \
-    && docker-php-ext-install pdo pdo_pgsql bcmath
+RUN apk add --no-cache \
+        nginx \
+        postgresql-dev \
+        supervisor \
+        freetype-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
+        libzip-dev \
+        libxml2-dev \
+        oniguruma-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo \
+        pdo_pgsql \
+        bcmath \
+        gd \
+        zip \
+        mbstring \
+        dom \
+        simplexml \
+        xml \
+        xmlreader \
+        xmlwriter
 
 COPY docker/php-security.ini /usr/local/etc/php/conf.d/99-fams-security.ini
 
