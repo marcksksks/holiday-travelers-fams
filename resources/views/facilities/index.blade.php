@@ -19,8 +19,33 @@
 
             <x-slot:actions>
 
-                <a
-                    href="{{ route('facilities.create') }}"
+                <div class="flex flex-wrap items-center gap-2">
+
+                    <a
+                        href="{{ route('facilities.import.index') }}"
+                        class="btn-outline inline-flex items-center justify-center gap-2">
+
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 3v12m0 0-4-4m4 4 4-4M5 19h14" />
+
+                        </svg>
+
+                        Bulk Import
+
+                    </a>
+
+                    <a
+                        href="{{ route('facilities.create') }}"
                     data-facility-create-open
                     class="btn-primary inline-flex items-center justify-center gap-2">
 
@@ -40,7 +65,9 @@
 
                     Add Facility
 
-                </a>
+                    </a>
+
+                </div>
 
             </x-slot:actions>
 

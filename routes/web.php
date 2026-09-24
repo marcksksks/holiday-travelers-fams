@@ -11,6 +11,7 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FacilityController;
+use App\Http\Controllers\FacilityImportController;
 use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\LegalRecordController;
 use App\Http\Controllers\NotificationController;
@@ -135,6 +136,27 @@ Route::middleware('auth')->group(function () {
 
     // Facilities — everyone can browse; create/edit/archive gated by 'manageFacilities'.
     Route::get('/facilities', [FacilityController::class, 'index'])->name('facilities.index');
+
+    Route::middleware(
+        'role:admin_officer,sys_admin'
+    )->group(function () {
+        Route::get(
+            '/facilities/import',
+            [FacilityImportController::class, 'index']
+        )->name('facilities.import.index');
+
+        Route::post(
+            '/facilities/import',
+            [FacilityImportController::class, 'store']
+        )
+            ->middleware('throttle:10,1')
+            ->name('facilities.import.store');
+
+        Route::get(
+            '/facilities/import/template',
+            [FacilityImportController::class, 'template']
+        )->name('facilities.import.template');
+    });
     Route::get('/facilities/create', [FacilityController::class, 'create'])->name('facilities.create');
     Route::post('/facilities', [FacilityController::class, 'store'])->name('facilities.store');
     Route::get('/facilities/{facility}/edit', [FacilityController::class, 'edit'])->name('facilities.edit');
