@@ -7,10 +7,12 @@ use App\Models\Visitor;
 use App\Services\AiAssistService;
 use App\Services\AuditService;
 use App\Services\CalendarSyncService;
+use App\Services\PrivacyService;
 use App\Services\VisitorCheckService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class VisitorController extends Controller
 {
@@ -19,6 +21,7 @@ class VisitorController extends Controller
         private CalendarSyncService $calendar,
         private AiAssistService $ai,
         private AuditService $audit,
+        private PrivacyService $privacy,
     ) {}
 
     public function index(Request $request)
@@ -240,18 +243,50 @@ class VisitorController extends Controller
 
     public function store(VisitorRequest $request): RedirectResponse
     {
-        $visitor = Visitor::create($request->validated());
+        $visitor = DB::transaction(
+            function () use ($request): Visitor {
+                $data = $request->validated();
 
-        $this->audit->log(
-            $request->user(),
-            'create',
-            'visitors',
-            "Visitor • {$visitor->full_name}",
-            (string) $visitor->id,
-            'Visitor registered'
+                unset(
+                    $data['privacy_acknowledged']
+                );
+
+                $visitor =
+                    Visitor::create($data);
+
+                $this->privacy->recordForVisitor(
+                    $request->user(),
+                    $visitor,
+                    PrivacyService::PURPOSE_VISITOR_MANAGEMENT,
+                    PrivacyService::LAWFUL_BASIS_LEGITIMATE_INTERESTS,
+                    PrivacyService::NOTICE_VERSION,
+                    false,
+                    null,
+                    'visitor_desk',
+                    [
+                        'notice_acknowledged' => true,
+                    ]
+                );
+
+                $this->audit->log(
+                    $request->user(),
+                    'create',
+                    'visitors',
+                    "Visitor • {$visitor->full_name}",
+                    (string) $visitor->id,
+                    'Visitor registered'
+                );
+
+                return $visitor;
+            }
         );
 
-        return redirect()->route('visitors.index')->with('status', "{$visitor->full_name} logged.");
+        return redirect()
+            ->route('visitors.index')
+            ->with(
+                'status',
+                "{$visitor->full_name} logged."
+            );
     }
 
     public function checkIn(Request $request, Visitor $visitor): RedirectResponse

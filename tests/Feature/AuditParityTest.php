@@ -172,6 +172,7 @@ class AuditParityTest extends TestCase
                 'full_name' => 'Audit API Visitor',
                 'visitor_type' => 'guest',
                 'is_walk_in' => true,
+                'privacy_acknowledged' => true,
             ])
             ->assertCreated();
 
@@ -342,6 +343,7 @@ class AuditParityTest extends TestCase
                 'full_name' => 'Audit Web Visitor',
                 'visitor_type' => 'guest',
                 'is_walk_in' => true,
+                'privacy_acknowledged' => true,
             ])
             ->assertRedirect();
 

@@ -7,14 +7,17 @@ use App\Http\Requests\VisitorRequest;
 use App\Http\Resources\VisitorResource;
 use App\Models\Visitor;
 use App\Services\AuditService;
+use App\Services\PrivacyService;
 use App\Services\VisitorCheckService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class VisitorApiController extends Controller
 {
     public function __construct(
         private VisitorCheckService $checks,
-        private AuditService $audit
+        private AuditService $audit,
+        private PrivacyService $privacy
     ) {}
 
     public function index(Request $request)
@@ -29,6 +32,7 @@ class VisitorApiController extends Controller
     public function show(Request $request, Visitor $visitor)
     {
         abort_unless($request->user()->can('viewVisitors'), 403);
+
         return new VisitorResource($visitor);
     }
 
@@ -39,18 +43,47 @@ class VisitorApiController extends Controller
             403
         );
 
-        $visitor = Visitor::create($request->validated());
+        $visitor = DB::transaction(
+            function () use ($request): Visitor {
+                $data = $request->validated();
 
-        $this->audit->log(
-            $request->user(),
-            'create',
-            'visitors',
-            "Visitor • {$visitor->full_name}",
-            (string) $visitor->id,
-            'Visitor registered'
+                unset(
+                    $data['privacy_acknowledged']
+                );
+
+                $visitor =
+                    Visitor::create($data);
+
+                $this->privacy->recordForVisitor(
+                    $request->user(),
+                    $visitor,
+                    PrivacyService::PURPOSE_VISITOR_MANAGEMENT,
+                    PrivacyService::LAWFUL_BASIS_LEGITIMATE_INTERESTS,
+                    PrivacyService::NOTICE_VERSION,
+                    false,
+                    null,
+                    'visitor_api',
+                    [
+                        'notice_acknowledged' => true,
+                    ]
+                );
+
+                $this->audit->log(
+                    $request->user(),
+                    'create',
+                    'visitors',
+                    "Visitor • {$visitor->full_name}",
+                    (string) $visitor->id,
+                    'Visitor registered'
+                );
+
+                return $visitor;
+            }
         );
 
-        return (new VisitorResource($visitor))->response()->setStatusCode(201);
+        return (new VisitorResource($visitor))
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function checkIn(Request $request, Visitor $visitor)

@@ -25,6 +25,7 @@ class VisitorRequest extends FormRequest
             'appointment_id' => ['nullable', 'exists:appointments,id'],
             'id_reference' => ['nullable', 'string', 'max:255'],
             'is_walk_in' => ['boolean'],
+            'privacy_acknowledged' => ['required', 'accepted'],
             'notes' => ['nullable', 'string'],
         ];
     }

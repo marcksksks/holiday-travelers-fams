@@ -117,6 +117,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
 
+    Route::post(
+        '/settings/privacy-requests',
+        [SettingsController::class, 'submitPrivacyRequest']
+    )
+        ->middleware('throttle:3,1')
+        ->name('settings.privacy-requests.store');
+
     // Personal MFA management.
     Route::post('/settings/mfa/setup', [SettingsController::class, 'beginMfaSetup'])
         ->middleware('throttle:6,1')

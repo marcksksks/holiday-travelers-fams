@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PrivacyRequest;
 use App\Models\User;
 use App\Services\AuditService;
+use App\Services\PrivacyService;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +24,8 @@ class SettingsController extends Controller
         600;
 
     public function __construct(
-        private AuditService $audit
+        private AuditService $audit,
+        private PrivacyService $privacy
     ) {}
 
     public function index(Request $request): View
@@ -97,8 +100,22 @@ class SettingsController extends Controller
                     )
             );
 
+        $privacyRequests =
+            PrivacyRequest::query()
+                ->where(
+                    'user_id',
+                    $user->id
+                )
+                ->orderByDesc(
+                    'submitted_at'
+                )
+                ->limit(10)
+                ->get();
+
         return view('settings.index', [
             'user' => $user,
+
+            'privacyRequests' => $privacyRequests,
 
             'aiProvider' => $aiProvider,
 
@@ -180,6 +197,45 @@ class SettingsController extends Controller
             'status',
             'Profile settings updated successfully.'
         );
+    }
+
+    public function submitPrivacyRequest(
+        Request $request
+    ): RedirectResponse {
+        $data = $request->validate([
+            'type' => [
+                'required',
+                Rule::in(
+                    PrivacyRequest::TYPES
+                ),
+            ],
+
+            'details' => [
+                'nullable',
+                'string',
+                'max:4000',
+            ],
+
+            'privacy_current_password' => [
+                'required',
+                'current_password',
+            ],
+        ]);
+
+        $privacyRequest =
+            $this->privacy->submitRequest(
+                $request->user(),
+                $data['type'],
+                $data['details'] ?? null,
+                true
+            );
+
+        return redirect()
+            ->route('settings.index')
+            ->with(
+                'status',
+                "Privacy request #{$privacyRequest->id} submitted for review."
+            );
     }
 
     public function beginMfaSetup(

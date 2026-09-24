@@ -169,6 +169,9 @@ class SixRoleMutationSecurityTest extends TestCase
                     'visitor_type' => 'guest',
                     'is_walk_in' => true,
 
+                    'privacy_acknowledged' =>
+                        true,
+
                     'purpose' =>
                         'RBAC mutation test',
                 ]);

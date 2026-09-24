@@ -410,6 +410,42 @@
                             </label>
 
 
+                            <div class="rounded-xl border border-accent/20 bg-accent/5 px-3.5 py-3">
+
+                                <label class="flex cursor-pointer items-start gap-3">
+
+                                    <input
+                                        id="privacy_acknowledged"
+                                        type="checkbox"
+                                        name="privacy_acknowledged"
+                                        value="1"
+                                        required
+                                        @checked(old('privacy_acknowledged'))
+                                        class="mt-0.5 h-4 w-4 rounded border-slate-300 text-accent focus:ring-accent">
+
+                                    <span class="min-w-0">
+
+                                        <span class="block text-xs font-semibold text-primary">
+                                            Privacy notice acknowledgement
+                                        </span>
+
+                                        <span class="mt-1 block text-[10px] leading-4 text-slate-500">
+                                            I confirm that the visitor was informed of and acknowledged the privacy notice covering the recording of identity, contact, and visit details for visitor management, security, and access-control purposes.
+                                        </span>
+
+                                    </span>
+
+                                </label>
+
+                                @error('privacy_acknowledged')
+                                    <p class="mt-2 text-[10px] font-medium text-error">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+
+                            </div>
+
+
                             <div class="rounded-xl border border-accent/15 bg-accent/5 px-3.5 py-3">
 
                                 <div class="flex items-start gap-2.5">

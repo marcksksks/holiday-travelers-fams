@@ -1709,6 +1709,166 @@
     </section>
 
 
+    {{-- Privacy & Data Rights --}}
+    <section class="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+
+        <div class="flex flex-col gap-5">
+
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
+                    Privacy & Data Rights
+                </p>
+
+                <h2 class="mt-1 text-lg font-semibold text-primary">
+                    Request a review of your personal data
+                </h2>
+
+                <p class="mt-2 max-w-3xl text-xs leading-5 text-slate-500">
+                    You may request erasure, blocking, or withdrawal of consent. Submission does not immediately delete records. Information may still need to be retained for security, contractual, legal, audit, or records-retention purposes.
+                </p>
+            </div>
+
+
+            <form
+                method="POST"
+                action="{{ route('settings.privacy-requests.store') }}"
+                class="grid gap-4 lg:grid-cols-2">
+
+                @csrf
+
+                <div>
+                    <label for="privacy_request_type" class="label">
+                        Request type
+                    </label>
+
+                    <select
+                        id="privacy_request_type"
+                        name="type"
+                        required
+                        class="input">
+
+                        <option value="">
+                            Select a request
+                        </option>
+
+                        <option value="erasure" @selected(old('type') === 'erasure')>
+                            Erasure review
+                        </option>
+
+                        <option value="blocking" @selected(old('type') === 'blocking')>
+                            Block or restrict processing
+                        </option>
+
+                        <option value="withdraw_consent" @selected(old('type') === 'withdraw_consent')>
+                            Withdraw consent
+                        </option>
+
+                    </select>
+
+                    @error('type')
+                        <p class="mt-1 text-xs text-error">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+
+                <div>
+                    <label for="privacy_current_password" class="label">
+                        Current password
+                    </label>
+
+                    <input
+                        id="privacy_current_password"
+                        type="password"
+                        name="privacy_current_password"
+                        required
+                        autocomplete="current-password"
+                        class="input">
+
+                    @error('privacy_current_password')
+                        <p class="mt-1 text-xs text-error">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+
+                <div class="lg:col-span-2">
+                    <label for="privacy_details" class="label">
+                        Additional details
+                    </label>
+
+                    <textarea
+                        id="privacy_details"
+                        name="details"
+                        rows="3"
+                        maxlength="4000"
+                        class="input resize-y"
+                        placeholder="Optional context that may help the privacy review.">{{ old('details') }}</textarea>
+
+                    @error('details')
+                        <p class="mt-1 text-xs text-error">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+
+                <div class="lg:col-span-2 flex justify-end">
+                    <button type="submit" class="btn-primary">
+                        Submit privacy request
+                    </button>
+                </div>
+
+            </form>
+
+
+            @if($privacyRequests->isNotEmpty())
+
+                <div class="border-t border-border pt-4">
+
+                    <h3 class="text-sm font-semibold text-primary">
+                        Recent privacy requests
+                    </h3>
+
+                    <div class="mt-3 space-y-2">
+
+                        @foreach($privacyRequests as $privacyRequest)
+
+                            <div class="flex flex-col gap-1 rounded-xl border border-border bg-background/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+
+                                <div>
+                                    <p class="text-xs font-semibold text-primary">
+                                        Request #{{ $privacyRequest->id }}
+                                        ·
+                                        {{ str($privacyRequest->type)->replace('_', ' ')->title() }}
+                                    </p>
+
+                                    <p class="mt-0.5 text-[10px] text-slate-500">
+                                        Submitted {{ optional($privacyRequest->submitted_at)->format('M j, Y g:i A') }}
+                                    </p>
+                                </div>
+
+                                <span class="text-xs font-semibold text-slate-600">
+                                    {{ str($privacyRequest->status)->replace('_', ' ')->title() }}
+                                </span>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                </div>
+
+            @endif
+
+        </div>
+
+    </section>
+
+
     {{-- Privacy Note --}}
     <div class="rounded-xl border border-accent/20 bg-accent/5 px-4 py-3">
 
