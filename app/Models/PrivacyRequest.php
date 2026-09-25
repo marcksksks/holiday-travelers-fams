@@ -59,6 +59,9 @@ class PrivacyRequest extends Model
         'decision_reason',
         'retention_basis',
         'completed_at',
+        'executed_by_user_id',
+        'executed_at',
+        'execution_summary',
     ];
 
     protected function casts(): array
@@ -68,6 +71,8 @@ class PrivacyRequest extends Model
             'submitted_at' => 'datetime',
             'reviewed_at' => 'datetime',
             'completed_at' => 'datetime',
+            'executed_at' => 'datetime',
+            'execution_summary' => 'array',
         ];
     }
 
@@ -81,6 +86,14 @@ class PrivacyRequest extends Model
         return $this->belongsTo(
             User::class,
             'reviewed_by_user_id'
+        );
+    }
+
+    public function executedBy(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'executed_by_user_id'
         );
     }
 }

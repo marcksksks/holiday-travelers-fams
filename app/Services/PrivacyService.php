@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\AccountRecoveryRequest;
 use App\Models\PrivacyConsent;
 use App\Models\PrivacyRequest;
 use App\Models\User;
 use App\Models\Visitor;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class PrivacyService
@@ -29,7 +32,8 @@ class PrivacyService
     ];
 
     public function __construct(
-        private AuditService $audit
+        private AuditService $audit,
+        private CredentialRevocationService $credentials
     ) {}
 
     public function recordForUser(
@@ -389,6 +393,732 @@ class PrivacyService
     /**
      * Reviewer authorization and separation of duties.
      */
+    /**
+     * Execute an approved privacy request.
+     *
+     * Review and execution are intentionally separated.
+     */
+    public function executeRequest(
+        PrivacyRequest $privacyRequest,
+        User $executor
+    ): PrivacyRequest {
+        return DB::transaction(
+            function () use (
+                $privacyRequest,
+                $executor
+            ): PrivacyRequest {
+                $lockedRequest =
+                    PrivacyRequest::query()
+                        ->lockForUpdate()
+                        ->findOrFail(
+                            $privacyRequest->id
+                        );
+
+                $this->assertExecutor(
+                    $executor,
+                    $lockedRequest
+                );
+
+                if (
+                    ! in_array(
+                        $lockedRequest->status,
+                        [
+                            PrivacyRequest::STATUS_APPROVED,
+                            PrivacyRequest::STATUS_PARTIALLY_APPROVED,
+                        ],
+                        true
+                    )
+                ) {
+                    throw ValidationException::withMessages([
+                        'privacy_request' => 'Only approved privacy requests can be executed.',
+                    ]);
+                }
+
+                $subject =
+                    User::query()
+                        ->lockForUpdate()
+                        ->find(
+                            $lockedRequest->user_id
+                        );
+
+                if ($subject === null) {
+                    throw ValidationException::withMessages([
+                        'privacy_request' => 'The privacy request no longer has an available account subject.',
+                    ]);
+                }
+
+                $decisionStatus =
+                    $lockedRequest->status;
+
+                $summary =
+                    match ($lockedRequest->type) {
+                        PrivacyRequest::TYPE_ERASURE => $this->executeErasure(
+                            $subject
+                        ),
+
+                        PrivacyRequest::TYPE_BLOCKING => $this->executeBlocking(
+                            $subject
+                        ),
+
+                        PrivacyRequest::TYPE_WITHDRAW_CONSENT => $this->executeConsentWithdrawal(
+                            $subject
+                        ),
+
+                        default => throw ValidationException::withMessages([
+                            'privacy_request' => 'This privacy request type cannot be executed.',
+                        ]),
+                    };
+
+                $summary['request_type'] =
+                    $lockedRequest->type;
+
+                $summary['review_decision'] =
+                    $decisionStatus;
+
+                $summary['structured_execution'] =
+                    true;
+
+                $summary['unstructured_records_automatically_modified'] =
+                    false;
+
+                $lockedRequest->update([
+                    'status' => PrivacyRequest::STATUS_COMPLETED,
+
+                    'executed_by_user_id' => $executor->id,
+
+                    'executed_at' => now(),
+
+                    'execution_summary' => $summary,
+
+                    'completed_at' => now(),
+                ]);
+
+                $this->audit->log(
+                    $executor,
+                    'privacy_execution',
+                    'privacy',
+                    "Privacy request - {$lockedRequest->type}",
+                    (string) $lockedRequest->id,
+                    "Controlled privacy execution completed for {$lockedRequest->type}; review decision was {$decisionStatus}."
+                );
+
+                return $lockedRequest->fresh([
+                    'user',
+                    'reviewedBy',
+                    'executedBy',
+                ]);
+            }
+        );
+    }
+
+    /**
+     * Restrict account-based processing and revoke access.
+     */
+    private function executeBlocking(
+        User $subject
+    ): array {
+        $this->assertAccountMayBeDisabled(
+            $subject
+        );
+
+        $oldEmail =
+            $subject->email;
+
+        $this->credentials
+            ->revokeAll(
+                $subject
+            );
+
+        $resetTokens =
+            DB::table(
+                'password_reset_tokens'
+            )
+                ->where(
+                    'email',
+                    $oldEmail
+                )
+                ->delete();
+
+        $recoveryRequests =
+            AccountRecoveryRequest::query()
+                ->where(
+                    'user_id',
+                    $subject->id
+                )
+                ->whereIn(
+                    'status',
+                    [
+                        AccountRecoveryRequest::STATUS_PENDING,
+                        AccountRecoveryRequest::STATUS_APPROVED,
+                    ]
+                )
+                ->update([
+                    'status' => AccountRecoveryRequest::STATUS_EXPIRED,
+
+                    'request_ip' => null,
+
+                    'user_agent' => null,
+
+                    'expires_at' => now(),
+
+                    'updated_at' => now(),
+                ]);
+
+        AccountRecoveryRequest::query()
+            ->where(
+                'user_id',
+                $subject->id
+            )
+            ->update([
+                'request_ip' => null,
+
+                'user_agent' => null,
+
+                'updated_at' => now(),
+            ]);
+
+        $subject->forceFill([
+            'is_active' => false,
+
+            'force_password_change' => false,
+
+            'privacy_processing_restricted_at' => now(),
+        ])->save();
+
+        return [
+            'action' => 'processing_restricted',
+
+            'credentials_revoked' => true,
+
+            'password_reset_tokens_removed' => $resetTokens,
+
+            'recovery_authorizations_expired' => $recoveryRequests,
+
+            'business_records_deleted' => 0,
+        ];
+    }
+
+    /**
+     * Withdraw every currently active consent decision for the subject.
+     *
+     * Notice acknowledgements and non-consent lawful bases are preserved.
+     */
+    private function executeConsentWithdrawal(
+        User $subject
+    ): array {
+        $withdrawn =
+            PrivacyConsent::query()
+                ->where(
+                    'user_id',
+                    $subject->id
+                )
+                ->where(
+                    'consent_required',
+                    true
+                )
+                ->where(
+                    'granted',
+                    true
+                )
+                ->whereNull(
+                    'withdrawn_at'
+                )
+                ->update([
+                    'withdrawn_at' => now(),
+
+                    'updated_at' => now(),
+                ]);
+
+        return [
+            'action' => 'consent_withdrawn',
+
+            'consents_withdrawn' => $withdrawn,
+
+            'non_consent_records_preserved' => true,
+
+            'business_records_deleted' => 0,
+        ];
+    }
+
+    /**
+     * Anonymize structured account identity while retaining operational,
+     * legal, contractual, retention, and audit records.
+     */
+    private function executeErasure(
+        User $subject
+    ): array {
+        $this->assertAccountMayBeDisabled(
+            $subject
+        );
+
+        $oldEmail =
+            $subject->email;
+
+        $oldName =
+            $subject->full_name;
+
+        $anonymousEmail =
+            "anonymized-{$subject->id}@privacy.invalid";
+
+        $anonymousName =
+            "Anonymized User #{$subject->id}";
+
+        /*
+         * Revoke credentials before changing the login identity.
+         */
+        $this->credentials
+            ->revokeAll(
+                $subject
+            );
+
+        $resetTokens =
+            DB::table(
+                'password_reset_tokens'
+            )
+                ->where(
+                    'email',
+                    $oldEmail
+                )
+                ->delete();
+
+        $recoveryRequests =
+            AccountRecoveryRequest::query()
+                ->where(
+                    'user_id',
+                    $subject->id
+                )
+                ->delete();
+
+        if (
+            $subject->hasTwoFactorEnabled()
+        ) {
+            $subject
+                ->disableTwoFactorAuth();
+        }
+
+        $consentsWithdrawn =
+            PrivacyConsent::query()
+                ->where(
+                    'user_id',
+                    $subject->id
+                )
+                ->where(
+                    'consent_required',
+                    true
+                )
+                ->where(
+                    'granted',
+                    true
+                )
+                ->whereNull(
+                    'withdrawn_at'
+                )
+                ->update([
+                    'withdrawn_at' => now(),
+
+                    'updated_at' => now(),
+                ]);
+
+        PrivacyConsent::query()
+            ->where(
+                'user_id',
+                $subject->id
+            )
+            ->update([
+                'metadata' => null,
+
+                'updated_at' => now(),
+            ]);
+
+        PrivacyRequest::query()
+            ->where(
+                'user_id',
+                $subject->id
+            )
+            ->update([
+                'details' => null,
+
+                'updated_at' => now(),
+            ]);
+
+        $counts = [];
+
+        $counts['reservations_requester'] =
+            DB::table(
+                'reservations'
+            )
+                ->where(
+                    'requester_email',
+                    $oldEmail
+                )
+                ->update([
+                    'requester_email' => $anonymousEmail,
+
+                    'requester_name' => $anonymousName,
+                ]);
+
+        $counts['reservations_decider'] =
+            DB::table(
+                'reservations'
+            )
+                ->where(
+                    'decision_by_email',
+                    $oldEmail
+                )
+                ->update([
+                    'decision_by_email' => $anonymousEmail,
+                ]);
+
+        $counts['appointment_hosts'] =
+            DB::table(
+                'appointments'
+            )
+                ->where(
+                    'host_email',
+                    $oldEmail
+                )
+                ->update([
+                    'host_email' => $anonymousEmail,
+
+                    'host_name' => $anonymousName,
+                ]);
+
+        $counts['visitor_hosts'] =
+            DB::table(
+                'visitors'
+            )
+                ->where(
+                    'host_email',
+                    $oldEmail
+                )
+                ->update([
+                    'host_email' => $anonymousEmail,
+
+                    'host_name' => $anonymousName,
+                ]);
+
+        $counts['document_uploaders'] =
+            DB::table(
+                'archive_documents'
+            )
+                ->where(
+                    'uploaded_by_email',
+                    $oldEmail
+                )
+                ->update([
+                    'uploaded_by_email' => $anonymousEmail,
+                ]);
+
+        $counts['contract_officers'] =
+            DB::table(
+                'contracts'
+            )
+                ->where(
+                    'responsible_officer_email',
+                    $oldEmail
+                )
+                ->update([
+                    'responsible_officer_email' => $anonymousEmail,
+                ]);
+
+        $counts['legal_officers'] =
+            DB::table(
+                'legal_records'
+            )
+                ->where(
+                    'responsible_officer_email',
+                    $oldEmail
+                )
+                ->update([
+                    'responsible_officer_email' => $anonymousEmail,
+                ]);
+
+        $counts['legal_assignments_removed'] =
+            DB::table(
+                'legal_records'
+            )
+                ->where(
+                    'assigned_user_id',
+                    $subject->id
+                )
+                ->update([
+                    'assigned_user_id' => null,
+                ]);
+
+        $counts['retention_requesters'] =
+            DB::table(
+                'record_retentions'
+            )
+                ->where(
+                    'disposition_requested_by',
+                    $oldEmail
+                )
+                ->update([
+                    'disposition_requested_by' => $anonymousEmail,
+                ]);
+
+        $counts['retention_deciders'] =
+            DB::table(
+                'record_retentions'
+            )
+                ->where(
+                    'disposition_decided_by',
+                    $oldEmail
+                )
+                ->update([
+                    'disposition_decided_by' => $anonymousEmail,
+                ]);
+
+        /*
+         * Notifications are transient user-facing records, unlike
+         * operational and audit records.
+         */
+        $counts['notifications_removed'] =
+            DB::table(
+                'app_notifications'
+            )
+                ->where(
+                    'recipient_email',
+                    $oldEmail
+                )
+                ->delete();
+
+        /*
+         * Preserve audit rows, but replace the direct actor identifier.
+         */
+        $auditIds =
+            DB::table(
+                'audit_logs'
+            )
+                ->where(
+                    'actor_email',
+                    $oldEmail
+                )
+                ->pluck(
+                    'id'
+                )
+                ->all();
+
+        $counts['audit_entries_anonymized'] =
+            count(
+                $auditIds
+            );
+
+        if ($auditIds !== []) {
+            $this->anonymizeAuditEntries(
+                $auditIds,
+                $oldEmail,
+                $oldName,
+                $anonymousEmail,
+                $anonymousName
+            );
+        }
+
+        $subject->forceFill([
+            'full_name' => $anonymousName,
+
+            'email' => $anonymousEmail,
+
+            'email_verified_at' => null,
+
+            'password' => Hash::make(
+                Str::random(64)
+            ),
+
+            'department' => null,
+
+            'job_title' => null,
+
+            'phone' => null,
+
+            'is_active' => false,
+
+            'force_password_change' => false,
+
+            'remember_token' => null,
+
+            'privacy_processing_restricted_at' => now(),
+
+            'privacy_anonymized_at' => now(),
+        ])->save();
+
+        return [
+            'action' => 'structured_identity_anonymized',
+
+            'credentials_revoked' => true,
+
+            'password_reset_tokens_removed' => $resetTokens,
+
+            'recovery_requests_removed' => $recoveryRequests,
+
+            'consents_withdrawn' => $consentsWithdrawn,
+
+            'structured_reference_updates' => $counts,
+
+            'operational_records_preserved' => true,
+
+            'audit_records_preserved' => true,
+
+            'unstructured_document_contents_modified' => false,
+        ];
+    }
+
+    /**
+     * Preserve audit history while removing the subject's direct identity.
+     */
+    private function anonymizeAuditEntries(
+        array $auditIds,
+        string $oldEmail,
+        string $oldName,
+        string $anonymousEmail,
+        string $anonymousName
+    ): void {
+        $rows =
+            DB::table(
+                'audit_logs'
+            )
+                ->whereIn(
+                    'id',
+                    $auditIds
+                )
+                ->get([
+                    'id',
+                    'record_label',
+                    'details',
+                ]);
+
+        foreach ($rows as $row) {
+            $recordLabel =
+                $row->record_label;
+
+            $details =
+                $row->details;
+
+            if ($recordLabel !== null) {
+                $recordLabel =
+                    str_replace(
+                        [
+                            $oldEmail,
+                            $oldName,
+                        ],
+                        [
+                            $anonymousEmail,
+                            $anonymousName,
+                        ],
+                        $recordLabel
+                    );
+            }
+
+            if ($details !== null) {
+                $details =
+                    str_replace(
+                        [
+                            $oldEmail,
+                            $oldName,
+                        ],
+                        [
+                            $anonymousEmail,
+                            $anonymousName,
+                        ],
+                        $details
+                    );
+            }
+
+            DB::table(
+                'audit_logs'
+            )
+                ->where(
+                    'id',
+                    $row->id
+                )
+                ->update([
+                    'actor_email' => $anonymousEmail,
+
+                    'record_label' => $recordLabel,
+
+                    'details' => $details,
+                ]);
+        }
+    }
+
+    private function assertExecutor(
+        User $executor,
+        PrivacyRequest $privacyRequest
+    ): void {
+        if (
+            ! $executor->is_active
+            ||
+            ! $executor->can(
+                'executePrivacy'
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'privacy_request' => 'Only an active System Administrator can execute an approved privacy request.',
+            ])->status(403);
+        }
+
+        if (
+            $privacyRequest->user_id !== null
+            &&
+            (int) $privacyRequest->user_id ===
+                (int) $executor->id
+        ) {
+            throw ValidationException::withMessages([
+                'privacy_request' => 'You cannot execute your own privacy request.',
+            ]);
+        }
+
+        if (
+            $privacyRequest->reviewed_by_user_id === null
+        ) {
+            throw ValidationException::withMessages([
+                'privacy_request' => 'The request must have a recorded reviewer before execution.',
+            ]);
+        }
+
+        if (
+            (int) $privacyRequest->reviewed_by_user_id ===
+            (int) $executor->id
+        ) {
+            throw ValidationException::withMessages([
+                'privacy_request' => 'The reviewer and privacy executor must be different users.',
+            ]);
+        }
+    }
+
+    private function assertAccountMayBeDisabled(
+        User $subject
+    ): void {
+        if (
+            ! $subject->isSysAdmin()
+            ||
+            ! $subject->is_active
+        ) {
+            return;
+        }
+
+        $anotherActiveAdministratorExists =
+            User::query()
+                ->where(
+                    'app_role',
+                    User::ROLE_SYS_ADMIN
+                )
+                ->where(
+                    'is_active',
+                    true
+                )
+                ->whereKeyNot(
+                    $subject->id
+                )
+                ->exists();
+
+        if (! $anotherActiveAdministratorExists) {
+            throw ValidationException::withMessages([
+                'privacy_request' => 'The last active System Administrator cannot be blocked or anonymized.',
+            ]);
+        }
+    }
+
     private function assertReviewer(
         User $reviewer,
         PrivacyRequest $privacyRequest

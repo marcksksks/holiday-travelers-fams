@@ -338,6 +338,16 @@ Route::middleware('auth')->group(function () {
             )
                 ->middleware('throttle:20,1')
                 ->name('decision');
+
+            Route::post(
+                '/{privacyRequest}/execute',
+                [
+                    PrivacyRequestController::class,
+                    'execute',
+                ]
+            )
+                ->middleware('throttle:5,1')
+                ->name('execute');
         });
 
     // Audit trail

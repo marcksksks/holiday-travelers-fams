@@ -72,6 +72,7 @@ class PrivacyRequestController extends Controller
                 ->with([
                     'user:id,full_name,email,app_role',
                     'reviewedBy:id,full_name,email,app_role',
+                    'executedBy:id,full_name,email,app_role',
                 ])
                 ->when(
                     $status,
@@ -293,6 +294,45 @@ class PrivacyRequestController extends Controller
             ->with(
                 'status',
                 "Privacy request #{$updated->id}: {$label}. No personal data has been erased."
+            );
+    }
+
+    public function execute(
+        Request $request,
+        PrivacyRequest $privacyRequest
+    ): RedirectResponse {
+        abort_unless(
+            $request->user()->can(
+                'executePrivacy'
+            ),
+            403
+        );
+
+        $request->validate([
+            'current_password' => [
+                'required',
+                'current_password',
+            ],
+
+            'confirm_execution' => [
+                'accepted',
+            ],
+        ]);
+
+        $updated =
+            $this->privacy
+                ->executeRequest(
+                    $privacyRequest,
+                    $request->user()
+                );
+
+        return redirect()
+            ->route(
+                'privacy-requests.index'
+            )
+            ->with(
+                'status',
+                "Privacy request #{$updated->id} controlled execution completed."
             );
     }
 }

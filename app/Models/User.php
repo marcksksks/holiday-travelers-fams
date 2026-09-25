@@ -43,7 +43,7 @@ class User extends Authenticatable implements TwoFactorAuthenticatable
 
     protected $fillable = [
         'full_name', 'email', 'password', 'app_role',
-        'department', 'job_title', 'phone', 'is_active', 'force_password_change',
+        'department', 'job_title', 'phone', 'is_active', 'force_password_change', 'privacy_processing_restricted_at', 'privacy_anonymized_at',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -55,6 +55,8 @@ class User extends Authenticatable implements TwoFactorAuthenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'force_password_change' => 'boolean',
+            'privacy_processing_restricted_at' => 'datetime',
+            'privacy_anonymized_at' => 'datetime',
         ];
     }
 

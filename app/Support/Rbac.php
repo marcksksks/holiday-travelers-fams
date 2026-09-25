@@ -60,6 +60,7 @@ class Rbac
         'manageContracts' => ['admin_officer', 'sys_admin'],
         'approveContracts' => ['manager', 'sys_admin'],
         'managePrivacy' => ['manager', 'sys_admin'],
+        'executePrivacy' => ['sys_admin'],
         'manageUsers' => ['sys_admin'],
     ];
 

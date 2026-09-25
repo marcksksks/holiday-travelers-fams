@@ -597,6 +597,122 @@
 
                 </div>
 
+
+                @if(
+                    $executionPending
+                    && auth()->user()->can('executePrivacy')
+                )
+
+                    <div class="border-t border-border bg-warning/5 px-5 py-5">
+
+                        <div class="grid gap-4 lg:grid-cols-2 lg:items-start">
+
+                            <div>
+
+                                <p class="text-sm font-semibold text-primary">
+                                    Controlled privacy execution
+                                </p>
+
+                                <p class="mt-1 text-xs leading-5 text-slate-600">
+                                    This is a high-impact action. Review and execution must be performed by different users.
+                                </p>
+
+                                <p class="mt-2 text-xs leading-5 text-slate-500">
+                                    Erasure anonymizes structured identity while preserving operational, retention, legal, contractual, and audit records. Blocking revokes account access without deleting records. Consent withdrawal updates active consent records.
+                                </p>
+
+                            </div>
+
+                            <form
+                                method="POST"
+                                action="{{ route('privacy-requests.execute', $privacyRequest) }}"
+                                data-submit-loading
+                                data-loading-text="Executing privacy request..."
+                                class="space-y-3 rounded-xl border border-warning/20 bg-background p-4">
+
+                                @csrf
+
+                                <div>
+
+                                    <label
+                                        for="execution-password-{{ $privacyRequest->id }}"
+                                        class="label">
+
+                                        Current Password
+
+                                    </label>
+
+                                    <input
+                                        id="execution-password-{{ $privacyRequest->id }}"
+                                        type="password"
+                                        name="current_password"
+                                        autocomplete="current-password"
+                                        required
+                                        class="input">
+
+                                </div>
+
+                                <label class="flex items-start gap-3 text-xs leading-5 text-slate-600">
+
+                                    <input
+                                        type="checkbox"
+                                        name="confirm_execution"
+                                        value="1"
+                                        required
+                                        class="mt-1">
+
+                                    <span>
+                                        I confirm that I reviewed the recorded decision and understand that this executes the approved privacy action.
+                                    </span>
+
+                                </label>
+
+                                <button
+                                    type="submit"
+                                    class="btn-primary w-full justify-center">
+
+                                    Execute Controlled Request
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                @endif
+
+
+                @if(
+                    $privacyRequest->status === 'completed'
+                    && $privacyRequest->completed_at
+                )
+
+                    <div class="border-t border-border bg-success/5 px-5 py-4">
+
+                        <p class="text-sm font-semibold text-success">
+                            Controlled execution completed
+                        </p>
+
+                        <p class="mt-1 text-xs text-slate-600">
+
+                            Executed
+                            {{
+                                optional(
+                                    $privacyRequest->executed_at
+                                )->format('M j, Y g:i A')
+                            }}
+
+                            @if($privacyRequest->executedBy)
+                                by {{ $privacyRequest->executedBy->full_name }}
+                            @endif
+
+                        </p>
+
+                    </div>
+
+                @endif
             </article>
 
         @empty
