@@ -1895,7 +1895,7 @@
                     Security note:
                 </span>
 
-                Sensitive application credentials such as the Gemini API key, database password, and other environment secrets are not displayed or editable from this page.
+                Sensitive application credentials such as the AI provider API key, database password, and other environment secrets are not displayed or editable from this page.
 
             </p>
 

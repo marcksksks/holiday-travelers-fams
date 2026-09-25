@@ -2,8 +2,13 @@
 
     @php
         $aiProviderConfigured =
-            config('services.ai_assist.provider', 'none') !== 'none'
+            in_array(
+                config('services.ai_assist.provider', 'none'),
+                ['openai', 'gemini'],
+                true
+            )
             && filled(config('services.ai_assist.api_key'))
+            && filled(config('services.ai_assist.model'))
             && filled(config('services.ai_assist.endpoint'));
     @endphp
 
@@ -66,7 +71,7 @@
                                     id="ai-visitor-assistant-title"
                                     class="font-heading text-lg font-semibold text-primary">
 
-                                    AI Visitor Assistant
+                                    Visitor Intelligence Assistant
 
                                 </h2>
 
@@ -79,7 +84,7 @@
 
 
                             <p class="mt-1 max-w-xl text-xs leading-5 text-slate-500">
-                                Extract, summarize, and review visitor information before registration.
+                                Classify, summarize, route, and verify visitor information against today's appointments before registration.
                             </p>
 
                         </div>
@@ -115,7 +120,7 @@
                         <button
                             type="button"
                             data-ai-assistant-close
-                            aria-label="Close AI Visitor Assistant"
+                            aria-label="Close Visitor Intelligence Assistant"
                             class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-background hover:text-primary">
 
                             <svg
@@ -198,7 +203,30 @@
                                 </p>
 
 
-                                <div class="grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                                <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+
+                                    <button
+                                        type="button"
+                                        data-ai-mode="triage"
+                                        class="btn-primary justify-center">
+
+                                        <svg
+                                            class="h-4 w-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24">
+
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12l2 2 4-4M12 3a9 9 0 100 18 9 9 0 000-18z" />
+
+                                        </svg>
+
+                                        Analyze Visit
+
+                                    </button>
 
                                     <button
                                         type="button"
@@ -376,7 +404,7 @@
                                 </p>
 
                                 <p class="mt-1 max-w-sm text-xs leading-5 text-slate-500">
-                                    Enter visitor information and choose Extract, Summarize, or Appointment.
+                                    Enter visitor information and choose Analyze Visit for the complete AI-assisted workflow.
                                 </p>
 
                             </div>

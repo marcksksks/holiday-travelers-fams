@@ -325,16 +325,85 @@ class VisitorController extends Controller
 
     public function aiAssist(Request $request): JsonResponse
     {
-        abort_unless($request->user()->can('useAiAssist'), 403);
+        abort_unless(
+            $request->user()->can('useAiAssist'),
+            403
+        );
 
         $data = $request->validate([
-            'mode' => ['required', 'in:classify,extract,summary,appointment_check'],
-            'text' => ['nullable', 'string', 'max:2000'],
-            'context' => ['nullable', 'array'],
+            'mode' => [
+                'required',
+                'in:triage,classify,extract,summary,appointment_check',
+            ],
+
+            'text' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
+
+            'context' => [
+                'nullable',
+                'array:full_name,contact_number,email,organization,visitor_type,host_email,host_name,purpose',
+            ],
+
+            'context.full_name' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'context.contact_number' => [
+                'nullable',
+                'string',
+                'max:50',
+            ],
+
+            'context.email' => [
+                'nullable',
+                'email',
+                'max:255',
+            ],
+
+            'context.organization' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'context.visitor_type' => [
+                'nullable',
+                'in:customer,business_partner,supplier,government,applicant,guest,other',
+            ],
+
+            'context.host_email' => [
+                'nullable',
+                'email',
+                'max:255',
+            ],
+
+            'context.host_name' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'context.purpose' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
         ]);
 
-        $result = $this->ai->assist($request->user(), $data['mode'], $data['text'] ?? '', $data['context'] ?? []);
+        $result = $this->ai->assist(
+            $request->user(),
+            $data['mode'],
+            $data['text'] ?? '',
+            $data['context'] ?? []
+        );
 
-        return response()->json($result);
+        return response()->json(
+            $result
+        );
     }
 }

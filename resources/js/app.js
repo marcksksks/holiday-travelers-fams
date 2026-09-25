@@ -1268,9 +1268,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fieldIds = [
             'full_name',
+            'contact_number',
+            'email',
             'organization',
             'visitor_type',
             'host_email',
+            'host_name',
             'purpose'
         ];
 
@@ -1651,6 +1654,324 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
+
+    const renderTriage = (suggestion) => {
+
+        const classification =
+            document.createElement('div');
+
+        classification.className =
+            'grid gap-3 sm:grid-cols-2';
+
+        classification.appendChild(
+            makeRow(
+                'Visitor Type',
+                suggestion.visitor_type
+                    ? String(suggestion.visitor_type)
+                        .replaceAll('_', ' ')
+                    : ''
+            )
+        );
+
+        classification.appendChild(
+            makeRow(
+                'Purpose Category',
+                suggestion.purpose_category
+                    ? String(suggestion.purpose_category)
+                        .replaceAll('_', ' ')
+                    : ''
+            )
+        );
+
+        classification.appendChild(
+            makeRow(
+                'Suggested Routing',
+                suggestion.suggested_department
+                    ? String(suggestion.suggested_department)
+                        .replaceAll('_', ' ')
+                    : ''
+            )
+        );
+
+        classification.appendChild(
+            makeRow(
+                'Suggested Host',
+                suggestion.suggested_host || ''
+            )
+        );
+
+        resultContainer.appendChild(classification);
+
+
+        const summary =
+            document.createElement('div');
+
+        summary.className =
+            'rounded-xl border border-accent/20 bg-accent/5 p-4';
+
+        summary.appendChild(
+            makeText(
+                'p',
+                'Visitor Summary',
+                'font-button text-xs font-semibold uppercase tracking-wide text-primary'
+            )
+        );
+
+        summary.appendChild(
+            makeText(
+                'p',
+                suggestion.summary ||
+                    'No summary returned.',
+                'mt-2 text-sm leading-relaxed text-slate-600'
+            )
+        );
+
+        resultContainer.appendChild(summary);
+
+
+        const appointment =
+            document.createElement('div');
+
+        appointment.className =
+            'rounded-xl border border-border bg-background/60 p-4';
+
+        appointment.appendChild(
+            makeText(
+                'p',
+                'Appointment Verification',
+                'font-button text-xs font-semibold uppercase tracking-wide text-primary'
+            )
+        );
+
+        appointment.appendChild(
+            makeText(
+                'p',
+                String(
+                    suggestion.appointment_match ||
+                    'not_checked'
+                )
+                    .replaceAll('_', ' '),
+                'mt-2 text-sm font-semibold capitalize text-primary'
+            )
+        );
+
+        if (suggestion.appointment) {
+
+            const details =
+                document.createElement('div');
+
+            details.className =
+                'mt-3 grid gap-2 text-xs text-slate-500 sm:grid-cols-2';
+
+            [
+                [
+                    'Appointment',
+                    `#${suggestion.appointment.id}`
+                ],
+                [
+                    'Date',
+                    suggestion.appointment.date
+                ],
+                [
+                    'Time',
+                    [
+                        suggestion.appointment.start_time,
+                        suggestion.appointment.end_time
+                    ]
+                        .filter(Boolean)
+                        .join(' - ')
+                ],
+                [
+                    'Facility',
+                    suggestion.appointment.facility_name ||
+                        'Not assigned'
+                ]
+            ].forEach(([label, value]) => {
+
+                const item =
+                    document.createElement('div');
+
+                item.appendChild(
+                    makeText(
+                        'span',
+                        `${label}: `,
+                        'font-medium text-slate-400'
+                    )
+                );
+
+                item.appendChild(
+                    makeText(
+                        'span',
+                        value || 'Not provided',
+                        'text-slate-600'
+                    )
+                );
+
+                details.appendChild(item);
+            });
+
+            appointment.appendChild(details);
+        }
+
+        resultContainer.appendChild(appointment);
+
+
+        const renderListBox = (
+            title,
+            items,
+            warning = false
+        ) => {
+
+            if (
+                !Array.isArray(items) ||
+                items.length === 0
+            ) {
+                return;
+            }
+
+            const box =
+                document.createElement('div');
+
+            box.className =
+                warning
+                    ? 'rounded-xl border border-warning/20 bg-warning/5 p-4'
+                    : 'rounded-xl border border-border p-4';
+
+            box.appendChild(
+                makeText(
+                    'p',
+                    title,
+                    warning
+                        ? 'font-button text-xs font-semibold text-amber-700'
+                        : 'font-button text-xs font-semibold text-primary'
+                )
+            );
+
+            const list =
+                document.createElement('ul');
+
+            list.className =
+                'mt-2 space-y-1.5 text-xs text-slate-600';
+
+            items.forEach((item) => {
+
+                const row =
+                    document.createElement('li');
+
+                row.className =
+                    'flex items-start gap-2';
+
+                const dot =
+                    document.createElement('span');
+
+                dot.className =
+                    warning
+                        ? 'mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-warning'
+                        : 'mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-secondary';
+
+                row.appendChild(dot);
+
+                row.appendChild(
+                    makeText(
+                        'span',
+                        String(item)
+                            .replaceAll('_', ' ')
+                    )
+                );
+
+                list.appendChild(row);
+            });
+
+            box.appendChild(list);
+            resultContainer.appendChild(box);
+        };
+
+
+        renderListBox(
+            'Missing Information',
+            suggestion.missing_information
+        );
+
+        renderListBox(
+            'Appointment Details to Verify',
+            suggestion.mismatches,
+            true
+        );
+
+
+        const action =
+            document.createElement('div');
+
+        action.className =
+            'rounded-xl border border-primary/15 bg-primary/5 p-4';
+
+        action.appendChild(
+            makeText(
+                'p',
+                'Suggested Staff Action',
+                'font-button text-xs font-semibold text-primary'
+            )
+        );
+
+        action.appendChild(
+            makeText(
+                'p',
+                suggestion.suggested_action ||
+                    'Continue manual visitor review.',
+                'mt-2 text-xs leading-relaxed text-slate-600'
+            )
+        );
+
+        resultContainer.appendChild(action);
+
+
+        if (suggestion.security_notice) {
+
+            const security =
+                document.createElement('div');
+
+            security.className =
+                'rounded-xl border border-error/20 bg-error/5 p-4';
+
+            security.appendChild(
+                makeText(
+                    'p',
+                    'Security Notice',
+                    'font-button text-xs font-semibold text-error'
+                )
+            );
+
+            security.appendChild(
+                makeText(
+                    'p',
+                    suggestion.security_notice,
+                    'mt-2 text-xs leading-relaxed text-slate-600'
+                )
+            );
+
+            resultContainer.appendChild(security);
+        }
+
+
+        if (suggestion.confidence) {
+
+            resultContainer.appendChild(
+                makeRow(
+                    'AI Confidence',
+                    suggestion.confidence
+                )
+            );
+        }
+
+
+        if (
+            currentMode === 'triage'
+        ) {
+            applyWrap.classList.remove(
+                'hidden'
+            );
+        }
+    };
     const renderSuggestion = (mode, suggestion) => {
 
         setLoading(false);
@@ -1661,16 +1982,26 @@ document.addEventListener('DOMContentLoaded', () => {
         currentMode = mode;
 
         statusBadge.textContent =
-            mode === 'extract'
-                ? 'Extracted'
-                : mode === 'summary'
-                    ? 'Summary'
-                    : 'Reviewed';
+            mode === 'triage'
+                ? (
+                    suggestion.source === 'ai'
+                        ? 'AI Triage'
+                        : 'Safe Fallback'
+                )
+                : mode === 'extract'
+                    ? 'Extracted'
+                    : mode === 'summary'
+                        ? 'Summary'
+                        : 'Reviewed';
 
         statusBadge.classList.remove('hidden');
 
 
-        if (mode === 'extract' || mode === 'classify') {
+        if (mode === 'triage') {
+
+            renderTriage(suggestion);
+
+        } else if (mode === 'extract' || mode === 'classify') {
 
             renderExtract(suggestion);
 
@@ -1797,15 +2128,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (
             !currentSuggestion ||
-            !['extract', 'classify'].includes(currentMode)
+            !['triage', 'extract', 'classify'].includes(currentMode)
         ) {
             return;
         }
 
         const mappings = {
             full_name: 'full_name',
+            contact_number: 'contact_number',
+            email: 'email',
             organization: 'organization',
             visitor_type: 'visitor_type',
+            host_name: 'host_name',
             purpose: 'purpose',
         };
 
@@ -1863,6 +2197,55 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
 
+
+        /*
+         * Only an exact PostgreSQL-backed match can be linked
+         * automatically after the staff member clicks Apply.
+         * Partial AI/database suggestions remain unlinked.
+         */
+        const appointmentField =
+            document.getElementById(
+                'appointment_id'
+            );
+
+        const walkInField =
+            document.getElementById(
+                'is_walk_in'
+            );
+
+        if (
+            currentMode === 'triage'
+            &&
+            currentSuggestion.appointment_match ===
+                'matched'
+            &&
+            currentSuggestion.appointment?.id
+            &&
+            appointmentField
+        ) {
+            appointmentField.value =
+                String(
+                    currentSuggestion
+                        .appointment
+                        .id
+                );
+
+            if (walkInField) {
+                walkInField.checked =
+                    false;
+
+                walkInField.dispatchEvent(
+                    new Event(
+                        'change',
+                        {
+                            bubbles: true
+                        }
+                    )
+                );
+            }
+        } else if (appointmentField) {
+            appointmentField.value = '';
+        }
         statusBadge.textContent = 'Applied';
 
 

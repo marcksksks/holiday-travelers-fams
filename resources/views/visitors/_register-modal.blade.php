@@ -114,6 +114,12 @@
                         name="_visitor_modal_context"
                         value="create">
 
+                    <input
+                        id="appointment_id"
+                        type="hidden"
+                        name="appointment_id"
+                        value="{{ old('appointment_id') }}">
+
 
                     {{-- =====================================================
                          SCROLLABLE FORM
@@ -297,6 +303,68 @@
 
                                     </div>
 
+
+                                    {{-- Contact Number --}}
+                                    <div>
+
+                                        <label
+                                            for="contact_number"
+                                            class="label">
+
+                                            Contact Number
+
+                                        </label>
+
+                                        <input
+                                            id="contact_number"
+                                            type="text"
+                                            name="contact_number"
+                                            value="{{ old('contact_number') }}"
+                                            autocomplete="tel"
+                                            placeholder="Visitor contact number"
+                                            class="input @error('contact_number') border-error focus:border-error focus:ring-error/20 @enderror">
+
+                                        @error('contact_number')
+
+                                            <p class="mt-1 text-[10px] text-error">
+                                                {{ $message }}
+                                            </p>
+
+                                        @enderror
+
+                                    </div>
+
+
+                                    {{-- Email --}}
+                                    <div>
+
+                                        <label
+                                            for="email"
+                                            class="label">
+
+                                            Visitor Email
+
+                                        </label>
+
+                                        <input
+                                            id="email"
+                                            type="email"
+                                            name="email"
+                                            value="{{ old('email') }}"
+                                            autocomplete="email"
+                                            placeholder="visitor@example.com"
+                                            class="input @error('email') border-error focus:border-error focus:ring-error/20 @enderror">
+
+                                        @error('email')
+
+                                            <p class="mt-1 text-[10px] text-error">
+                                                {{ $message }}
+                                            </p>
+
+                                        @enderror
+
+                                    </div>
+
                                 </div>
 
                             </section>
@@ -324,6 +392,36 @@
 
 
                                 <div class="space-y-3">
+
+                                    {{-- Host Name --}}
+                                    <div>
+
+                                        <label
+                                            for="host_name"
+                                            class="label">
+
+                                            Host Name
+
+                                        </label>
+
+                                        <input
+                                            id="host_name"
+                                            type="text"
+                                            name="host_name"
+                                            value="{{ old('host_name') }}"
+                                            placeholder="Person the visitor is meeting"
+                                            class="input @error('host_name') border-error focus:border-error focus:ring-error/20 @enderror">
+
+                                        @error('host_name')
+
+                                            <p class="mt-1 text-[10px] text-error">
+                                                {{ $message }}
+                                            </p>
+
+                                        @enderror
+
+                                    </div>
+
 
                                     {{-- Host --}}
                                     <div>
@@ -385,6 +483,11 @@
                                  ARRIVAL TYPE
                             ====================================================== --}}
                             <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-background/50 p-3.5 transition hover:border-accent/40">
+
+                                <input
+                                    type="hidden"
+                                    name="is_walk_in"
+                                    value="0">
 
                                 <input
                                     id="is_walk_in"
