@@ -169,6 +169,15 @@
             'active' => ['audit-trail.*'],
         ],
 
+        'privacy-requests.index' => [
+            'label' => 'Privacy Reviews',
+            'route' => 'privacy-requests.index',
+            'icon' => 'audit',
+            'active' => [
+                'privacy-requests.*',
+            ],
+        ],
+
         'users.index' => [
             'label' => 'Staff Accounts',
             'route' => 'users.index',
@@ -223,6 +232,7 @@
             'items' => [
                 'reports.index',
                 'audit-trail.index',
+                'privacy-requests.index',
             ],
         ],
 

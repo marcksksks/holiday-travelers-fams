@@ -33,6 +33,7 @@ class Rbac
         'legal-dashboard.index' => ['admin_officer', 'manager', 'legal_officer', 'sys_admin'],
         'reports.index' => ['admin_officer', 'manager', 'sys_admin'],
         'audit-trail.index' => ['manager', 'sys_admin'],
+        'privacy-requests.index' => ['manager', 'sys_admin'],
         'users.index' => ['sys_admin'],
         'settings.index' => self::ALL_ROLES,
     ];
@@ -58,6 +59,7 @@ class Rbac
         'reviewLegal' => ['legal_officer', 'sys_admin'],
         'manageContracts' => ['admin_officer', 'sys_admin'],
         'approveContracts' => ['manager', 'sys_admin'],
+        'managePrivacy' => ['manager', 'sys_admin'],
         'manageUsers' => ['sys_admin'],
     ];
 

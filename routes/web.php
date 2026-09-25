@@ -15,6 +15,7 @@ use App\Http\Controllers\FacilityImportController;
 use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\LegalRecordController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PrivacyRequestController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\ReservationController;
@@ -302,6 +303,42 @@ Route::middleware('auth')->group(function () {
             [ReportExportController::class, 'print']
         )->name('reports.print');
     });
+
+    // Privacy request governance.
+    Route::middleware(
+        'role:manager,sys_admin'
+    )
+        ->prefix('privacy-requests')
+        ->name('privacy-requests.')
+        ->group(function () {
+            Route::get(
+                '/',
+                [
+                    PrivacyRequestController::class,
+                    'index',
+                ]
+            )->name('index');
+
+            Route::post(
+                '/{privacyRequest}/start-review',
+                [
+                    PrivacyRequestController::class,
+                    'startReview',
+                ]
+            )
+                ->middleware('throttle:20,1')
+                ->name('start-review');
+
+            Route::post(
+                '/{privacyRequest}/decision',
+                [
+                    PrivacyRequestController::class,
+                    'decision',
+                ]
+            )
+                ->middleware('throttle:20,1')
+                ->name('decision');
+        });
 
     // Audit trail
     Route::middleware('role:manager,sys_admin')

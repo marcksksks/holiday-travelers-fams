@@ -169,6 +169,254 @@ class PrivacyService
         );
     }
 
+    /**
+     * Begin controlled review of a verified privacy request.
+     *
+     * This phase records governance only.
+     * It does not erase or anonymize subject data.
+     */
+    public function startReview(
+        PrivacyRequest $privacyRequest,
+        User $reviewer
+    ): PrivacyRequest {
+        return DB::transaction(
+            function () use (
+                $privacyRequest,
+                $reviewer
+            ): PrivacyRequest {
+                $lockedRequest =
+                    PrivacyRequest::query()
+                        ->lockForUpdate()
+                        ->findOrFail(
+                            $privacyRequest->id
+                        );
+
+                $this->assertReviewer(
+                    $reviewer,
+                    $lockedRequest
+                );
+
+                if (
+                    $lockedRequest
+                        ->identity_verified_at === null
+                ) {
+                    throw ValidationException::withMessages([
+                        'privacy_request' => 'Identity verification is required before this privacy request can be reviewed.',
+                    ]);
+                }
+
+                if (
+                    $lockedRequest->status !==
+                    PrivacyRequest::STATUS_PENDING
+                ) {
+                    throw ValidationException::withMessages([
+                        'privacy_request' => 'Only pending privacy requests can be moved into review.',
+                    ]);
+                }
+
+                $lockedRequest->update([
+                    'status' => PrivacyRequest::STATUS_UNDER_REVIEW,
+
+                    'reviewed_by_user_id' => $reviewer->id,
+
+                    'reviewed_at' => null,
+
+                    'decision_reason' => null,
+
+                    'retention_basis' => null,
+
+                    'completed_at' => null,
+                ]);
+
+                $this->audit->log(
+                    $reviewer,
+                    'privacy_review_started',
+                    'privacy',
+                    "Privacy request - {$lockedRequest->type}",
+                    (string) $lockedRequest->id,
+                    'Privacy request moved to controlled review. No personal data was altered.'
+                );
+
+                return $lockedRequest->fresh([
+                    'user',
+                    'reviewedBy',
+                ]);
+            }
+        );
+    }
+
+    /**
+     * Record a non-destructive privacy governance decision.
+     *
+     * Approved requests remain incomplete until controlled
+     * execution is performed in Phase 9D.2C.
+     */
+    public function decideRequest(
+        PrivacyRequest $privacyRequest,
+        User $reviewer,
+        string $decision,
+        string $decisionReason,
+        ?string $retentionBasis = null
+    ): PrivacyRequest {
+        $allowedDecisions = [
+            PrivacyRequest::STATUS_APPROVED,
+            PrivacyRequest::STATUS_PARTIALLY_APPROVED,
+            PrivacyRequest::STATUS_DENIED,
+        ];
+
+        if (
+            ! in_array(
+                $decision,
+                $allowedDecisions,
+                true
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'decision' => 'The selected privacy review decision is invalid.',
+            ]);
+        }
+
+        $decisionReason =
+            trim($decisionReason);
+
+        if (
+            $decisionReason === ''
+            ||
+            mb_strlen($decisionReason) > 2000
+        ) {
+            throw ValidationException::withMessages([
+                'decision_reason' => 'A review decision reason of up to 2000 characters is required.',
+            ]);
+        }
+
+        if ($retentionBasis !== null) {
+            $retentionBasis =
+                trim($retentionBasis);
+
+            if ($retentionBasis === '') {
+                $retentionBasis =
+                    null;
+            }
+        }
+
+        if (
+            $retentionBasis !== null
+            &&
+            mb_strlen($retentionBasis) > 2000
+        ) {
+            throw ValidationException::withMessages([
+                'retention_basis' => 'The retention basis may not exceed 2000 characters.',
+            ]);
+        }
+
+        if (
+            in_array(
+                $decision,
+                [
+                    PrivacyRequest::STATUS_PARTIALLY_APPROVED,
+                    PrivacyRequest::STATUS_DENIED,
+                ],
+                true
+            )
+            &&
+            $retentionBasis === null
+        ) {
+            throw ValidationException::withMessages([
+                'retention_basis' => 'A retention basis is required when a request is partially approved or denied.',
+            ]);
+        }
+
+        return DB::transaction(
+            function () use (
+                $privacyRequest,
+                $reviewer,
+                $decision,
+                $decisionReason,
+                $retentionBasis
+            ): PrivacyRequest {
+                $lockedRequest =
+                    PrivacyRequest::query()
+                        ->lockForUpdate()
+                        ->findOrFail(
+                            $privacyRequest->id
+                        );
+
+                $this->assertReviewer(
+                    $reviewer,
+                    $lockedRequest
+                );
+
+                if (
+                    $lockedRequest->status !==
+                    PrivacyRequest::STATUS_UNDER_REVIEW
+                ) {
+                    throw ValidationException::withMessages([
+                        'privacy_request' => 'Only requests currently under review can receive a decision.',
+                    ]);
+                }
+
+                $lockedRequest->update([
+                    'status' => $decision,
+
+                    'reviewed_by_user_id' => $reviewer->id,
+
+                    'reviewed_at' => now(),
+
+                    'decision_reason' => $decisionReason,
+
+                    'retention_basis' => $retentionBasis,
+
+                    'completed_at' => null,
+                ]);
+
+                $this->audit->log(
+                    $reviewer,
+                    'privacy_decision',
+                    'privacy',
+                    "Privacy request - {$lockedRequest->type}",
+                    (string) $lockedRequest->id,
+                    "Privacy governance decision recorded: {$decision}. No personal data was altered."
+                );
+
+                return $lockedRequest->fresh([
+                    'user',
+                    'reviewedBy',
+                ]);
+            }
+        );
+    }
+
+    /**
+     * Reviewer authorization and separation of duties.
+     */
+    private function assertReviewer(
+        User $reviewer,
+        PrivacyRequest $privacyRequest
+    ): void {
+        if (
+            ! $reviewer->is_active
+            ||
+            ! $reviewer->can(
+                'managePrivacy'
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'privacy_request' => 'You are not authorized to review privacy requests.',
+            ])->status(403);
+        }
+
+        if (
+            $privacyRequest->user_id !== null
+            &&
+            $privacyRequest->user_id ===
+                $reviewer->id
+        ) {
+            throw ValidationException::withMessages([
+                'privacy_request' => 'You cannot review or decide your own privacy request.',
+            ]);
+        }
+    }
+
     private function recordConsent(
         User $actor,
         ?User $subject,
