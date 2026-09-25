@@ -1,0 +1,61 @@
+name: PHP SAST - Semgrep
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '15 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sast-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    name: Semgrep PHP / Laravel SAST
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned Semgrep
+        run: |
+          python -m pip install \
+            --disable-pip-version-check \
+            "semgrep==1.178.0"
+
+      - name: Show Semgrep version
+        run: semgrep --version
+
+      - name: Run PHP and OWASP security rules
+        run: |
+          semgrep scan \
+            --config p/php \
+            --config p/owasp-top-ten \
+            --error \
+            --metrics=off \
+            --exclude vendor \
+            --exclude node_modules \
+            --exclude backups \
+            --exclude storage \
+            --exclude public/build \
+            app \
+            bootstrap \
+            config \
+            database \
+            routes \
+            tests

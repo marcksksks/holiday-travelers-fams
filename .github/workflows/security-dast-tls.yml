@@ -1,0 +1,119 @@
+name: DAST and TLS Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Deployed FAMS HTTPS URL, for example https://fams.example.com'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate-target:
+    name: TLS 1.3 and OWASP ZAP Baseline
+    runs-on: ubuntu-latest
+
+    env:
+      TARGET_URL: ${{ inputs.target_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate scan target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import ipaddress
+          import os
+          import socket
+          import sys
+          from urllib.parse import urlparse
+
+          target = os.environ["TARGET_URL"].strip()
+          parsed = urlparse(target)
+
+          if parsed.scheme.lower() != "https":
+              raise SystemExit(
+                  "DAST target must use HTTPS."
+              )
+
+          if not parsed.hostname:
+              raise SystemExit(
+                  "DAST target hostname is missing."
+              )
+
+          host = parsed.hostname.lower()
+
+          if host in {
+              "localhost",
+              "localhost.localdomain",
+          }:
+              raise SystemExit(
+                  "Localhost cannot be used as the CI DAST target."
+              )
+
+          try:
+              addresses = {
+                  item[4][0]
+                  for item in socket.getaddrinfo(
+                      host,
+                      443,
+                      type=socket.SOCK_STREAM,
+                  )
+              }
+          except socket.gaierror as exc:
+              raise SystemExit(
+                  f"Target hostname could not be resolved: {exc}"
+              )
+
+          for address in addresses:
+              ip = ipaddress.ip_address(address)
+
+              if (
+                  ip.is_private
+                  or ip.is_loopback
+                  or ip.is_link_local
+                  or ip.is_multicast
+                  or ip.is_reserved
+              ):
+                  raise SystemExit(
+                      f"Unsafe/non-public DAST target address: {address}"
+                  )
+
+          print(
+              f"Validated public HTTPS target: {host}"
+          )
+          PY
+
+      - name: Verify TLS 1.3 handshake
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl \
+            --fail \
+            --silent \
+            --show-error \
+            --head \
+            --location \
+            --tlsv1.3 \
+            --tls-max 1.3 \
+            --max-time 30 \
+            "$TARGET_URL" \
+            | tee tls13-response-headers.txt
+
+          echo "TLS 1.3 connection succeeded."
+
+      - name: OWASP ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: ${{ inputs.target_url }}
+          fail_action: true
+          allow_issue_writing: false
+          artifact_name: fams-zap-baseline
