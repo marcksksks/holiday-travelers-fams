@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\ContractExpiryService;
+use App\Services\DatabaseBackupService;
 use App\Services\LegalDeadlineService;
 use App\Services\OperationalReminderService;
 use App\Services\RetentionReviewService;
@@ -168,3 +169,79 @@ Schedule::command(
 )
     ->everyMinute()
     ->withoutOverlapping();
+
+Artisan::command(
+    'database:backup {--no-prune : Keep all existing backup archives}',
+    function () {
+        try {
+            $result =
+                app(
+                    DatabaseBackupService::class
+                )->run(
+                    ! $this->option(
+                        'no-prune'
+                    )
+                );
+
+            $this->info(
+                'PostgreSQL backup completed.'
+            );
+
+            $this->line(
+                'Archive: '.
+                $result['filename']
+            );
+
+            $this->line(
+                'Size: '.
+                $result['size_bytes'].
+                ' bytes'
+            );
+
+            $this->line(
+                'SHA-256: '.
+                $result['sha256']
+            );
+
+            $this->line(
+                'Expired backups pruned: '.
+                $result['pruned']
+            );
+
+            return 0;
+        } catch (Throwable $exception) {
+            report(
+                $exception
+            );
+
+            $this->error(
+                'Database backup failed. Review the application log for details.'
+            );
+
+            return 1;
+        }
+    }
+)->purpose(
+    'Create a verified PostgreSQL custom-format database backup.'
+);
+
+if (
+    config(
+        'backup.database.enabled',
+        true
+    )
+) {
+    Schedule::command(
+        'database:backup'
+    )
+        ->dailyAt(
+            (string) config(
+                'backup.database.schedule_time',
+                '01:00'
+            )
+        )
+        ->withoutOverlapping(
+            180
+        )
+        ->onOneServer();
+}

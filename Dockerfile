@@ -18,6 +18,7 @@ FROM php:8.3-fpm-alpine AS app
 
 RUN apk add --no-cache \
         nginx \
+        postgresql-client \
         postgresql-dev \
         supervisor \
         freetype-dev \
