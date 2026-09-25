@@ -67,12 +67,15 @@ class PrivacyRequest extends Model
     protected function casts(): array
     {
         return [
+            'details' => 'encrypted',
+            'decision_reason' => 'encrypted',
+            'retention_basis' => 'encrypted',
             'identity_verified_at' => 'datetime',
             'submitted_at' => 'datetime',
             'reviewed_at' => 'datetime',
             'completed_at' => 'datetime',
             'executed_at' => 'datetime',
-            'execution_summary' => 'array',
+            'execution_summary' => 'encrypted:array',
         ];
     }
 

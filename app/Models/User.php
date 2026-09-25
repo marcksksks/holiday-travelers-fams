@@ -53,6 +53,7 @@ class User extends Authenticatable implements TwoFactorAuthenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'phone' => 'encrypted',
             'is_active' => 'boolean',
             'force_password_change' => 'boolean',
             'privacy_processing_restricted_at' => 'datetime',

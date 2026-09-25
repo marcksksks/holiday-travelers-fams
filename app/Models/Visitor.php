@@ -19,6 +19,7 @@ class Visitor extends Model
     protected function casts(): array
     {
         return [
+            'id_reference' => 'encrypted',
             'is_walk_in' => 'boolean',
             'check_in_at' => 'datetime',
             'check_out_at' => 'datetime',

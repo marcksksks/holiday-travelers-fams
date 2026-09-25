@@ -51,6 +51,8 @@ class AccountRecoveryRequest extends Model
     protected function casts(): array
     {
         return [
+            'request_ip' => 'encrypted',
+            'user_agent' => 'encrypted',
             'requested_at' => 'datetime',
             'approved_at' => 'datetime',
             'rejected_at' => 'datetime',

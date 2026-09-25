@@ -34,7 +34,7 @@ class PrivacyConsent extends Model
             'acknowledged_at' => 'datetime',
             'granted_at' => 'datetime',
             'withdrawn_at' => 'datetime',
-            'metadata' => 'array',
+            'metadata' => 'encrypted:array',
         ];
     }
 
