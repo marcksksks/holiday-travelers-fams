@@ -159,7 +159,7 @@ class SettingsController extends Controller
                     'users',
                     'email'
                 )->ignore(
-                    $user->id
+                    $user
                 ),
             ],
 
