@@ -35,7 +35,7 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --no-scripts
 
-FROM node:20-alpine AS assets
+FROM node:26-alpine AS assets
 
 WORKDIR /app
 COPY package.json package-lock.json ./
