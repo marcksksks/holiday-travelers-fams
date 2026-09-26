@@ -1,20 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM composer:2 AS vendor
-WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --no-scripts
-
-FROM node:20-alpine AS assets
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
-COPY resources ./resources
-COPY vite.config.js tailwind.config.js postcss.config.js ./
-COPY --from=vendor /app/vendor ./vendor
-RUN npm run build
-
-FROM php:8.3-fpm-alpine AS app
+FROM php:8.3-fpm-alpine AS php-runtime
 
 RUN apk add --no-cache \
         nginx \
@@ -41,6 +27,26 @@ RUN apk add --no-cache \
         xmlreader \
         xmlwriter
 
+FROM php-runtime AS vendor
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --no-scripts
+
+FROM node:20-alpine AS assets
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY resources ./resources
+COPY vite.config.js tailwind.config.js postcss.config.js ./
+COPY --from=vendor /app/vendor ./vendor
+RUN npm run build
+
+FROM php-runtime AS app
+
 COPY docker/php-security.ini /usr/local/etc/php/conf.d/99-fams-security.ini
 
 WORKDIR /var/www/html
@@ -61,7 +67,9 @@ RUN mkdir -p \
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/start.sh /start.sh
+
 RUN chmod +x /start.sh
 
 EXPOSE 8080
+
 CMD ["/start.sh"]
