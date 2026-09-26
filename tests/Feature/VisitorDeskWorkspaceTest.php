@@ -54,7 +54,10 @@ class VisitorDeskWorkspaceTest extends TestCase
                 'Completed'
             )
             ->assertSee(
-                'AI Assistant'
+                'Visitor Traffic Intelligence'
+            )
+            ->assertDontSee(
+                'Visitor Intelligence Assistant'
             )
             ->assertSee(
                 'Register Visitor'

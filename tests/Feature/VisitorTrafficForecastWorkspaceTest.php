@@ -130,7 +130,7 @@ class VisitorTrafficForecastWorkspaceTest extends TestCase
             );
     }
 
-    public function test_traffic_intelligence_preserves_existing_ai_assistant_during_transition(): void
+    public function test_traffic_intelligence_is_primary_ai_experience_in_visitor_workspace(): void
     {
         $receptionist =
             $this->user(
@@ -151,7 +151,10 @@ class VisitorTrafficForecastWorkspaceTest extends TestCase
                 'Visitor Traffic Intelligence'
             )
             ->assertSee(
-                'AI Assistant'
+                'Visitor Traffic Intelligence'
+            )
+            ->assertDontSee(
+                'Visitor Intelligence Assistant'
             )
             ->assertSee(
                 'Register Visitor'

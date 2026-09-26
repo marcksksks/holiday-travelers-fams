@@ -442,7 +442,7 @@ class AiVisitorTriageTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_ai_triage_interface_is_visible_to_receptionist(): void
+    public function test_legacy_ai_interface_is_hidden_from_receptionist(): void
     {
         $this
             ->actingAs(
@@ -455,12 +455,15 @@ class AiVisitorTriageTest extends TestCase
             )
             ->assertOk()
             ->assertSee(
+                'Visitor Traffic Intelligence'
+            )
+            ->assertDontSee(
                 'Visitor Intelligence Assistant'
             )
-            ->assertSee(
+            ->assertDontSee(
                 'Analyze Visit'
             )
-            ->assertSee(
+            ->assertDontSee(
                 'Human decision required'
             );
     }

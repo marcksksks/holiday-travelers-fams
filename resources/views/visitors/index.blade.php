@@ -19,28 +19,7 @@
 
             @can('useAiAssist')
 
-                <button
-                    type="button"
-                    data-ai-assistant-open
-                    class="btn-outline inline-flex items-center gap-2">
 
-                    <svg
-                        class="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 3l1.1 3.3L16 7.4l-2.9 1.1L12 12l-1.1-3.5L8 7.4l2.9-1.1L12 3zM6 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3z" />
-
-                    </svg>
-
-                    AI Assistant
-
-                </button>
 
             @endcan
 
@@ -262,8 +241,6 @@
     ====================================================== --}}
     @include('visitors._traffic-forecast')
 
-    {{-- AI Visitor Assistant Modal --}}
-    @include('visitors._ai-assistant-modal')
 
     {{-- =====================================================
          VISITOR DESK WORKSPACE
