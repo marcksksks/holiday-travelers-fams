@@ -28,16 +28,14 @@
 @endphp
 
 
-<div class="space-y-7">
+<div class="space-y-4">
 
     {{-- =====================================================
          PAGE HEADER
     ====================================================== --}}
     <x-page-header
-        eyebrow="FAMS Command Center"
         title="Operations Dashboard"
-        badge="Operations Overview"
-        description="Monitor facilities, reservations, appointments, visitors, legal matters, contracts, documents, and compliance activity from one workspace.">
+        description="Current operational activity and workload.">
 
         <x-slot:actions>
 
@@ -132,12 +130,9 @@
     {{-- =====================================================
          SYSTEM OVERVIEW
     ====================================================== --}}
-    <section class="space-y-4">
+    <section class="space-y-3">
 
-        <x-section-header
-            eyebrow="Overview"
-            title="System Overview"
-            description="A role-aware snapshot of the operational areas available to you." />
+        <x-section-header title="System Overview" />
 
 
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 min-[1800px]:grid-cols-6">
@@ -146,7 +141,8 @@
                 label="Available Facilities"
                 :value="number_format($facilityCount)"
                 :href="route('facilities.index')"
-                helper="Facilities currently available for reservation."
+                :show-action="false"
+                helper="Ready for reservation."
                 tone="primary">
 
                 <x-slot:icon>
@@ -174,7 +170,8 @@
                 label="Pending Reservations"
                 :value="number_format($pendingReservations)"
                 :href="route('reservations.index')"
-                helper="Reservation requests currently awaiting action."
+                :show-action="false"
+                helper="Awaiting action."
                 tone="secondary">
 
                 <x-slot:icon>
@@ -204,7 +201,8 @@
                     label="Today's Appointments"
                     :value="number_format($todaysAppointments)"
                     :href="route('appointments.index')"
-                    helper="Appointments scheduled for today."
+                    :show-action="false"
+                    helper="Scheduled today."
                     tone="accent">
 
                     <x-slot:icon>
@@ -236,7 +234,8 @@
                     label="Visitors On Site"
                     :value="number_format($checkedInVisitors)"
                     :href="route('visitors.index', ['status' => 'checked_in'])"
-                    helper="Visitors currently checked in."
+                    :show-action="false"
+                    helper="Checked in now."
                     tone="success">
 
                     <x-slot:icon>
@@ -268,7 +267,8 @@
                     label="Contracts Expiring"
                     :value="number_format($contractsExpiringSoon)"
                     :href="route('contracts.index')"
-                    helper="Active contracts expiring within 30 days."
+                    :show-action="false"
+                    helper="Expiring within 30 days."
                     tone="warning">
 
                     <x-slot:icon>
@@ -300,7 +300,8 @@
                     label="Legal Action Required"
                     :value="number_format($legalActionRequired)"
                     :href="route('legal.index', ['review_status' => 'action_required'])"
-                    helper="Legal matters currently requiring action."
+                    :show-action="false"
+                    helper="Requires action."
                     tone="error">
 
                     <x-slot:icon>
@@ -341,15 +342,14 @@
     @include('dashboard._live-operations')
 
 
-    {{-- =====================================================
+    @if ($attentionCount > 0)
+{{-- =====================================================
          ATTENTION CENTER
     ====================================================== --}}
     <section class="space-y-4">
 
             <x-section-header
-                eyebrow="Work Queues"
-                title="Needs Attention"
-                description="Items that may require review, approval, renewal, or follow-up.">
+                    title="Needs Attention">
 
                 <x-slot:actions>
 
@@ -482,7 +482,7 @@
                             </p>
 
                             <p class="mt-1 text-xs leading-5 text-slate-500">
-                                There are currently no reservations, document reviews, retention decisions, contract renewals, disposal approvals, or legal matters requiring attention.
+                                No items require attention.
                             </p>
 
                         </div>
@@ -494,22 +494,19 @@
             @endif
 
     </section>
+@endif
 
-
-    {{-- =====================================================
+{{-- =====================================================
          SCHEDULE & UPCOMING WORK
     ====================================================== --}}
-    <section class="space-y-4">
+    <section class="space-y-3">
 
-        <x-section-header
-            eyebrow="Schedule"
-            title="Upcoming Work"
-            description="Approved reservations and today's appointments in one operational view." />
+        <x-section-header title="Upcoming Work" />
 
 
         <div
             @class([
-                'grid gap-5',
+                'grid gap-3',
                 'xl:grid-cols-2' => $canViewAppointments,
                 'grid-cols-1' => ! $canViewAppointments,
             ])>
@@ -518,7 +515,7 @@
             {{-- Upcoming Reservations --}}
             <section class="card overflow-hidden">
 
-                <div class="flex items-center justify-between gap-4 border-b border-border bg-background/40 px-5 py-4">
+                <div class="flex items-center justify-between gap-3 border-b border-border bg-background/40 px-4 py-3">
 
                     <div>
 
@@ -550,12 +547,12 @@
 
                         <a
                             href="{{ route('reservations.index') }}"
-                            class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-background/60">
+                            class="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-background/60">
 
                             <div class="min-w-0">
 
                                 <p class="truncate text-sm font-semibold text-primary">
-                                    {{ $reservation->facility_name }}
+                                    {{ ctype_digit(trim((string) $reservation->facility_name)) ? 'Facility ' . trim((string) $reservation->facility_name) : $reservation->facility_name }}
                                 </p>
 
                                 <p class="mt-1 text-xs text-slate-500">
@@ -579,7 +576,7 @@
 
                         <x-empty-state
                             title="No upcoming reservations"
-                            description="Approved facility bookings will appear here.">
+                            description="Nothing scheduled.">
 
                             <x-slot:icon>
 
@@ -613,7 +610,7 @@
 
                 <section class="card overflow-hidden">
 
-                    <div class="flex items-center justify-between gap-4 border-b border-border bg-background/40 px-5 py-4">
+                    <div class="flex items-center justify-between gap-3 border-b border-border bg-background/40 px-4 py-3">
 
                         <div>
 
@@ -645,7 +642,7 @@
 
                             <a
                                 href="{{ route('appointments.index') }}"
-                                class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-background/60">
+                                class="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-background/60">
 
                                 <div class="min-w-0">
 
@@ -680,7 +677,7 @@
 
                             <x-empty-state
                                 title="No appointments today"
-                                description="Today's scheduled appointments will appear here.">
+                                description="Nothing scheduled.">
 
                                 <x-slot:icon>
 
@@ -709,187 +706,6 @@
                 </section>
 
             @endif
-
-        </div>
-
-    </section>
-
-
-    {{-- =====================================================
-         QUICK ACCESS
-    ====================================================== --}}
-    <section class="space-y-4 xl:hidden">
-
-        <x-section-header
-            eyebrow="Navigation"
-            title="Quick Access"
-            description="Jump directly to the workspaces available for your role." />
-
-
-        <div class="card p-4">
-
-            <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
-                <a
-                    href="{{ route('facilities.index') }}"
-                    class="group flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-primary/20 hover:bg-background">
-
-                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <x-nav-icon name="facilities" />
-                    </div>
-
-                    <div class="min-w-0">
-                        <p class="truncate text-sm font-semibold text-primary">
-                            Facilities
-                        </p>
-                        <p class="mt-0.5 text-[11px] text-slate-400">
-                            Reservations & availability
-                        </p>
-                    </div>
-
-                </a>
-
-
-                <a
-                    href="{{ route('reservations.index') }}"
-                    class="group flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-secondary/30 hover:bg-background">
-
-                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
-                        <x-nav-icon name="appointments" />
-                    </div>
-
-                    <div class="min-w-0">
-                        <p class="truncate text-sm font-semibold text-primary">
-                            Reservations
-                        </p>
-                        <p class="mt-0.5 text-[11px] text-slate-400">
-                            Requests & decisions
-                        </p>
-                    </div>
-
-                </a>
-
-
-                @if ($canViewAppointments)
-
-                    <a
-                        href="{{ route('appointments.index') }}"
-                        class="group flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-accent/30 hover:bg-background">
-
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                            <x-nav-icon name="appointments" />
-                        </div>
-
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-semibold text-primary">
-                                Appointments
-                            </p>
-                            <p class="mt-0.5 text-[11px] text-slate-400">
-                                Schedule & visitors
-                            </p>
-                        </div>
-
-                    </a>
-
-                @endif
-
-
-                @if ($canViewVisitors)
-
-                    <a
-                        href="{{ route('visitors.index') }}"
-                        class="group flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-success/30 hover:bg-background">
-
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success">
-                            <x-nav-icon name="visitors" />
-                        </div>
-
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-semibold text-primary">
-                                Visitor Desk
-                            </p>
-                            <p class="mt-0.5 text-[11px] text-slate-400">
-                                Check-in & check-out
-                            </p>
-                        </div>
-
-                    </a>
-
-                @endif
-
-
-                @if ($canViewDocuments)
-
-                    <a
-                        href="{{ route('documents.index') }}"
-                        class="group flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-accent/30 hover:bg-background">
-
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                            <x-nav-icon name="documents" />
-                        </div>
-
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-semibold text-primary">
-                                Documents
-                            </p>
-                            <p class="mt-0.5 text-[11px] text-slate-400">
-                                Archive & records
-                            </p>
-                        </div>
-
-                    </a>
-
-                @endif
-
-
-                @if ($canViewLegal)
-
-                    <a
-                        href="{{ route('legal.index') }}"
-                        class="group flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-error/30 hover:bg-background">
-
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-error/10 text-error">
-                            <x-nav-icon name="legal" />
-                        </div>
-
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-semibold text-primary">
-                                Legal Management
-                            </p>
-                            <p class="mt-0.5 text-[11px] text-slate-400">
-                                Matters & compliance
-                            </p>
-                        </div>
-
-                    </a>
-
-                @endif
-
-
-                @if ($canViewContracts)
-
-                    <a
-                        href="{{ route('contracts.index') }}"
-                        class="group flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-warning/30 hover:bg-background">
-
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warning/10 text-amber-600">
-                            <x-nav-icon name="contracts" />
-                        </div>
-
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-semibold text-primary">
-                                Contracts
-                            </p>
-                            <p class="mt-0.5 text-[11px] text-slate-400">
-                                Agreements & renewals
-                            </p>
-                        </div>
-
-                    </a>
-
-                @endif
-
-            </div>
 
         </div>
 

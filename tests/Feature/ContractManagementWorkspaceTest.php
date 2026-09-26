@@ -38,6 +38,8 @@ class ContractManagementWorkspaceTest extends TestCase
             ->assertSee(
                 'Contract Portfolio'
             )
+            ->assertSee('data-contract-filter-bar', false)
+            ->assertSee('Search contracts...')
             ->assertSee(
                 'Total Contracts'
             )

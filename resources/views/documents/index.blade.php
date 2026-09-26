@@ -4,16 +4,16 @@
 
 @section('content')
 
-<div class="space-y-6">
+<div class="space-y-4">
 
     {{-- =====================================================
          DOCUMENT MANAGEMENT WORKSPACE HEADER
     ====================================================== --}}
     <x-page-header
-        eyebrow="Records Workspace"
+
         title="Document Management"
-        badge="Controlled Library"
-        description="Organize, secure, retrieve, version, review, and archive organizational records from one controlled library.">
+
+        description="Organize, secure, and retrieve document records.">
 
         @can('manageDocuments')
 
@@ -52,21 +52,19 @@
     {{-- =====================================================
          DOCUMENT LIBRARY OVERVIEW
     ====================================================== --}}
-    <section class="space-y-4">
+    <section class="space-y-3">
 
-        <x-section-header
-            eyebrow="Overview"
-            title="Library Status"
-            description="A current snapshot of the document records available within your access scope." />
+        <x-section-header title="Library Status" />
 
 
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
             <x-metric-card
                 label="Total Documents"
+                :show-action="false"
                 :value="number_format($counts['total'])"
                 :href="route('documents.index')"
-                helper="All document records currently visible to your role."
+                helper="Visible records."
                 tone="primary">
 
                 <x-slot:icon>
@@ -92,9 +90,10 @@
 
             <x-metric-card
                 label="Active"
+                :show-action="false"
                 :value="number_format($counts['active'])"
                 :href="route('documents.index', ['status' => 'active'])"
-                helper="Current records available for normal operational use."
+                helper="Current records."
                 tone="success">
 
                 <x-slot:icon>
@@ -120,9 +119,10 @@
 
             <x-metric-card
                 label="Needs Review"
+                :show-action="false"
                 :value="number_format($counts['needs_review'])"
                 :href="route('documents.index', ['status' => 'needs_review'])"
-                helper="Records currently requiring review or administrative attention."
+                helper="Requires review."
                 tone="warning">
 
                 <x-slot:icon>
@@ -148,9 +148,10 @@
 
             <x-metric-card
                 label="Archived"
+                :show-action="false"
                 :value="number_format($counts['archived'])"
                 :href="route('documents.index', ['status' => 'archived'])"
-                helper="Historical records retained outside the active document set."
+                helper="Retained records."
                 tone="accent">
 
                 <x-slot:icon>
@@ -180,14 +181,9 @@
     {{-- =====================================================
          DOCUMENT LIBRARY
     ====================================================== --}}
-    <x-section-header
-        eyebrow="Library"
-        title="Document Library"
-        description="Browse folders, locate records, manage document lifecycle, and open related operational records." />
-
 
     {{-- Main Library --}}
-    <div class="grid gap-4 xl:grid-cols-[260px_minmax(0,1fr)]">
+    <div class="grid gap-3 xl:grid-cols-[240px_minmax(0,1fr)]">
 
         {{-- =====================================================
              MOBILE DOCUMENT LIBRARY
@@ -275,7 +271,7 @@
         ====================================================== --}}
         <aside class="hidden h-fit overflow-hidden rounded-xl border border-border bg-card xl:sticky xl:top-24 xl:block">
 
-            <div class="border-b border-border px-4 py-4">
+            <div class="border-b border-border px-4 py-3">
 
                 <div class="flex items-center gap-3">
 
@@ -330,7 +326,7 @@
         </aside>
 
         {{-- Documents --}}
-        <main class="min-w-0 space-y-4">
+        <main class="min-w-0 space-y-3">
 
             {{-- =====================================================
                  DOCUMENT WORKSPACE TOOLBAR
@@ -338,18 +334,20 @@
             <section class="card overflow-hidden">
 
                 {{-- Current location --}}
-                <div class="flex flex-col gap-3 border-b border-border px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+                <div class="flex flex-col gap-2 border-b border-border px-4 py-3 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
 
                     <div class="min-w-0">
 
                         {{-- Breadcrumb --}}
-                        <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+                        @if ($selectedContainer || request()->filled('status'))
+
+<div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
 
                             <a
                                 href="{{ route('documents.index') }}"
                                 class="font-semibold text-primary transition hover:text-secondary">
 
-                                Document Management
+                                All Documents
 
                             </a>
 
@@ -383,6 +381,7 @@
 
                         </div>
 
+@endif
 
                         <div class="mt-1.5 flex flex-wrap items-center gap-2">
 
@@ -424,7 +423,7 @@
                         </div>
 
 
-                        @if ($documents->total() > 0)
+                        @if ($documents->hasPages())
 
                             <p class="mt-1 text-[10px] text-slate-400">
 
@@ -484,6 +483,7 @@
                 <form
                     method="GET"
                     action="{{ route('documents.index') }}"
+                    data-document-filter-bar
                     class="px-4 py-3 sm:px-5">
 
                     @if ($selectedContainer)
@@ -524,7 +524,7 @@
                                 type="search"
                                 name="search"
                                 value="{{ request('search') }}"
-                                placeholder="Search title, filename, reference, or related record..."
+                                placeholder="Search documents..."
                                 class="input pl-9">
 
                         </div>
@@ -608,7 +608,7 @@
 
                             <button
                                 type="submit"
-                                class="btn-secondary w-full justify-center">
+                                class="btn-primary w-full justify-center">
 
                                 Apply
 
@@ -1721,7 +1721,7 @@
 
                                 @can('manageDocuments')
 
-                                    <th class="w-12 px-4 py-3">
+                                    <th class="w-11 px-3 py-2.5">
 
                                         <input
                                             type="checkbox"
@@ -1734,19 +1734,19 @@
                                 @endcan
 
 
-                                <th class="px-4 py-3 text-[10px] font-semibold uppercase tracking-wide">
+                                <th class="px-3 py-2.5 text-[9px] font-semibold uppercase tracking-wide">
                                     Document
                                 </th>
 
-                                <th class="w-36 px-4 py-3 text-[10px] font-semibold uppercase tracking-wide">
+                                <th class="w-32 px-3 py-2.5 text-[9px] font-semibold uppercase tracking-wide">
                                     Status
                                 </th>
 
-                                <th class="w-36 px-4 py-3 text-[10px] font-semibold uppercase tracking-wide">
+                                <th class="w-32 px-3 py-2.5 text-[9px] font-semibold uppercase tracking-wide">
                                     Updated
                                 </th>
 
-                                <th class="w-16 px-4 py-3">
+                                <th class="w-14 px-3 py-2.5">
                                     <span class="sr-only">Actions</span>
                                 </th>
 
@@ -1765,7 +1765,7 @@
 
                                     @can('manageDocuments')
 
-                                        <td class="w-12 px-4 py-4 align-top">
+                                        <td class="w-11 px-3 py-3 align-top">
 
                                             <input
                                                 type="checkbox"
@@ -1775,7 +1775,7 @@
                                                 data-document-select
                                                 data-document-status="{{ $document->status }}"
                                                 aria-label="Select {{ $document->title }}"
-                                                class="mt-2 h-4 w-4 rounded border-border text-primary focus:ring-primary">
+                                                class="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary">
 
                                         </td>
 
@@ -1783,19 +1783,19 @@
 
 
                                     {{-- Document + context --}}
-                                    <td class="min-w-[360px] px-4 py-4">
+                                    <td class="min-w-[340px] px-3 py-3">
 
-                                        <div class="flex items-start gap-3">
+                                        <div class="flex items-start gap-2.5">
 
                                             <div
                                                 @class([
-                                                    'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                                                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
                                                     'bg-accent/10 text-primary' => $document->is_system_generated,
                                                     'bg-primary/5 text-primary' => ! $document->is_system_generated,
                                                 ])>
 
                                                 <svg
-                                                    class="h-5 w-5"
+                                                    class="h-4 w-4"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24">
@@ -1889,13 +1889,13 @@
                                                     $document->relatedModuleLabel()
                                                 )
 
-                                                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                                                    <div class="mt-1.5 flex flex-wrap items-center gap-1">
 
                                                         @if ($document->container)
 
                                                             <a
                                                                 href="{{ route('documents.index', ['container' => $document->container->id]) }}"
-                                                                class="inline-flex max-w-[260px] items-center gap-1 rounded-md bg-primary/5 px-2 py-1 text-[9px] font-medium text-primary transition hover:bg-primary/10">
+                                                                class="inline-flex max-w-[240px] items-center gap-1 rounded-md bg-primary/5 px-2 py-0.5 text-[9px] font-medium text-primary transition hover:bg-primary/10">
 
                                                                 <svg
                                                                     class="h-3 w-3 shrink-0"
@@ -1919,7 +1919,7 @@
 
                                                         @else
 
-                                                            <span class="rounded-md bg-background px-2 py-1 text-[9px] text-slate-400">
+                                                            <span class="rounded-md bg-background px-2 py-0.5 text-[9px] text-slate-400">
                                                                 Unfiled
                                                             </span>
 
@@ -1929,7 +1929,7 @@
                                                         @if ($document->relatedModuleLabel())
 
                                                             <span
-                                                                class="inline-flex max-w-[280px] items-center gap-1 rounded-md bg-accent/10 px-2 py-1 text-[9px] font-medium text-primary"
+                                                                class="inline-flex max-w-[260px] items-center gap-1 rounded-md bg-accent/10 px-2 py-0.5 text-[9px] font-medium text-primary"
                                                                 title="{{ $document->relatedRecordLabel() }}">
 
                                                                 <span>
@@ -1964,7 +1964,7 @@
 
 
                                     {{-- Status --}}
-                                    <td class="whitespace-nowrap px-4 py-4 align-top">
+                                    <td class="whitespace-nowrap px-3 py-3 align-top">
 
                                         @switch($document->status)
 
@@ -2016,7 +2016,7 @@
 
 
                                     {{-- Updated --}}
-                                    <td class="whitespace-nowrap px-4 py-4 align-top">
+                                    <td class="whitespace-nowrap px-3 py-3 align-top">
 
                                         <p class="text-xs font-medium text-slate-600">
                                             {{ $document->updated_at?->format('M d, Y') }}
@@ -2030,7 +2030,7 @@
 
 
                                     {{-- Actions --}}
-                                    <td class="px-4 py-4 align-top">
+                                    <td class="px-3 py-3 align-top">
 
                                         <div class="flex justify-end">
 
@@ -2115,6 +2115,285 @@
 
 </div>
 
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+        const triggers =
+            Array.from(
+                document.querySelectorAll(
+                    '[data-document-action-trigger]'
+                )
+            );
+
+
+        const closeAll =
+            (exceptTrigger = null) => {
+
+                triggers.forEach(
+                    (trigger) => {
+
+                        if (
+                            exceptTrigger
+                            &&
+                            trigger === exceptTrigger
+                        ) {
+                            return;
+                        }
+
+                        const root =
+                            trigger.closest(
+                                '[data-document-action-root]'
+                            );
+
+                        const menu =
+                            root?.querySelector(
+                                '[data-document-action-menu]'
+                            );
+
+                        if (!menu) {
+                            return;
+                        }
+
+                        menu.classList.add(
+                            'hidden'
+                        );
+
+                        menu.style.left = '';
+                        menu.style.top = '';
+                        menu.style.visibility = '';
+
+                        trigger.setAttribute(
+                            'aria-expanded',
+                            'false'
+                        );
+
+                    }
+                );
+
+            };
+
+
+        const positionMenu =
+            (trigger, menu) => {
+
+                menu.classList.remove(
+                    'hidden'
+                );
+
+                menu.style.visibility =
+                    'hidden';
+
+                menu.style.left = '0px';
+                menu.style.top = '0px';
+
+
+                const triggerRect =
+                    trigger.getBoundingClientRect();
+
+                const menuRect =
+                    menu.getBoundingClientRect();
+
+                const gutter = 8;
+                const spacing = 6;
+
+
+                let left =
+                    triggerRect.right -
+                    menuRect.width;
+
+                left =
+                    Math.max(
+                        gutter,
+                        Math.min(
+                            left,
+                            window.innerWidth -
+                                menuRect.width -
+                                gutter
+                        )
+                    );
+
+
+                let top =
+                    triggerRect.bottom +
+                    spacing;
+
+
+                if (
+                    top +
+                    menuRect.height >
+                    window.innerHeight -
+                        gutter
+                ) {
+
+                    top =
+                        triggerRect.top -
+                        menuRect.height -
+                        spacing;
+
+                }
+
+
+                top =
+                    Math.max(
+                        gutter,
+                        Math.min(
+                            top,
+                            window.innerHeight -
+                                menuRect.height -
+                                gutter
+                        )
+                    );
+
+
+                menu.style.left =
+                    `${Math.round(left)}px`;
+
+                menu.style.top =
+                    `${Math.round(top)}px`;
+
+                menu.style.visibility = '';
+
+            };
+
+
+        triggers.forEach(
+            (trigger) => {
+
+                trigger.addEventListener(
+                    'click',
+                    (event) => {
+
+                        event.preventDefault();
+                        event.stopPropagation();
+
+
+                        const root =
+                            trigger.closest(
+                                '[data-document-action-root]'
+                            );
+
+                        const menu =
+                            root?.querySelector(
+                                '[data-document-action-menu]'
+                            );
+
+                        if (!menu) {
+                            return;
+                        }
+
+
+                        const wasOpen =
+                            !menu.classList.contains(
+                                'hidden'
+                            );
+
+
+                        closeAll(
+                            trigger
+                        );
+
+
+                        if (wasOpen) {
+
+                            menu.classList.add(
+                                'hidden'
+                            );
+
+                            trigger.setAttribute(
+                                'aria-expanded',
+                                'false'
+                            );
+
+                            return;
+
+                        }
+
+
+                        positionMenu(
+                            trigger,
+                            menu
+                        );
+
+                        trigger.setAttribute(
+                            'aria-expanded',
+                            'true'
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+        document.addEventListener(
+            'click',
+            (event) => {
+
+                const insideMenu =
+                    event.target.closest(
+                        '[data-document-action-menu]'
+                    );
+
+                const insideTrigger =
+                    event.target.closest(
+                        '[data-document-action-trigger]'
+                    );
+
+                if (
+                    !insideMenu
+                    &&
+                    !insideTrigger
+                ) {
+                    closeAll();
+                }
+
+            }
+        );
+
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+
+                if (event.key !== 'Escape') {
+                    return;
+                }
+
+                const openTrigger =
+                    triggers.find(
+                        (trigger) =>
+                            trigger.getAttribute(
+                                'aria-expanded'
+                            ) === 'true'
+                    );
+
+                closeAll();
+
+                openTrigger?.focus();
+
+            }
+        );
+
+
+        window.addEventListener(
+            'resize',
+            () => closeAll()
+        );
+
+
+        window.addEventListener(
+            'scroll',
+            () => closeAll(),
+            true
+        );
+
+    }
+);
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

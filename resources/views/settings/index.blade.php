@@ -4,20 +4,20 @@
 
 @section('content')
 
-<div class="space-y-6">
+<div class="space-y-4">
 
     {{-- =====================================================
          SETTINGS WORKSPACE HEADER
     ====================================================== --}}
     <x-page-header
-        eyebrow="Account"
+
         title="Settings"
-        badge="Personal Workspace"
-        description="Manage your personal profile, sign-in security, appearance preferences, and application information.">
+
+        description="Manage your profile, security, appearance, and account preferences.">
 
         <x-slot:actions>
 
-            <div class="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card">
+            <div class="flex items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-2.5 shadow-card">
 
                 <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-heading text-sm font-bold text-white">
 
@@ -49,20 +49,18 @@
          SETTINGS NAVIGATION
     ====================================================== --}}
     <section
-        class="card p-4"
+        data-settings-navigation
+        class="card p-3"
         aria-label="Settings sections">
 
-        <x-section-header
-            eyebrow="Account Workspace"
-            title="Settings Navigation"
-            description="Jump directly to the account area you want to manage." />
+        <x-section-header title="Settings Navigation" />
 
 
-        <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="mt-3 grid gap-2 sm:grid-cols-3">
 
             <a
                 href="#settings-profile"
-                class="group rounded-xl border border-border bg-background/40 p-4 transition hover:border-accent hover:bg-accent/5">
+                class="group rounded-xl border border-border bg-background/40 p-3 transition hover:border-accent hover:bg-accent/5">
 
                 <div class="flex items-center gap-3">
 
@@ -103,7 +101,7 @@
 
             <a
                 href="#settings-security"
-                class="group rounded-xl border border-border bg-background/40 p-4 transition hover:border-accent hover:bg-accent/5">
+                class="group rounded-xl border border-border bg-background/40 p-3 transition hover:border-accent hover:bg-accent/5">
 
                 <div class="flex items-center gap-3">
 
@@ -144,7 +142,7 @@
 
             <a
                 href="#settings-appearance"
-                class="group rounded-xl border border-border bg-background/40 p-4 transition hover:border-accent hover:bg-accent/5">
+                class="group rounded-xl border border-border bg-background/40 p-3 transition hover:border-accent hover:bg-accent/5">
 
                 <div class="flex items-center gap-3">
 
@@ -182,62 +180,21 @@
 
             </a>
 
-
-            <a
-                href="#settings-system"
-                class="group rounded-xl border border-border bg-background/40 p-4 transition hover:border-accent hover:bg-accent/5">
-
-                <div class="flex items-center gap-3">
-
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success">
-
-                        <svg
-                            class="h-5 w-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 5h16v14H4V5zm4 18h8M12 19v4" />
-
-                        </svg>
-
-                    </div>
-
-                    <div>
-
-                        <p class="text-sm font-semibold text-primary">
-                            System
-                        </p>
-
-                        <p class="mt-0.5 text-xs text-slate-500">
-                            Application info
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </a>
-
         </div>
 
     </section>
 
-    <div class="grid items-start gap-6 xl:grid-cols-2">
+    <div class="grid items-start gap-4 xl:grid-cols-2">
 
         <div
             data-settings-primary-column
-            class="space-y-6">
+            class="space-y-4">
         {{-- Profile --}}
         <section
             id="settings-profile"
             class="card scroll-mt-24 overflow-hidden">
 
-            <div class="border-b border-border bg-background/60 px-6 py-5">
+            <div class="border-b border-border bg-background/60 px-5 py-4">
 
                 <div class="flex items-center gap-3">
 
@@ -280,13 +237,13 @@
             <form
                 method="POST"
                 action="{{ route('settings.profile.update') }}"
-                class="space-y-6 p-6">
+                class="space-y-5 p-5">
 
                 @csrf
                 @method('PUT')
 
 
-                <div class="grid gap-5 md:grid-cols-2">
+                <div class="grid gap-4 md:grid-cols-2">
 
                     {{-- Full Name --}}
                     <div>
@@ -439,7 +396,7 @@
             id="settings-appearance"
             class="card scroll-mt-24 overflow-hidden">
 
-            <div class="border-b border-border bg-background/60 px-6 py-5">
+            <div class="border-b border-border bg-background/60 px-5 py-4">
 
                 <div class="flex items-center gap-3">
 
@@ -469,7 +426,7 @@
                         </h3>
 
                         <p class="mt-0.5 text-xs text-slate-500">
-                            Choose how Holiday Travelers FAMS appears on this device.
+                            Choose how the interface appears on this device.
                         </p>
 
                     </div>
@@ -479,13 +436,13 @@
             </div>
 
 
-            <div class="grid gap-4 p-6 md:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+            <div class="grid gap-3 p-5 md:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
 
                 {{-- Light --}}
                 <button
                     type="button"
                     data-theme-option="light"
-                    class="theme-choice rounded-2xl p-5 text-left">
+                    class="theme-choice rounded-xl p-4 text-left">
 
                     <div class="mb-4 flex items-center justify-between">
 
@@ -544,7 +501,7 @@
                 <button
                     type="button"
                     data-theme-option="dark"
-                    class="theme-choice rounded-2xl p-5 text-left">
+                    class="theme-choice rounded-xl p-4 text-left">
 
                     <div class="mb-4 flex items-center justify-between">
 
@@ -603,7 +560,7 @@
                 <button
                     type="button"
                     data-theme-option="system"
-                    class="theme-choice rounded-2xl p-5 text-left">
+                    class="theme-choice rounded-xl p-4 text-left">
 
                     <div class="mb-4 flex items-center justify-between">
 
@@ -680,7 +637,7 @@
         {{-- Right Column --}}
         <div
             data-settings-security-column
-            class="space-y-6">
+            class="space-y-4">
 
             {{-- Account --}}
             <section
@@ -1554,160 +1511,7 @@
 
     </div>
 
-
-    {{-- Application Information --}}
-    <section
-        id="settings-system"
-        class="card scroll-mt-24 overflow-hidden">
-
-        <div class="border-b border-border bg-background/60 px-6 py-5">
-
-            <div class="flex items-center gap-3">
-
-                <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
-
-                    <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 15.5A3.5 3.5 0 1012 8a3.5 3.5 0 000 7.5zm7.4-3.5a7.7 7.7 0 00-.08-1.08l2-1.55-2-3.46-2.48 1a8.5 8.5 0 00-1.87-1.08L14.6 3h-4l-.37 2.83a8.5 8.5 0 00-1.87 1.08l-2.48-1-2 3.46 2 1.55A7.7 7.7 0 005.8 12c0 .36.03.72.08 1.08l-2 1.55 2 3.46 2.48-1a8.5 8.5 0 001.87 1.08L10.6 21h4l.37-2.83a8.5 8.5 0 001.87-1.08l2.48 1 2-3.46-2-1.55c.05-.36.08-.72.08-1.08z" />
-
-                    </svg>
-
-                </div>
-
-
-                <div>
-
-                    <h3 class="font-heading text-base font-semibold text-primary">
-                        Application Information
-                    </h3>
-
-                    <p class="mt-0.5 text-xs text-slate-500">
-                        Current Facilities and Administrative Management System configuration.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="grid divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0 xl:grid-cols-4">
-
-            {{-- Theme --}}
-            <div class="p-5">
-
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    Interface
-                </p>
-
-                <p class="mt-2 text-sm font-semibold text-primary">
-                    Sky & Sunset
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    Current system design theme
-                </p>
-
-            </div>
-
-
-            {{-- Timezone --}}
-            <div class="p-5">
-
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    Timezone
-                </p>
-
-                <p class="mt-2 text-sm font-semibold text-primary">
-                    {{ config('app.timezone') }}
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    Application date and time zone
-                </p>
-
-            </div>
-
-
-            {{-- Environment --}}
-            <div class="p-5">
-
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    Environment
-                </p>
-
-                <p class="mt-2 text-sm font-semibold text-primary">
-                    {{ str(app()->environment())->headline() }}
-                </p>
-
-                <p class="mt-1 text-xs text-slate-400">
-                    Laravel {{ app()->version() }}
-                </p>
-
-            </div>
-
-
-            {{-- AI --}}
-            <div class="p-5">
-
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    AI Visitor Assistant
-                </p>
-
-
-                <div class="mt-2 flex flex-wrap items-center gap-2">
-
-                    <p class="text-sm font-semibold text-primary">
-                        {{ str($aiProvider)->headline() }}
-                    </p>
-
-
-                    @if ($aiConfigured)
-
-                        <span class="badge badge-success">
-                            Connected
-                        </span>
-
-                    @else
-
-                        <span class="badge badge-warning">
-                            Fallback Mode
-                        </span>
-
-                    @endif
-
-                </div>
-
-
-                @if ($aiConfigured && $aiModel)
-
-                    <p class="mt-1 text-xs text-slate-400">
-                        Model: {{ $aiModel }}
-                    </p>
-
-                @else
-
-                    <p class="mt-1 text-xs text-slate-400">
-                        AI credentials are never displayed here.
-                    </p>
-
-                @endif
-
-            </div>
-
-        </div>
-
-    </section>
-
+    @unless ($user->isSysAdmin())
 
     {{-- Privacy & Data Rights --}}
     <section class="rounded-2xl border border-border bg-surface p-5 shadow-sm">
@@ -1868,6 +1672,7 @@
 
     </section>
 
+    @endunless
 
     {{-- Privacy Note --}}
     <div class="rounded-xl border border-accent/20 bg-accent/5 px-4 py-3">

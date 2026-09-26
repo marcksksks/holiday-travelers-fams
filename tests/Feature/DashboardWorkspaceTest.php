@@ -39,7 +39,7 @@ class DashboardWorkspaceTest extends TestCase
                 'Operations Dashboard'
             )
             ->assertSee(
-                'Operations Overview'
+                'Live'
             )
             ->assertSee(
                 'System Overview'
@@ -47,15 +47,11 @@ class DashboardWorkspaceTest extends TestCase
             ->assertSee(
                 'Current Operations'
             )
-            ->assertSee(
-                'Needs Attention'
-            )
+            ->assertDontSee('Needs Attention')
             ->assertSee(
                 'Upcoming Work'
             )
-            ->assertSee(
-                'Quick Access'
-            );
+            ->assertDontSee('Quick Access');
     }
 
     public function test_employee_dashboard_remains_role_aware(): void
@@ -113,7 +109,7 @@ class DashboardWorkspaceTest extends TestCase
             );
     }
 
-    public function test_dashboard_uses_operations_badge_instead_of_duplicate_role_badge(): void
+    public function test_dashboard_uses_live_badge_instead_of_duplicate_role_badge(): void
     {
         $manager =
             $this->user(
@@ -127,11 +123,11 @@ class DashboardWorkspaceTest extends TestCase
             )
             ->assertOk()
             ->assertSee(
-                'Operations Overview'
+                'Live'
             );
     }
 
-    public function test_dashboard_shows_all_clear_state_when_no_attention_items_exist(): void
+    public function test_dashboard_hides_attention_section_when_no_attention_items_exist(): void
     {
         $employee =
             $this->user(
@@ -144,9 +140,7 @@ class DashboardWorkspaceTest extends TestCase
                 route('dashboard')
             )
             ->assertOk()
-            ->assertSee(
-                'All operational queues are clear'
-            );
+            ->assertSee('All Clear')->assertDontSee('All operational queues are clear')->assertDontSee('Needs Attention');
     }
 
     public function test_needs_attention_hides_zero_value_queues_when_other_work_exists(): void

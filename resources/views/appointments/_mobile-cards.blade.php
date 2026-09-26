@@ -1,39 +1,78 @@
-<div class="grid gap-3 md:hidden">
+<div
+    data-appointment-card-grid
+    class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
 
     @forelse ($appointments as $appointment)
 
+        @php
+            $appointmentStartsAt = null;
+
+            if (
+                in_array(
+                    $appointment->status,
+                    [
+                        'scheduled',
+                        'confirmed',
+                    ],
+                    true
+                )
+            ) {
+                $appointmentStartsAt =
+                    \Illuminate\Support\Carbon::parse(
+                        $appointment->date->format('Y-m-d')
+                        .' '
+                        .substr(
+                            (string) $appointment->start_time,
+                            0,
+                            5
+                        ),
+                        config(
+                            'app.timezone',
+                            'Asia/Manila'
+                        )
+                    );
+            }
+        @endphp
+
+
         <article
             data-appointment-mobile-card
-            class="card overflow-hidden">
+            class="card flex min-h-[190px] flex-col overflow-hidden">
 
-            <div class="p-4">
+            <div class="flex-1 p-3">
 
-                <div class="flex items-start justify-between gap-3">
+                {{-- Header --}}
+                <div class="flex items-start justify-between gap-2">
 
-                    <div class="flex min-w-0 items-start gap-3">
+                    <div class="flex min-w-0 items-center gap-2.5">
 
                         <div
                             @class([
-                                'flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-heading text-sm font-bold uppercase',
+                                'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-heading text-xs font-bold uppercase',
                                 'bg-success/10 text-success' =>
                                     $appointment->status === 'checked_in',
-
                                 'bg-accent/10 text-primary' =>
                                     $appointment->status !== 'checked_in',
                             ])>
 
-                            {{ \Illuminate\Support\Str::substr($appointment->visitor_name, 0, 1) }}
+                            {{
+                                \Illuminate\Support\Str::substr(
+                                    $appointment->visitor_name,
+                                    0,
+                                    1
+                                )
+                            }}
 
                         </div>
 
 
                         <div class="min-w-0">
 
-                            <p class="truncate font-button text-sm font-semibold text-primary">
+                            <p class="truncate text-sm font-semibold text-primary">
                                 {{ $appointment->visitor_name }}
                             </p>
 
-                            <p class="mt-1 truncate text-[11px] text-slate-400">
+                            <p class="mt-0.5 truncate text-[10px] text-slate-400">
 
                                 @if ($appointment->visitor_organization)
 
@@ -41,7 +80,12 @@
 
                                 @else
 
-                                    {{ str($appointment->visitor_type ?: 'guest')->headline() }}
+                                    {{
+                                        str(
+                                            $appointment->visitor_type
+                                            ?: 'guest'
+                                        )->headline()
+                                    }}
 
                                 @endif
 
@@ -51,6 +95,38 @@
 
                     </div>
 
+
+                    <button
+                        type="button"
+                        data-appointment-actions-open
+                        data-appointment-id="{{ $appointment->id }}"
+                        data-status="{{ $appointment->status }}"
+                        data-can-manage="{{ auth()->user()->can('manageAppointments') ? '1' : '0' }}"
+                        data-status-url="{{ route('appointments.status', $appointment) }}"
+                        data-cancel-url="{{ route('appointments.cancel', $appointment) }}"
+                        aria-haspopup="menu"
+                        aria-expanded="false"
+                        aria-label="Appointment actions"
+                        class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-slate-400 transition hover:border-accent/40 hover:bg-accent/5 hover:text-primary">
+
+                        <svg
+                            class="h-4 w-4"
+                            fill="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <circle cx="5" cy="12" r="1.6" />
+                            <circle cx="12" cy="12" r="1.6" />
+                            <circle cx="19" cy="12" r="1.6" />
+
+                        </svg>
+
+                    </button>
+
+                </div>
+
+
+                {{-- Status + Date --}}
+                <div class="mt-3 flex flex-wrap items-center gap-2">
 
                     @switch($appointment->status)
 
@@ -116,42 +192,79 @@
 
                     @endswitch
 
+
+                    <span class="text-[10px] text-slate-400">
+                        {{ $appointment->date->format('M d, Y') }}
+                    </span>
+
                 </div>
 
 
-                <div class="mt-4 grid grid-cols-2 gap-3">
+                {{-- Live timing --}}
+                @if ($appointmentStartsAt)
 
-                    <div class="rounded-xl bg-background px-3 py-2.5">
+                    <div
+                        class="mt-2 flex items-center gap-1.5"
+                        data-appointment-live-timing
+                        data-appointment-start-ms="{{ $appointmentStartsAt->timestamp * 1000 }}"
+                        data-server-now-ms="{{ now()->timestamp * 1000 }}">
+
+                        <span
+                            class="h-1.5 w-1.5 shrink-0 rounded-full bg-secondary"
+                            aria-hidden="true">
+                        </span>
+
+                        <span
+                            class="text-[9px] font-semibold text-secondary"
+                            data-appointment-live-timing-value>
+
+                            Calculating...
+
+                        </span>
+
+                    </div>
+
+                @endif
+
+
+                {{-- Schedule --}}
+                <div class="mt-3 grid grid-cols-2 gap-2">
+
+                    <div class="rounded-lg bg-background/70 px-2.5 py-2">
 
                         <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
-                            Schedule
+                            Time
                         </p>
 
-                        <p class="mt-1 text-xs font-semibold text-primary">
-                            {{ $appointment->date->format('M d, Y') }}
-                        </p>
-
-                        <p class="mt-0.5 text-[10px] text-slate-500">
-
+                        <p class="mt-1 text-xs font-medium text-primary">
                             {{ $appointment->start_time }}
-
-                            @if ($appointment->end_time)
-                                &ndash; {{ $appointment->end_time }}
-                            @endif
-
                         </p>
+
+                        @if ($appointment->end_time)
+
+                            <p class="mt-0.5 text-[10px] text-slate-400">
+                                to {{ $appointment->end_time }}
+                            </p>
+
+                        @endif
 
                     </div>
 
 
-                    <div class="rounded-xl bg-background px-3 py-2.5">
+                    <div class="rounded-lg bg-background/70 px-2.5 py-2">
 
                         <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
                             Host
                         </p>
 
-                        <p class="mt-1 truncate text-xs font-medium text-slate-700">
-                            {{ $appointment->host_name ?: ($appointment->host_email ?: 'Not assigned') }}
+                        <p class="mt-1 truncate text-xs font-medium text-primary">
+                            {{
+                                $appointment->host_name
+                                ?: (
+                                    $appointment->host_email
+                                    ?: 'Not assigned'
+                                )
+                            }}
                         </p>
 
                     </div>
@@ -161,10 +274,10 @@
 
                 @if ($appointment->facility_name)
 
-                    <div class="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                    <div class="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500">
 
                         <svg
-                            class="h-4 w-4 shrink-0 text-accent"
+                            class="h-3.5 w-3.5 shrink-0 text-accent"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -178,18 +291,23 @@
                         </svg>
 
                         <span class="truncate">
-                            {{ $appointment->facility_name }}
+
+                            {{
+                                ctype_digit(
+                                    (string) $appointment->facility_name
+                                )
+                                    ? 'Facility '.$appointment->facility_name
+                                    : $appointment->facility_name
+                            }}
+
                         </span>
 
                     </div>
 
                 @endif
 
-            </div>
 
-
-            <div class="flex items-center gap-2 border-t border-border bg-background/40 px-4 py-3">
-
+                {{-- Hidden View trigger --}}
                 <button
                     type="button"
                     data-appointment-view
@@ -208,38 +326,50 @@
                     data-purpose="{{ $appointment->purpose }}"
                     data-notes="{{ $appointment->notes }}"
                     data-status="{{ $appointment->status }}"
-                    class="btn-outline flex-1 justify-center">
-
-                    View Details
-
+                    class="hidden"
+                    tabindex="-1">
                 </button>
 
 
-                <button
-                    type="button"
-                    data-appointment-actions-open
-                    data-appointment-id="{{ $appointment->id }}"
-                    data-status="{{ $appointment->status }}"
-                    data-can-manage="{{ auth()->user()->can('manageAppointments') ? '1' : '0' }}"
-                    data-status-url="{{ route('appointments.status', $appointment) }}"
-                    data-cancel-url="{{ route('appointments.cancel', $appointment) }}"
-                    aria-haspopup="menu"
-                    aria-expanded="false"
-                    aria-label="Appointment actions"
-                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-slate-500 transition hover:border-accent/40 hover:text-primary">
+                {{-- Hidden Edit trigger --}}
+                @can('manageAppointments')
 
-                    <svg
-                        class="h-5 w-5"
-                        fill="currentColor"
-                        viewBox="0 0 24 24">
+                    @if (
+                        in_array(
+                            $appointment->status,
+                            [
+                                'scheduled',
+                                'confirmed',
+                            ],
+                            true
+                        )
+                    )
 
-                        <circle cx="5" cy="12" r="1.7" />
-                        <circle cx="12" cy="12" r="1.7" />
-                        <circle cx="19" cy="12" r="1.7" />
+                        <button
+                            type="button"
+                            data-appointment-edit
+                            data-appointment-id="{{ $appointment->id }}"
+                            data-update-url="{{ route('appointments.update', $appointment) }}"
+                            data-name="{{ $appointment->visitor_name }}"
+                            data-organization="{{ $appointment->visitor_organization }}"
+                            data-email="{{ $appointment->visitor_email }}"
+                            data-contact="{{ $appointment->visitor_contact }}"
+                            data-type="{{ $appointment->visitor_type }}"
+                            data-host-name="{{ $appointment->host_name }}"
+                            data-host-email="{{ $appointment->host_email }}"
+                            data-date="{{ \Illuminate\Support\Carbon::parse($appointment->date)->format('Y-m-d') }}"
+                            data-start="{{ substr((string) $appointment->start_time, 0, 5) }}"
+                            data-end="{{ substr((string) $appointment->end_time, 0, 5) }}"
+                            data-facility-id="{{ $appointment->facility_id }}"
+                            data-purpose="{{ $appointment->purpose }}"
+                            data-notes="{{ $appointment->notes }}"
+                            class="hidden"
+                            tabindex="-1">
+                        </button>
 
-                    </svg>
+                    @endif
 
-                </button>
+                @endcan
 
             </div>
 
@@ -248,31 +378,33 @@
 
     @empty
 
-        <div class="card">
+        <div class="card py-10 text-center sm:col-span-2 lg:col-span-3 xl:col-span-4 2xl:col-span-5">
 
-            <x-empty-state
-                title="No appointments found"
-                description="No appointments match the current schedule filters.">
+            <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
 
-                <x-slot:icon>
+                <svg
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
 
-                    <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3M5 11h14M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
 
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8 7V3m8 4V3M5 11h14M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+                </svg>
 
-                    </svg>
+            </div>
 
-                </x-slot:icon>
+            <p class="mt-3 text-sm font-semibold text-primary">
+                No appointments scheduled
+            </p>
 
-            </x-empty-state>
+            <p class="mt-1 text-xs text-slate-400">
+                New appointments will appear here.
+            </p>
 
         </div>
 

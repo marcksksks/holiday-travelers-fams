@@ -23,7 +23,8 @@
 <form
     method="GET"
     action="{{ route('retention.index') }}"
-    class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+    data-retention-filter-bar
+    class="overflow-hidden rounded-xl border border-border bg-card shadow-card">
 
     <input
         type="hidden"
@@ -39,13 +40,9 @@
 
 
     {{-- Quick views --}}
-    <div class="flex flex-col gap-2.5 border-b border-border bg-background/30 px-3 py-3 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex flex-col gap-2 border-b border-border bg-background/30 px-3 py-2.5 lg:flex-row lg:items-center lg:justify-between">
 
         <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-
-            <span class="shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                Quick Views
-            </span>
 
 
             <nav
@@ -228,13 +225,13 @@
 
 
     {{-- Search, filters and sorting --}}
-    <div class="grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,2fr)_repeat(4,minmax(140px,1fr))_auto]">
+    <div class="grid gap-2 p-3 md:grid-cols-2 xl:grid-cols-[minmax(240px,2fr)_repeat(4,minmax(130px,1fr))_auto]">
 
         <div class="min-w-0">
 
             <label
                 for="retentionSearch"
-                class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                class="mb-1 block text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-400">
                 Search
             </label>
 
@@ -266,7 +263,7 @@
                     value="{{ request('q') }}"
                     maxlength="100"
                     autocomplete="off"
-                    placeholder="Title, record ID, or policy..."
+                    placeholder="Search retention records..."
                     class="input pl-10">
 
             </div>
@@ -278,7 +275,7 @@
 
             <label
                 for="retentionRecordType"
-                class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                class="mb-1 block text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-400">
                 Record Type
             </label>
 
@@ -317,7 +314,7 @@
 
             <label
                 for="retentionStatus"
-                class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                class="mb-1 block text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-400">
                 Lifecycle
             </label>
 
@@ -357,7 +354,7 @@
 
             <label
                 for="retentionCompliance"
-                class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                class="mb-1 block text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-400">
                 Compliance
             </label>
 
@@ -395,7 +392,7 @@
 
             <label
                 for="retentionSort"
-                class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                class="mb-1 block text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-400">
                 Sort By
             </label>
 

@@ -6,14 +6,12 @@
 @endphp
 
 <section
-    class="space-y-4"
+    class="space-y-3"
     data-dashboard-analytics-root
     data-dashboard-analytics-default-range="{{ $dashboardAnalytics['default_range'] }}">
 
     <x-section-header
-        eyebrow="Operational Intelligence"
-        title="Interactive Analytics"
-        description="Explore recent activity, change the reporting window, and drill directly into operational records.">
+        title="Interactive Analytics">
 
         <x-slot:actions>
 
@@ -120,26 +118,24 @@
 
         <div
             @class([
-                'space-y-5',
+                'space-y-3',
                 'hidden' =>
                     $days !== $dashboardAnalytics['default_range'],
             ])
             data-dashboard-analytics-panel="{{ $days }}"
             aria-hidden="{{ $days === $dashboardAnalytics['default_range'] ? 'false' : 'true' }}">
 
-            <section class="card overflow-hidden">
+                        <div class="grid gap-3 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] xl:items-stretch">
 
-                <div class="flex flex-col gap-3 border-b border-border bg-background/40 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
+<section class="card h-full overflow-hidden">
+
+                <div class="flex flex-col gap-2 border-b border-border bg-background/40 px-4 py-3 sm:flex-row sm:items-start sm:justify-between">
 
                     <div>
 
                         <h3 class="font-heading text-sm font-semibold text-primary">
                             Operational Activity Trend
                         </h3>
-
-                        <p class="mt-1 text-xs leading-5 text-slate-500">
-                            Daily operational activity for {{ strtolower($rangeLabel) }}.
-                        </p>
 
                     </div>
 
@@ -154,27 +150,65 @@
                 </div>
 
 
-                <div class="p-4 sm:p-5">
+                <div class="p-3 sm:p-4">
 
                     <div
-                        class="min-h-[250px] w-full overflow-hidden"
+                        class="relative h-[160px] w-full overflow-hidden"
                         data-dashboard-line-chart>
 
                         <script
                             type="application/json"
                             data-dashboard-chart-data>@json($activityPayload)</script>
 
+                        <div
+                            class="absolute inset-0 hidden items-center justify-center rounded-xl border border-dashed border-border bg-background/40 px-4 py-3 text-center"
+                            data-dashboard-chart-empty>
+
+                            <div>
+
+                                <div class="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 text-primary">
+
+                                    <svg
+                                        class="h-4 w-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true">
+
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M4 19V9m5 10V5m5 14v-7m5 7V3" />
+
+                                    </svg>
+
+                                </div>
+
+                                <p class="mt-2 text-sm font-semibold text-primary">
+                                    No operational activity recorded for this period
+                                </p>
+
+                                <p class="mx-auto mt-1 max-w-lg text-[11px] leading-4 text-slate-500">
+                                    Activity will appear when records are available.
+                                </p>
+
+                            </div>
+
+                        </div>
+
                         <svg
-                            class="h-auto min-h-[250px] w-full"
+                            class="absolute inset-0 h-full w-full"
                             viewBox="0 0 720 260"
                             role="img"
+                            data-dashboard-chart-svg
                             aria-label="Operational activity trend">
                         </svg>
 
                     </div>
 
 
-                    <div class="mt-4 flex flex-wrap gap-3">
+                    <div class="mt-2.5 flex flex-wrap gap-2">
 
                         <a
                             href="{{ route('reservations.index') }}"
@@ -222,101 +256,22 @@
 
             </section>
 
+<section class="card flex h-full flex-col overflow-hidden">
 
-            <div class="grid gap-5 xl:grid-cols-2">
-
-                <section class="card overflow-hidden">
-
-                    <div class="border-b border-border bg-background/40 px-5 py-4">
-
-                        <h3 class="font-heading text-sm font-semibold text-primary">
-                            Reservation Status
-                        </h3>
-
-                        <p class="mt-1 text-xs text-slate-500">
-                            Activate a bar to open the matching reservation register.
-                        </p>
-
-                    </div>
-
-
-                    <div class="space-y-3 p-4 sm:p-5">
-
-                        @foreach ($range['reservation_statuses'] as $statusItem)
-
-                            @php
-                                $statusWidth =
-                                    $statusItem['count'] > 0
-                                        ? max(
-                                            4,
-                                            (
-                                                $statusItem['count']
-                                                /
-                                                $statusMax
-                                            )
-                                            *
-                                            100
-                                        )
-                                        : 0;
-                            @endphp
-
-                            <a
-                                href="{{ route(
-                                    'reservations.index',
-                                    [
-                                        'status' =>
-                                            $statusItem['key'],
-                                    ]
-                                ) }}"
-                                class="group block rounded-xl border border-border bg-background/40 p-3 transition hover:border-primary/30 hover:bg-primary/[0.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                                data-dashboard-chart-drilldown>
-
-                                <div class="flex items-center justify-between gap-4">
-
-                                    <span class="text-xs font-semibold text-slate-600 group-hover:text-primary">
-                                        {{ $statusItem['label'] }}
-                                    </span>
-
-                                    <span class="font-heading text-sm font-bold text-primary">
-                                        {{ number_format($statusItem['count']) }}
-                                    </span>
-
-                                </div>
-
-                                <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-
-                                    <div
-                                        class="h-full rounded-full bg-primary transition-all duration-300"
-                                        style="width: {{ $statusWidth }}%">
-                                    </div>
-
-                                </div>
-
-                            </a>
-
-                        @endforeach
-
-                    </div>
-
-                </section>
-
-
-                <section class="card overflow-hidden">
-
-                    <div class="border-b border-border bg-background/40 px-5 py-4">
+                    <div class="border-b border-border bg-background/40 px-4 py-3">
 
                         <h3 class="font-heading text-sm font-semibold text-primary">
                             Facility Utilization
                         </h3>
 
                         <p class="mt-1 text-xs text-slate-500">
-                            Top facilities by approved reservations.
+                            Approved reservations by facility.
                         </p>
 
                     </div>
 
 
-                    <div class="p-4 sm:p-5">
+                    <div class="flex-1 p-3 sm:p-4">
 
                         @if (count($range['facility_utilization']) > 0)
 
@@ -352,7 +307,7 @@
                                         <div class="flex items-center justify-between gap-4">
 
                                             <span class="truncate text-xs font-semibold text-slate-600 group-hover:text-primary">
-                                                {{ $facilityItem['name'] }}
+                                                {{ ctype_digit(trim((string) $facilityItem['name'])) ? 'Facility ' . trim((string) $facilityItem['name']) : $facilityItem['name'] }}
                                             </span>
 
                                             <span class="font-heading text-sm font-bold text-primary">
@@ -361,7 +316,7 @@
 
                                         </div>
 
-                                        <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                        <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
 
                                             <div
                                                 class="h-full rounded-full bg-secondary transition-all duration-300"
@@ -378,14 +333,14 @@
 
                         @else
 
-                            <div class="rounded-xl border border-dashed border-border bg-background/50 px-4 py-10 text-center">
+                            <div class="flex min-h-[160px] items-center justify-center rounded-xl border border-dashed border-border bg-background/50 px-4 py-4 text-center">
 
                                 <p class="text-sm font-semibold text-primary">
                                     No approved facility activity
                                 </p>
 
                                 <p class="mt-1 text-xs text-slate-500">
-                                    Approved reservations will appear here.
+                                    No data yet.
                                 </p>
 
                             </div>
@@ -397,6 +352,82 @@
                 </section>
 
             </div>
+
+
+<section class="card overflow-hidden">
+
+                    <div class="border-b border-border bg-background/40 px-4 py-3">
+
+                        <h3 class="font-heading text-sm font-semibold text-primary">
+                            Reservation Status
+                        </h3>
+
+                        <p class="mt-1 text-xs text-slate-500">
+                            Select a status to view records.
+                        </p>
+
+                    </div>
+
+
+                    <div class="grid gap-2 p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-3 xl:grid-cols-5">
+
+                        @foreach ($range['reservation_statuses'] as $statusItem)
+
+                            @php
+                                $statusWidth =
+                                    $statusItem['count'] > 0
+                                        ? max(
+                                            4,
+                                            (
+                                                $statusItem['count']
+                                                /
+                                                $statusMax
+                                            )
+                                            *
+                                            100
+                                        )
+                                        : 0;
+                            @endphp
+
+                            <a
+                                href="{{ route(
+                                    'reservations.index',
+                                    [
+                                        'status' =>
+                                            $statusItem['key'],
+                                    ]
+                                ) }}"
+                                class="group block rounded-lg border border-border bg-background/40 px-3 py-2.5 transition hover:border-primary/30 hover:bg-primary/[0.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                data-dashboard-chart-drilldown>
+
+                                <div class="flex items-center justify-between gap-4">
+
+                                    <span class="text-xs font-semibold text-slate-600 group-hover:text-primary">
+                                        {{ $statusItem['label'] }}
+                                    </span>
+
+                                    <span class="font-heading text-sm font-bold text-primary">
+                                        {{ number_format($statusItem['count']) }}
+                                    </span>
+
+                                </div>
+
+                                <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+
+                                    <div
+                                        class="h-full rounded-full bg-primary transition-all duration-300"
+                                        style="width: {{ $statusWidth }}%">
+                                    </div>
+
+                                </div>
+
+                            </a>
+
+                        @endforeach
+
+                    </div>
+
+                </section>
 
         </div>
 

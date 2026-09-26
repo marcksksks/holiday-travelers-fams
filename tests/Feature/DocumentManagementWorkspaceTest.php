@@ -35,9 +35,7 @@ class DocumentManagementWorkspaceTest extends TestCase
                 route('documents.index')
             )
             ->assertOk()
-            ->assertSee(
-                'Controlled Library'
-            )
+            ->assertDontSee('Controlled Library')
             ->assertSee(
                 'Library Status'
             )
@@ -136,9 +134,8 @@ class DocumentManagementWorkspaceTest extends TestCase
                 route('documents.index')
             )
             ->assertOk()
-            ->assertSee(
-                'Search title, filename, reference, or related record...'
-            )
+            ->assertSee('Search documents...')
+            ->assertSee('data-document-filter-bar', false)
             ->assertSee(
                 'All Categories'
             )

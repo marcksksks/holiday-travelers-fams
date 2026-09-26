@@ -68,12 +68,11 @@ class SettingsWorkspaceTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee(
-                'Personal Workspace'
-            )
+            ->assertDontSee('Personal Workspace')
             ->assertSee(
                 'Settings Navigation'
             )
+            ->assertSee('data-settings-navigation', false)
             ->assertSee(
                 'Personal Profile'
             )
@@ -83,9 +82,8 @@ class SettingsWorkspaceTest extends TestCase
             ->assertSee(
                 'Appearance'
             )
-            ->assertSee(
-                'Application Information'
-            )
+            ->assertSee('Privacy & Data Rights', false)
+            ->assertDontSee('Application Information')
             ->assertSee(
                 'id="settings-profile"',
                 false
@@ -98,10 +96,7 @@ class SettingsWorkspaceTest extends TestCase
                 'id="settings-appearance"',
                 false
             )
-            ->assertSee(
-                'id="settings-system"',
-                false
-            );
+            ->assertDontSee('id="settings-system"', false);
     }
 
     public function test_settings_view_uses_shared_page_and_section_components(): void
@@ -242,5 +237,32 @@ class SettingsWorkspaceTest extends TestCase
                 ->fresh()
                 ->email
         );
+    }
+
+    public function test_privacy_data_rights_is_hidden_for_system_administrator(): void
+    {
+        $user =
+            User::factory()
+                ->role(User::ROLE_SYS_ADMIN)
+                ->create([
+                    'is_active' => true,
+                    'force_password_change' => false,
+                ]);
+
+        $this
+            ->actingAs($user)
+            ->get(
+                route('settings.index')
+            )
+            ->assertOk()
+            ->assertDontSee(
+                'Privacy & Data Rights'
+            )
+            ->assertDontSee(
+                'Request a review of your personal data'
+            )
+            ->assertDontSee(
+                'Application Information'
+            );
     }
 }

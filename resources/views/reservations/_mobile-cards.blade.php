@@ -2,7 +2,7 @@
      MOBILE RESERVATION CARDS
 ====================================================== --}}
 
-<div class="space-y-3 md:hidden">
+<div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
 
     @forelse ($reservations as $reservation)
 
@@ -72,18 +72,18 @@
 
         <article
             @class([
-                'card overflow-hidden transition',
+                'card h-full min-h-[170px] overflow-hidden transition hover:-translate-y-0.5 hover:shadow-soft',
                 'opacity-70' => $isHistorical,
             ])>
 
-            <div class="p-4">
+            <div class="p-3">
 
                 {{-- Top row --}}
                 <div class="flex items-start gap-3">
 
                     <div
                         @class([
-                            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                            'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
                             'bg-warning/10 text-amber-600' => $reservation->status === 'pending',
                             'bg-success/10 text-success' => $reservation->status === 'approved',
                             'bg-error/10 text-error' => $reservation->status === 'rejected',
@@ -162,7 +162,7 @@
 
 
                 {{-- Status + schedule --}}
-                <div class="mt-4 flex flex-wrap items-center gap-2">
+                <div class="mt-3 flex flex-wrap items-center gap-2">
 
                     @switch($reservation->status)
 
@@ -280,9 +280,9 @@
 
 
                 {{-- Main information --}}
-                <div class="mt-4 grid grid-cols-2 gap-3">
+                <div class="mt-2.5 grid grid-cols-2 gap-2">
 
-                    <div class="rounded-xl bg-background/70 p-3">
+                    <div class="rounded-lg bg-background/70 px-2.5 py-2">
 
                         <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                             Time
@@ -299,7 +299,7 @@
                     </div>
 
 
-                    <div class="rounded-xl bg-background/70 p-3">
+                    <div class="rounded-lg bg-background/70 px-2.5 py-2">
 
                         <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
 
@@ -341,7 +341,7 @@
                 {{-- Requester --}}
                 @if ($canDecide)
 
-                    <div class="mt-4 flex items-center gap-2 border-t border-border pt-3">
+                    <div class="mt-3 flex items-center gap-2 border-t border-border pt-2.5">
 
                         <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-semibold uppercase text-primary">
 
@@ -380,7 +380,7 @@
                 @if ($reservation->purpose)
 
                     <p
-                        class="mt-3 line-clamp-2 text-xs leading-5 text-slate-500"
+                        class="mt-2 line-clamp-1 text-[11px] leading-4 text-slate-500"
                         title="{{ $reservation->purpose }}">
 
                         {{ $reservation->purpose }}

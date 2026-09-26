@@ -104,13 +104,17 @@
         ],
 
         'facilities.index' => [
-            'label' => 'Facilities Reservation',
+            'label' => 'Facilities',
             'route' => 'facilities.index',
             'icon' => 'facilities',
-            'active' => [
-                'facilities.*',
-                'reservations.*',
-            ],
+            'active' => ['facilities.*'],
+        ],
+
+        'reservations.index' => [
+            'label' => 'Reservations',
+            'route' => 'reservations.index',
+            'icon' => 'reservations',
+            'active' => ['reservations.*'],
         ],
 
         'appointments.index' => [
@@ -206,6 +210,7 @@
             'label' => 'Operations',
             'items' => [
                 'facilities.index',
+                'reservations.index',
                 'appointments.index',
                 'visitors.index',
             ],

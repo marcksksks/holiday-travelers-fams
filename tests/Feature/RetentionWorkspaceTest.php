@@ -35,9 +35,7 @@ class RetentionWorkspaceTest extends TestCase
                 route('retention.index')
             )
             ->assertOk()
-            ->assertSee(
-                'Governance Workspace'
-            )
+            ->assertDontSee('Governance Workspace')
             ->assertSee(
                 'Compliance Status'
             )
@@ -56,9 +54,7 @@ class RetentionWorkspaceTest extends TestCase
             ->assertSee(
                 'Retention Register'
             )
-            ->assertSee(
-                'Track Retention Record'
-            );
+            ->assertSee('Track Record');
     }
 
     public function test_legal_officer_sees_records_without_management_actions(): void
@@ -155,9 +151,8 @@ class RetentionWorkspaceTest extends TestCase
             ->assertSee(
                 'Retention Policies'
             )
-            ->assertSee(
-                'Title, record ID, or policy...'
-            )
+            ->assertSee('Search retention records...')
+            ->assertSee('data-retention-filter-bar', false)
             ->assertSee(
                 'All types'
             )

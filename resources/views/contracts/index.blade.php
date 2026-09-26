@@ -8,16 +8,16 @@
     $canRenewContracts = auth()->user()->can('manageContracts');
 @endphp
 
-<div class="space-y-6">
+<div class="space-y-4">
 
     {{-- =====================================================
          CONTRACT MANAGEMENT HEADER
     ====================================================== --}}
     <x-page-header
-        eyebrow="Legal & Contracts"
+
         title="Contract Management"
-        badge="Contract Portfolio"
-        description="Create, review, approve, monitor, and renew organizational contracts through one controlled workflow.">
+
+        description="Manage contract workflows, terms, approvals, and renewals.">
 
         @can('manageContracts')
 
@@ -56,21 +56,19 @@
     {{-- =====================================================
          CONTRACT PORTFOLIO OVERVIEW
     ====================================================== --}}
-    <section class="space-y-4">
+    <section class="space-y-3">
 
-        <x-section-header
-            eyebrow="Overview"
-            title="Contract Portfolio"
-            description="A current snapshot of contract workflow, active agreements, and upcoming renewal attention." />
+        <x-section-header title="Contract Portfolio" />
 
 
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
             <x-metric-card
                 label="Total Contracts"
+                :show-action="false"
                 :value="number_format($contractStats['total'])"
                 :href="route('contracts.index')"
-                helper="All organizational contracts recorded in the system."
+                helper="Recorded contracts."
                 tone="primary">
 
                 <x-slot:icon>
@@ -96,9 +94,10 @@
 
             <x-metric-card
                 label="Active Contracts"
+                :show-action="false"
                 :value="number_format($contractStats['active'])"
                 :href="route('contracts.index', ['status' => 'active'])"
-                helper="Contracts whose current workflow status is active."
+                helper="Currently active."
                 tone="success">
 
                 <x-slot:icon>
@@ -124,8 +123,9 @@
 
             <x-metric-card
                 label="Workflow Review"
+                :show-action="false"
                 :value="number_format($contractStats['workflow'])"
-                helper="Contracts requiring legal review, management approval, or objection resolution."
+                helper="Awaiting workflow action."
                 tone="warning">
 
                 <x-slot:icon>
@@ -151,9 +151,10 @@
 
             <x-metric-card
                 label="Renewal Attention"
+                :show-action="false"
                 :value="number_format($contractStats['renewal_attention'])"
                 :href="route('contracts.index', ['deadline' => 'attention'])"
-                helper="Active or renewed contracts near or beyond their recorded end date."
+                helper="Near or past end date."
                 tone="error">
 
                 <x-slot:icon>
@@ -181,7 +182,7 @@
     </section>
 
 
-    <div class="space-y-6">
+    <div class="space-y-4">
 
         @can('manageContracts')
 
@@ -190,20 +191,18 @@
         @endcan
 
         {{-- Contract Register --}}
-        <div class="min-w-0 space-y-4">
+        <div class="min-w-0 space-y-3">
 
-            <x-section-header
-                eyebrow="Contracts"
-                title="Contract Register"
-                description="Track each contract through legal review, management approval, activation, term monitoring, and renewal." />
+            <x-section-header title="Contract Register" />
 
 
-            <div class="card p-4">
+            <div class="card p-3">
 
                 <form
                     method="GET"
                     action="{{ route('contracts.index') }}"
-                    class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px_auto]">
+                    data-contract-filter-bar
+                    class="grid gap-2 lg:grid-cols-[minmax(0,1fr)_210px_210px_auto]">
 
                     <div class="relative">
 
@@ -230,7 +229,7 @@
                             name="q"
                             maxlength="120"
                             value="{{ $search }}"
-                            placeholder="Search title, contract number, or responsible officer..."
+                            placeholder="Search contracts..."
                             class="input w-full pl-10">
 
                     </div>
@@ -352,9 +351,7 @@
                     $deadline !== ''
                 )
 
-                    <div class="mt-3 border-t border-border pt-3 text-xs text-slate-500">
-
-                        Showing
+                    <div class="mt-2 border-t border-border pt-2 text-[11px] text-slate-500">
 
                         <span class="font-semibold text-primary">
                             {{ number_format($contracts->total()) }}

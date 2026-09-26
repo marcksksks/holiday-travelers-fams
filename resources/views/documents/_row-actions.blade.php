@@ -1,11 +1,17 @@
-<details class="group relative">
+<div
+    class="relative"
+    data-document-action-root>
 
-    <summary
-        class="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-lg border border-border bg-card text-slate-400 transition hover:border-accent/40 hover:bg-accent/5 hover:text-primary"
-        aria-label="Document actions">
+    <button
+        type="button"
+        data-document-action-trigger
+        aria-haspopup="menu"
+        aria-expanded="false"
+        aria-label="Document actions"
+        class="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-slate-400 transition hover:border-accent/40 hover:bg-accent/5 hover:text-primary">
 
         <svg
-            class="h-5 w-5"
+            class="h-4 w-4"
             fill="currentColor"
             viewBox="0 0 24 24">
 
@@ -15,15 +21,19 @@
 
         </svg>
 
-    </summary>
+    </button>
 
 
-    <div class="absolute right-0 z-40 mt-2 w-60 overflow-hidden rounded-xl border border-border bg-card p-1.5 shadow-2xl">
+    <div
+        data-document-action-menu
+        role="menu"
+        class="fixed z-[95] hidden w-56 overflow-hidden rounded-xl border border-border bg-card p-1 shadow-2xl">
 
         {{-- Primary --}}
         <a
             href="{{ route('documents.show', $document) }}"
-            class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold text-primary transition hover:bg-primary/5">
+            role="menuitem"
+            class="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold text-primary transition hover:bg-primary/5">
 
             <svg
                 class="h-4 w-4 shrink-0"
@@ -48,8 +58,23 @@
 
             <button
                 type="button"
+                role="menuitem"
                 data-document-download="{{ route('documents.request-link', $document) }}"
-                class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-slate-600 transition hover:bg-background hover:text-primary">
+                class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs text-slate-600 transition hover:bg-background hover:text-primary">
+
+                <svg
+                    class="h-4 w-4 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14" />
+
+                </svg>
 
                 Download File
 
@@ -64,14 +89,15 @@
 
                 <div class="my-1 border-t border-border"></div>
 
-                <p class="px-3 pb-1 pt-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                <p class="px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-slate-400">
                     Manage
                 </p>
 
 
                 <a
                     href="{{ route('documents.edit', $document) }}#edit-metadata"
-                    class="flex items-center rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-background hover:text-primary">
+                    role="menuitem"
+                    class="block rounded-lg px-2.5 py-1.5 text-xs text-slate-600 transition hover:bg-background hover:text-primary">
 
                     Edit Metadata
 
@@ -80,7 +106,8 @@
 
                 <a
                     href="{{ route('documents.edit', $document) }}#move-document"
-                    class="flex items-center rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-background hover:text-primary">
+                    role="menuitem"
+                    class="block rounded-lg px-2.5 py-1.5 text-xs text-slate-600 transition hover:bg-background hover:text-primary">
 
                     Move to Folder
 
@@ -89,7 +116,8 @@
 
                 <a
                     href="{{ route('documents.edit', $document) }}#upload-version"
-                    class="flex items-center rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-background hover:text-primary">
+                    role="menuitem"
+                    class="block rounded-lg px-2.5 py-1.5 text-xs text-slate-600 transition hover:bg-background hover:text-primary">
 
                     Upload New Version
 
@@ -115,8 +143,8 @@
 
             <div class="my-1 border-t border-border"></div>
 
-            <p class="px-3 pb-1 pt-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                Related Module
+            <p class="px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-slate-400">
+                Related
             </p>
 
 
@@ -124,7 +152,8 @@
 
                 <a
                     href="{{ route('reservations.index') }}"
-                    class="block rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-background hover:text-primary">
+                    role="menuitem"
+                    class="block rounded-lg px-2.5 py-1.5 text-xs text-slate-600 transition hover:bg-background hover:text-primary">
 
                     Facilities Reservation
 
@@ -134,7 +163,8 @@
 
                 <a
                     href="{{ route('visitors.index') }}"
-                    class="block rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-background hover:text-primary">
+                    role="menuitem"
+                    class="block rounded-lg px-2.5 py-1.5 text-xs text-slate-600 transition hover:bg-background hover:text-primary">
 
                     Visitor Management
 
@@ -144,7 +174,8 @@
 
                 <a
                     href="{{ route('contracts.index') }}"
-                    class="block rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-background hover:text-primary">
+                    role="menuitem"
+                    class="block rounded-lg px-2.5 py-1.5 text-xs text-slate-600 transition hover:bg-background hover:text-primary">
 
                     Contract Management
 
@@ -154,7 +185,8 @@
 
                 <a
                     href="{{ route('legal.index') }}"
-                    class="block rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-background hover:text-primary">
+                    role="menuitem"
+                    class="block rounded-lg px-2.5 py-1.5 text-xs text-slate-600 transition hover:bg-background hover:text-primary">
 
                     Legal Management
 
@@ -179,7 +211,8 @@
 
                     <button
                         type="submit"
-                        class="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-semibold text-success transition hover:bg-success/5">
+                        role="menuitem"
+                        class="flex w-full items-center rounded-lg px-2.5 py-2 text-left text-xs font-semibold text-success transition hover:bg-success/5">
 
                         Restore Document
 
@@ -198,7 +231,8 @@
 
                     <button
                         type="submit"
-                        class="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-semibold text-error transition hover:bg-error/5">
+                        role="menuitem"
+                        class="flex w-full items-center rounded-lg px-2.5 py-2 text-left text-xs font-semibold text-error transition hover:bg-error/5">
 
                         Archive Document
 
@@ -212,4 +246,4 @@
 
     </div>
 
-</details>
+</div>

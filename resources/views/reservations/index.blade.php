@@ -4,18 +4,14 @@
 
 @section('content')
 
-<div class="space-y-6">
+<div class="space-y-5">
 
     @php
         $reservationWorkspaceDescription =
             $canDecide
-                ? 'Review reservation requests, monitor approvals, and coordinate shared facility availability from one workspace.'
-                : 'Reserve available facilities and track the progress of your requests from one workspace.';
+                ? 'Review and manage facility reservation requests.'
+                : 'Reserve facilities and track your requests.';
 
-        $closedReservationCount =
-            ($counts['rejected'] ?? 0)
-            +
-            ($counts['cancelled'] ?? 0);
     @endphp
 
 
@@ -23,160 +19,35 @@
          RESERVATIONS WORKSPACE HEADER
     ====================================================== --}}
     <x-page-header
-        eyebrow="Facilities Reservation"
         title="Reservations"
-        :badge="$canDecide ? 'Approval Workspace' : 'Personal Requests'"
         :description="$reservationWorkspaceDescription">
 
         <x-slot:actions>
 
             @if ($facilities->isNotEmpty())
 
-                <details class="group relative">
+                <button
+                    type="button"
+                    data-reservation-create-open
+                    class="btn-primary inline-flex items-center justify-center gap-2">
 
-                    <summary
-                        class="btn-primary flex cursor-pointer list-none items-center justify-center gap-2">
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                        <svg
-                            class="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 4v16m8-8H4" />
 
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 4v16m8-8H4" />
+                    </svg>
 
-                        </svg>
+                    Reserve Facility
 
-                        Reserve Facility
-
-                        <svg
-                            class="h-3.5 w-3.5 transition group-open:rotate-180"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 9l-7 7-7-7" />
-
-                        </svg>
-
-                    </summary>
-
-
-                    <div class="absolute right-0 z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
-
-                        <div class="border-b border-border px-4 py-3">
-
-                            <p class="text-xs font-semibold text-primary">
-                                Choose a facility
-                            </p>
-
-                            <p class="mt-0.5 text-[11px] text-slate-400">
-                                Only facilities currently available for reservation are listed.
-                            </p>
-
-                        </div>
-
-
-                        <div class="max-h-72 overflow-y-auto p-1.5">
-
-                            @foreach ($facilities as $facility)
-
-                                <a
-                                    href="{{ route('reservations.index', ['reserve_facility' => $facility->id]) }}"
-                                    class="flex items-center gap-3 rounded-lg px-3 py-2.5 transition hover:bg-background">
-
-                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary">
-
-                                        @if ($facility->facility_type === 'vehicle')
-
-                                            <svg
-                                                class="h-4 w-4"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24">
-
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M3 13l2-5h14l2 5M5 13v6m14-6v6M6 17h.01M18 17h.01M5 13h14" />
-
-                                            </svg>
-
-                                        @else
-
-                                            <svg
-                                                class="h-4 w-4"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24">
-
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
-
-                                            </svg>
-
-                                        @endif
-
-                                    </div>
-
-
-                                    <div class="min-w-0 flex-1">
-
-                                        <p class="truncate text-sm font-semibold text-slate-700">
-                                            {{ $facility->name }}
-                                        </p>
-
-                                        <p class="mt-0.5 truncate text-[11px] text-slate-400">
-
-                                            {{ str($facility->facility_type)->headline() }}
-
-                                            @if ($facility->capacity)
-
-                                                &bull;
-                                                Capacity {{ number_format($facility->capacity) }}
-
-                                            @endif
-
-                                        </p>
-
-                                    </div>
-
-
-                                    <svg
-                                        class="h-4 w-4 shrink-0 text-slate-300"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24">
-
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-
-                                    </svg>
-
-                                </a>
-
-                            @endforeach
-
-                        </div>
-
-                    </div>
-
-                </details>
+                </button>
 
             @else
 
@@ -196,110 +67,21 @@
 
 
     {{-- =====================================================
-         MODULE NAVIGATION
-    ====================================================== --}}
-    <div class="card p-1.5">
-
-        <nav
-            class="grid grid-cols-2 gap-1 sm:inline-grid sm:min-w-[340px] sm:grid-cols-2"
-            aria-label="Facilities Reservation workspace">
-
-            <a
-                href="{{ route('facilities.index') }}"
-                class="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-button text-sm font-semibold text-slate-500 transition hover:bg-background hover:text-primary">
-
-                <svg
-                    class="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
-
-                </svg>
-
-                Facilities
-
-            </a>
-
-
-            <a
-                href="{{ route('reservations.index') }}"
-                class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-button text-sm font-semibold text-white shadow-sm"
-                aria-current="page">
-
-                <svg
-                    class="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-
-                </svg>
-
-                Reservations
-
-            </a>
-
-        </nav>
-
-    </div>
-
-
-    {{-- =====================================================
          RESERVATION OVERVIEW
     ====================================================== --}}
     <section class="space-y-4">
 
-        <x-section-header
-            eyebrow="Overview"
-            title="Reservation Overview"
-            :description="$canDecide
-                ? 'A current snapshot of the reservation queue and approved facility use.'
-                : 'A current snapshot of your facility reservation requests.'" />
+                <x-section-header title="Reservation Status" />
 
 
-        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="grid gap-3 sm:grid-cols-3">
 
-            <x-metric-card
-                label="Total Requests"
-                :value="number_format($counts['total'])"
-                :href="route('reservations.index')"
-                helper="Reservation requests included in your current access scope."
-                tone="primary">
 
-                <x-slot:icon>
-
-                    <svg
-                        class="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-
-                    </svg>
-
-                </x-slot:icon>
-
-            </x-metric-card>
 
 
             <x-metric-card
                 label="Pending"
+                :show-action="false"
                 :value="number_format($counts['pending'])"
                 :href="route('reservations.index', ['status' => 'pending'])"
                 :helper="$canDecide
@@ -330,9 +112,10 @@
 
             <x-metric-card
                 label="Approved"
+                :show-action="false"
                 :value="number_format($counts['approved'])"
                 :href="route('reservations.index', ['status' => 'approved'])"
-                helper="Reservation requests approved for facility use."
+                helper="Approved for use."
                 tone="success">
 
                 <x-slot:icon>
@@ -358,9 +141,10 @@
 
             <x-metric-card
                 label="Completed"
+                :show-action="false"
                 :value="number_format($counts['completed'])"
                 :href="route('reservations.index', ['status' => 'completed'])"
-                helper="Facility reservations that have completed their lifecycle."
+                helper="Completed reservations."
                 tone="accent">
 
                 <x-slot:icon>
@@ -385,58 +169,6 @@
 
         </div>
 
-
-        @if ($closedReservationCount > 0)
-
-            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
-
-                <div>
-
-                    <p class="text-xs font-semibold text-primary">
-                        Closed Requests
-                    </p>
-
-                    <p class="mt-0.5 text-[11px] text-slate-500">
-                        {{ number_format($counts['rejected']) }} rejected
-                        ·
-                        {{ number_format($counts['cancelled']) }} cancelled
-                    </p>
-
-                </div>
-
-
-                <div class="flex items-center gap-4">
-
-                    @if ($counts['rejected'] > 0)
-
-                        <a
-                            href="{{ route('reservations.index', ['status' => 'rejected']) }}"
-                            class="text-xs font-semibold text-error transition hover:text-primary">
-
-                            Rejected →
-
-                        </a>
-
-                    @endif
-
-
-                    @if ($counts['cancelled'] > 0)
-
-                        <a
-                            href="{{ route('reservations.index', ['status' => 'cancelled']) }}"
-                            class="text-xs font-semibold text-slate-500 transition hover:text-primary">
-
-                            Cancelled →
-
-                        </a>
-
-                    @endif
-
-                </div>
-
-            </div>
-
-        @endif
 
     </section>
 
@@ -646,750 +378,7 @@
 
     @include('reservations._mobile-cards')
 
-    {{-- Table --}}
-    <div class="table-shell hidden overflow-hidden md:block">
 
-        <div class="overflow-x-auto">
-
-            <table class="min-w-full text-left text-sm">
-
-                <thead class="table-header sticky top-0 z-10">
-
-                    <tr>
-
-                        <th class="px-5 py-3.5 font-medium">
-                            Facility / Request
-                        </th>
-
-                        <th class="px-5 py-3.5 font-medium">
-                            Schedule
-                        </th>
-
-                        @if ($canDecide)
-
-                            <th class="px-5 py-3.5 font-medium">
-                                Requester
-                            </th>
-
-                        @endif
-
-                        <th class="px-5 py-3.5 font-medium">
-                            Status
-                        </th>
-
-                        <th class="w-16 px-5 py-3.5 text-right font-medium">
-                            <span class="sr-only">
-                                Actions
-                            </span>
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody class="divide-y divide-border bg-card">
-
-                    @forelse ($reservations as $reservation)
-
-                        <tr
-                            @class([
-                                'group transition hover:bg-background/70',
-                                'opacity-65' => in_array(
-                                    $reservation->status,
-                                    ['rejected', 'cancelled', 'completed'],
-                                    true
-                                ),
-                            ])>
-
-                            {{-- Reservation --}}
-                            <td class="px-5 py-4">
-
-                                <div class="flex items-start gap-3">
-
-                                    <div
-                                        @class([
-                                            'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-                                            'bg-warning/10 text-amber-600' => $reservation->status === 'pending',
-                                            'bg-success/10 text-success' => $reservation->status === 'approved',
-                                            'bg-error/10 text-error' => $reservation->status === 'rejected',
-                                            'bg-slate-100 text-slate-400' => in_array(
-                                                $reservation->status,
-                                                ['cancelled', 'completed'],
-                                                true
-                                            ),
-                                        ])>
-
-                                        <svg
-                                            class="h-4 w-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24">
-
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M3 21h18M5 21V5l7-3 7 3v16M9 21v-5h6v5" />
-
-                                        </svg>
-
-                                    </div>
-
-
-                                    <div class="min-w-0">
-
-                                        <p class="max-w-[260px] truncate font-button text-sm font-semibold text-primary">
-                                            {{ $reservation->facility_name }}
-                                        </p>
-
-
-                                        <div class="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400">
-
-                                            <span>
-                                                Reservation #{{ $reservation->id }}
-                                            </span>
-
-
-                                            @if ($reservation->attendees)
-
-                                                <span aria-hidden="true">
-                                                    &bull;
-                                                </span>
-
-                                                <span>
-
-                                                    {{ number_format($reservation->attendees) }}
-
-                                                    {{
-                                                        $reservation->facility?->facility_type === 'vehicle'
-                                                            ? 'passengers'
-                                                            : 'people'
-                                                    }}
-
-                                                </span>
-
-                                            @endif
-
-                                        </div>
-
-
-                                        @if ($reservation->purpose)
-
-                                            <p
-                                                class="mt-1.5 max-w-[280px] truncate text-xs text-slate-500"
-                                                title="{{ $reservation->purpose }}">
-
-                                                {{ $reservation->purpose }}
-
-                                            </p>
-
-                                        @endif
-
-                                    </div>
-
-                                </div>
-
-                            </td>
-
-
-                            {{-- Schedule --}}
-                            <td class="px-5 py-4">
-
-                                <div class="space-y-1">
-
-                                    <p class="text-sm font-semibold text-slate-700">
-                                        {{ $reservation->date->format('M d, Y') }}
-                                    </p>
-
-                                    <p class="text-xs text-slate-500">
-                                        {{ $reservation->start_time }}
-                                        –
-                                        {{ $reservation->end_time }}
-                                    </p>
-
-
-                                    @if ($reservation->status === 'approved')
-
-                                        @php
-                                            $reservationDate =
-                                                $reservation->date->format('Y-m-d');
-
-                                            $reservationStartsAt =
-                                                \Illuminate\Support\Carbon::parse(
-                                                    $reservationDate
-                                                    . ' '
-                                                    . substr(
-                                                        (string) $reservation->start_time,
-                                                        0,
-                                                        5
-                                                    ),
-                                                    config(
-                                                        'app.timezone',
-                                                        'Asia/Manila'
-                                                    )
-                                                );
-
-                                            $reservationEndsAt =
-                                                \Illuminate\Support\Carbon::parse(
-                                                    $reservationDate
-                                                    . ' '
-                                                    . substr(
-                                                        (string) $reservation->end_time,
-                                                        0,
-                                                        5
-                                                    ),
-                                                    config(
-                                                        'app.timezone',
-                                                        'Asia/Manila'
-                                                    )
-                                                );
-                                        @endphp
-
-                                        <div
-                                            class="flex items-center gap-1.5"
-                                            data-reservation-live-timing
-                                            data-reservation-start-ms="{{ $reservationStartsAt->timestamp * 1000 }}"
-                                            data-reservation-end-ms="{{ $reservationEndsAt->timestamp * 1000 }}"
-                                            data-server-now-ms="{{ now()->timestamp * 1000 }}">
-
-                                            <span
-                                                class="h-1.5 w-1.5 shrink-0 rounded-full bg-success"
-                                                aria-hidden="true">
-                                            </span>
-
-                                            <span
-                                                class="text-[9px] font-semibold text-success"
-                                                data-reservation-live-timing-value>
-                                                Calculating...
-                                            </span>
-
-                                        </div>
-
-                                    @endif
-
-                                </div>
-
-                            </td>
-
-
-                            @if ($canDecide)
-
-                                {{-- Requester --}}
-                                <td class="px-5 py-4">
-
-                                    <div class="flex items-center gap-2">
-
-                                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 font-button text-xs font-semibold uppercase text-primary">
-                                            {{ \Illuminate\Support\Str::substr($reservation->requester_name, 0, 1) }}
-                                        </div>
-
-                                        <div class="min-w-0">
-
-                                            <p class="max-w-[170px] truncate text-sm font-medium text-slate-700">
-                                                {{ $reservation->requester_name }}
-                                            </p>
-
-                                            @if ($reservation->requester_email === auth()->user()->email)
-
-                                                <p class="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
-                                                    Your request
-                                                </p>
-
-                                            @endif
-
-                                        </div>
-
-                                    </div>
-
-                                </td>
-
-                            @endif
-
-
-                            {{-- Status --}}
-                            <td class="px-5 py-4">
-
-                                @switch($reservation->status)
-
-                                    @case('pending')
-
-                                        <span class="badge badge-warning">
-                                            <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-warning"></span>
-                                            Pending
-                                        </span>
-
-                                        @break
-
-
-                                    @case('approved')
-
-                                        <span class="badge badge-success">
-                                            <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-success"></span>
-                                            Approved
-                                        </span>
-
-                                        @break
-
-
-                                    @case('rejected')
-
-                                        <span class="badge badge-error">
-                                            <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-error"></span>
-                                            Rejected
-                                        </span>
-
-                                        @break
-
-
-                                    @case('cancelled')
-
-                                        <span class="badge bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
-                                            Cancelled
-                                        </span>
-
-                                        @break
-
-
-                                    @case('completed')
-
-                                        <span class="badge badge-info">
-                                            Completed
-                                        </span>
-
-                                        @break
-
-                                @endswitch
-
-                                {{-- Reservation rejection reason --}}
-                                @if (
-                                    $reservation->status === 'rejected'
-                                    &&
-                                    filled($reservation->decision_note)
-                                )
-
-                                    <p
-                                        class="mt-2 max-w-[180px] text-xs leading-relaxed text-error"
-                                        title="{{ $reservation->decision_note }}">
-
-                                        <span class="font-semibold">
-                                            Reason:
-                                        </span>
-
-                                        {{ str($reservation->decision_note)->limit(80) }}
-
-                                    </p>
-
-                                @endif
-
-
-                            </td>
-
-
-                            {{-- Actions --}}
-                            <td class="px-5 py-4 text-right">
-
-                                @php
-                                    $isReservationOwner =
-                                        $reservation->requester_email ===
-                                        auth()->user()->email;
-
-                                    $canReviewReservation =
-                                        auth()->user()->can(
-                                            'decideReservations'
-                                        );
-
-                                    $canEditReservation =
-                                        $isReservationOwner
-                                        &&
-                                        in_array(
-                                            $reservation->status,
-                                            ['pending', 'rejected'],
-                                            true
-                                        );
-
-                                    $canCancelReservation =
-                                        $isReservationOwner
-                                        &&
-                                        $reservation->status === 'pending';
-
-                                    $canDecideReservation =
-                                        $canReviewReservation
-                                        &&
-                                        ! $isReservationOwner
-                                        &&
-                                        $reservation->status === 'pending';
-                                @endphp
-
-
-                                <button
-                                    type="button"
-                                    data-reservation-actions-open
-                                    data-reservation-id="{{ $reservation->id }}"
-                                    data-can-decide="{{ $canDecideReservation ? '1' : '0' }}"
-                                    data-can-edit="{{ $canEditReservation ? '1' : '0' }}"
-                                    data-can-cancel="{{ $canCancelReservation ? '1' : '0' }}"
-                                    data-decide-url="{{ route('reservations.decide', $reservation) }}"
-                                    data-cancel-url="{{ route('reservations.cancel', $reservation) }}"
-                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-slate-500 transition hover:border-accent/40 hover:bg-accent/5 hover:text-primary focus:outline-none focus:ring-2 focus:ring-accent/20"
-                                    aria-label="Open reservation actions">
-
-                                    <svg
-                                        class="h-5 w-5"
-                                        fill="currentColor"
-                                        viewBox="0 0 24 24">
-
-                                        <circle cx="5" cy="12" r="1.7" />
-                                        <circle cx="12" cy="12" r="1.7" />
-                                        <circle cx="19" cy="12" r="1.7" />
-
-                                    </svg>
-
-                                </button>
-
-
-                                {{-- Hidden View Details trigger --}}
-                                <button
-                                    type="button"
-                                    data-reservation-view-open
-                                    data-reservation-id="{{ $reservation->id }}"
-                                    data-reservation-facility="{{ $reservation->facility_name }}"
-                                    data-reservation-facility-type="{{ $reservation->facility?->facility_type }}"
-                                    data-reservation-location="{{ $reservation->facility?->location }}"
-                                    data-reservation-capacity="{{ $reservation->facility?->capacity }}"
-                                    data-reservation-date="{{ $reservation->date->format('M d, Y') }}"
-                                    data-reservation-start="{{ substr($reservation->start_time, 0, 5) }}"
-                                    data-reservation-end="{{ substr($reservation->end_time, 0, 5) }}"
-                                    data-reservation-attendees="{{ $reservation->attendees }}"
-                                    data-reservation-purpose="{{ $reservation->purpose }}"
-                                    data-reservation-requester="{{ $reservation->requester_name }}"
-                                    data-reservation-requester-email="{{ $reservation->requester_email }}"
-                                    data-reservation-status="{{ $reservation->status }}"
-                                    data-reservation-note="{{ $reservation->decision_note }}"
-                                    class="hidden"
-                                    tabindex="-1"
-                                    aria-hidden="true">
-                                </button>
-
-
-                                @if ($canEditReservation)
-
-                                    {{-- Existing edit-modal trigger --}}
-                                    <button
-                                        type="button"
-                                        data-reservation-edit-open
-                                        data-reservation-id="{{ $reservation->id }}"
-                                        data-reservation-facility-id="{{ $reservation->facility_id }}"
-                                        data-reservation-facility="{{ $reservation->facility_name }}"
-                                        data-reservation-facility-type="{{ $reservation->facility?->facility_type }}"
-                                        data-reservation-facility-status="{{ $reservation->facility?->status }}"
-                                        data-reservation-capacity="{{ $reservation->facility?->capacity }}"
-                                        data-reservation-date="{{ $reservation->date->toDateString() }}"
-                                        data-reservation-start="{{ substr($reservation->start_time, 0, 5) }}"
-                                        data-reservation-end="{{ substr($reservation->end_time, 0, 5) }}"
-                                        data-reservation-attendees="{{ $reservation->attendees }}"
-                                        data-reservation-purpose="{{ $reservation->purpose }}"
-                                        data-reservation-note="{{ $reservation->decision_note }}"
-                                        data-reservation-update-url="{{ route('reservations.resubmit', $reservation) }}"
-                                        class="hidden"
-                                        tabindex="-1"
-                                        aria-hidden="true">
-                                    </button>
-
-                                @endif
-
-                            </td>
-
-                        </tr>
-
-
-                    @empty
-
-                        <tr>
-
-                            <td
-                                colspan="{{ $canDecide ? 5 : 4 }}"
-                                class="px-6 py-16">
-
-                                <div class="mx-auto max-w-sm text-center">
-
-                                    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 text-accent">
-
-                                        <svg
-                                            class="h-7 w-7"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24">
-
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
-
-                                        </svg>
-
-                                    </div>
-
-
-                                    @if (
-                                        request()->filled('search')
-                                        || request()->filled('status')
-                                        || request()->filled('facility')
-                                        || request()->filled('date')
-                                    )
-
-                                        <h3 class="font-heading text-base font-semibold text-primary">
-                                            No matching reservations
-                                        </h3>
-
-                                        <p class="mt-1 text-sm text-slate-500">
-                                            Try changing your search or clearing some filters.
-                                        </p>
-
-                                        <a
-                                            href="{{ route('reservations.index') }}"
-                                            class="btn-outline mt-5 inline-flex">
-
-                                            Clear filters
-
-                                        </a>
-
-                                    @else
-
-                                        <h3 class="font-heading text-base font-semibold text-primary">
-                                            No reservation requests
-                                        </h3>
-
-                                        <p class="mt-1 text-sm text-slate-500">
-                                            New facility reservation requests will appear here.
-                                        </p>
-
-                                        @if ($facilities->isNotEmpty())
-
-                                            
-
-                                        @endif
-
-                                    @endif
-
-                                </div>
-
-                            </td>
-
-                        </tr>
-
-                    @endforelse
-
-                </tbody>
-
-            </table>
-
-                    {{-- Live approved-reservation timing --}}
-                    @once
-                        <script>
-                            document.addEventListener(
-                                'DOMContentLoaded',
-                                () => {
-
-                                    const timingElements =
-                                        document.querySelectorAll(
-                                            '[data-reservation-live-timing]'
-                                        );
-
-                                    if (! timingElements.length) {
-                                        return;
-                                    }
-
-                                    const pageStartedAt =
-                                        performance.now();
-
-
-                                    const formatDuration =
-                                        (milliseconds) => {
-
-                                            const totalMinutes =
-                                                Math.max(
-                                                    0,
-                                                    Math.ceil(
-                                                        milliseconds / 60000
-                                                    )
-                                                );
-
-                                            if (totalMinutes < 1) {
-                                                return '< 1m';
-                                            }
-
-                                            const days =
-                                                Math.floor(
-                                                    totalMinutes / 1440
-                                                );
-
-                                            const hours =
-                                                Math.floor(
-                                                    (totalMinutes % 1440) / 60
-                                                );
-
-                                            const minutes =
-                                                totalMinutes % 60;
-
-
-                                            if (days > 0) {
-
-                                                if (hours > 0) {
-                                                    return `${days}d ${hours}h`;
-                                                }
-
-                                                return `${days}d`;
-
-                                            }
-
-
-                                            if (hours > 0) {
-
-                                                if (minutes > 0) {
-                                                    return `${hours}h ${minutes}m`;
-                                                }
-
-                                                return `${hours}h`;
-
-                                            }
-
-
-                                            return `${minutes}m`;
-
-                                        };
-
-
-                                    const famsReservationLiveTiming =
-                                        () => {
-
-                                            const elapsedSinceLoad =
-                                                performance.now() -
-                                                pageStartedAt;
-
-
-                                            timingElements.forEach(
-                                                (element) => {
-
-                                                    const startMs =
-                                                        Number(
-                                                            element.dataset
-                                                                .reservationStartMs
-                                                        );
-
-                                                    const endMs =
-                                                        Number(
-                                                            element.dataset
-                                                                .reservationEndMs
-                                                        );
-
-                                                    const serverNowMs =
-                                                        Number(
-                                                            element.dataset
-                                                                .serverNowMs
-                                                        );
-
-                                                    const value =
-                                                        element.querySelector(
-                                                            '[data-reservation-live-timing-value]'
-                                                        );
-
-
-                                                    if (
-                                                        ! value ||
-                                                        ! Number.isFinite(startMs) ||
-                                                        ! Number.isFinite(endMs) ||
-                                                        ! Number.isFinite(serverNowMs)
-                                                    ) {
-                                                        return;
-                                                    }
-
-
-                                                    const currentTime =
-                                                        serverNowMs +
-                                                        elapsedSinceLoad;
-
-
-                                                    if (currentTime < startMs) {
-
-                                                        const remaining =
-                                                            startMs -
-                                                            currentTime;
-
-                                                        if (remaining < 60000) {
-
-                                                            value.textContent =
-                                                                'Starting now';
-
-                                                        }
-                                                        else {
-
-                                                            value.textContent =
-                                                                `Starts in ${
-                                                                    formatDuration(
-                                                                        remaining
-                                                                    )
-                                                                }`;
-
-                                                        }
-
-                                                        return;
-                                                    }
-
-
-                                                    if (
-                                                        currentTime >= startMs &&
-                                                        currentTime < endMs
-                                                    ) {
-
-                                                        const remaining =
-                                                            endMs -
-                                                            currentTime;
-
-                                                        value.textContent =
-                                                            `In use now \u2022 ${
-                                                                formatDuration(
-                                                                    remaining
-                                                                )
-                                                            } remaining`;
-
-                                                        return;
-                                                    }
-
-
-                                                    const elapsed =
-                                                        currentTime -
-                                                        endMs;
-
-                                                    value.textContent =
-                                                        `Ended ${
-                                                            formatDuration(
-                                                                elapsed
-                                                            )
-                                                        } ago`;
-
-                                                }
-                                            );
-
-                                        };
-
-
-                                    famsReservationLiveTiming();
-
-                                    window.setInterval(
-                                        famsReservationLiveTiming,
-                                        30000
-                                    );
-
-                                }
-                            );
-                        </script>
-                    @endonce
-
-        </div>
-
-    </div>
 
 
     @if ($reservations->hasPages())
@@ -1399,19 +388,7 @@
         </div>
 
     @endif
-    @php
-        $selectedFacilityId =
-            old('_reservation_modal_context') === 'create'
-                ? old('facility_id')
-                : request('reserve_facility');
 
-        $selectedFacility =
-            $facilities->first(
-                fn ($facility) =>
-                    (string) $facility->id ===
-                    (string) $selectedFacilityId
-            );
-    @endphp
 
 
 
@@ -2257,198 +1234,239 @@
     </script>
 
     {{-- =====================================================
-         RESERVE FACILITY MODAL
-    ====================================================== --}}
+     CREATE RESERVATION MODAL
+====================================================== --}}
+<div
+    data-reservation-create-modal
+    @if (
+        ($errors->any() && old('_reservation_modal_context') === 'create')
+        || request()->filled('reserve_facility')
+    )
+        data-open-reservation="true"
+    @endif
+    class="fixed inset-0 z-[80] hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="reserve-facility-title">
+
     <div
-        data-reservation-create-modal
-        @if (
-            ($errors->any() && old('_reservation_modal_context') === 'create')
-            || $selectedFacility
-        )
-            data-open-reservation="true"
-        @endif
-        class="fixed inset-0 z-[80] hidden"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="reserve-facility-title">
-
-        {{-- Backdrop --}}
-        <div
-            data-reservation-create-backdrop
-            class="absolute inset-0 bg-slate-950/55 backdrop-blur-sm">
-        </div>
+        data-reservation-create-backdrop
+        class="absolute inset-0 bg-slate-950/55 backdrop-blur-sm">
+    </div>
 
 
-        <div class="relative flex min-h-full items-center justify-center p-3 sm:p-6">
+    <div class="relative flex min-h-full items-center justify-center p-3 sm:p-6">
 
-            <div class="flex max-h-[calc(100vh-1.5rem)] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:max-h-[calc(100vh-3rem)]">
+        <div class="flex max-h-[calc(100vh-1.5rem)] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:max-h-[calc(100vh-3rem)]">
 
-                {{-- Header --}}
-                <div class="flex shrink-0 items-start justify-between gap-4 border-b border-border px-5 py-4 sm:px-6">
+            {{-- Header --}}
+            <div class="flex shrink-0 items-center justify-between gap-4 border-b border-border px-5 py-4 sm:px-6">
 
-                    <div class="flex min-w-0 items-start gap-3">
+                <div>
 
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+                    <h2
+                        id="reserve-facility-title"
+                        class="font-heading text-lg font-semibold text-primary">
 
-                            <svg
-                                class="h-5 w-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24">
+                        Reserve Facility
 
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+                    </h2>
 
-                            </svg>
-
-                        </div>
-
-
-                        <div class="min-w-0">
-
-                            <h2
-                                id="reserve-facility-title"
-                                class="font-heading text-lg font-semibold text-primary">
-
-                                Reserve Facility
-
-                            </h2>
-
-                            <p class="mt-1 text-sm text-slate-500">
-                                Complete the schedule and reservation details.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        data-reservation-create-close
-                        aria-label="Close reservation"
-                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-background hover:text-primary">
-
-                        <svg
-                            class="h-5 w-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-
-                        </svg>
-
-                    </button>
+                    <p class="mt-1 text-xs text-slate-500">
+                        Select a facility and complete the reservation details.
+                    </p>
 
                 </div>
 
 
-                <form
-                    method="POST"
-                    action="{{ route('reservations.store') }}"
-                    data-submit-loading
-                    data-loading-text="Submitting..."
-                    class="flex min-h-0 flex-1 flex-col">
+                <button
+                    type="button"
+                    data-reservation-create-close
+                    aria-label="Close reservation"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-background hover:text-primary">
 
-                    @csrf
+                    <svg
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
 
-                    <input
-                        type="hidden"
-                        name="_reservation_modal_context"
-                        value="create">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
 
-                    <input
-                        type="hidden"
-                        name="facility_id"
-                        value="{{ old('facility_id', request('reserve_facility')) }}">
+                    </svg>
+
+                </button>
+
+            </div>
 
 
-                    <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+            <form
+                method="POST"
+                action="{{ route('reservations.store') }}"
+                data-submit-loading
+                data-loading-text="Submitting..."
+                class="flex min-h-0 flex-1 flex-col">
 
-                        @if ($errors->any() && old('_reservation_modal_context') === 'create')
+                @csrf
 
-                            <div class="mb-5 rounded-xl border border-error/20 bg-error/5 p-4">
+                <input
+                    type="hidden"
+                    name="_reservation_modal_context"
+                    value="create">
 
-                                <div class="flex items-start gap-3">
 
-                                    <div class="mt-0.5 text-error">
+                <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
 
-                                        <svg
-                                            class="h-5 w-5"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24">
+                    @if (
+                        $errors->any()
+                        && old('_reservation_modal_context') === 'create'
+                    )
 
-                                            <path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16a2 2 0 001.73 3z" />
+                        <div class="mb-5 rounded-xl border border-error/20 bg-error/5 p-4">
 
-                                        </svg>
+                            <p class="text-sm font-semibold text-error">
+                                Please check the reservation details.
+                            </p>
 
-                                    </div>
+                            <ul class="mt-2 list-disc space-y-1 pl-5 text-xs text-error">
 
-                                    <div>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
 
-                                        <p class="text-sm font-semibold text-error">
-                                            Please check the reservation details.
-                                        </p>
+                            </ul>
 
-                                        <ul class="mt-1.5 list-disc space-y-1 pl-4 text-xs text-error">
+                        </div>
 
-                                            @foreach ($errors->all() as $error)
-                                                <li>{{ $error }}</li>
-                                            @endforeach
+                    @endif
 
-                                        </ul>
 
-                                    </div>
+                    <div class="space-y-5">
 
-                                </div>
+                        {{-- Facility --}}
+                        <div
+                            data-reservation-facility-picker
+                            class="relative">
+
+                            <label
+                                for="reservation_facility_search"
+                                class="label">
+
+                                Facility
+                                <span class="text-error">*</span>
+
+                            </label>
+
+
+                            <input
+                                type="hidden"
+                                name="facility_id"
+                                data-reservation-facility-id
+                                value="{{ old('facility_id', request('reserve_facility')) }}">
+
+
+                            <div class="relative">
+
+                                <svg
+                                    class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
+
+                                </svg>
+
+
+                                <input
+                                    id="reservation_facility_search"
+                                    data-reservation-facility-search
+                                    type="search"
+                                    autocomplete="off"
+                                    role="combobox"
+                                    aria-autocomplete="list"
+                                    aria-expanded="false"
+                                    aria-controls="reservation_facility_results"
+                                    placeholder="Search or choose a facility..."
+                                    class="input pl-10 pr-10">
+
+
+                                <svg
+                                    class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24">
+
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+
+                                </svg>
 
                             </div>
 
-                        @endif
+
+                            <div
+                                id="reservation_facility_results"
+                                data-reservation-facility-results
+                                role="listbox"
+                                class="absolute z-20 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-xl border border-border bg-card p-1.5 shadow-xl">
+
+                                @foreach ($facilities as $facility)
+
+                                    @php
+                                        $facilityDisplayName =
+                                            ctype_digit(
+                                                (string) $facility->name
+                                            )
+                                                ? 'Facility '.$facility->name
+                                                : $facility->name;
+
+                                        $facilityTypeLabel =
+                                            str(
+                                                $facility->facility_type
+                                            )->headline();
+
+                                        $facilitySearchText =
+                                            strtolower(
+                                                trim(
+                                                    $facilityDisplayName
+                                                    .' '
+                                                    .$facilityTypeLabel
+                                                    .' '
+                                                    .($facility->location ?? '')
+                                                )
+                                            );
+                                    @endphp
 
 
-                        @if ($selectedFacility)
+                                    <button
+                                        type="button"
+                                        role="option"
+                                        data-reservation-facility-option
+                                        data-facility-id="{{ $facility->id }}"
+                                        data-facility-name="{{ $facilityDisplayName }}"
+                                        data-facility-type="{{ $facility->facility_type }}"
+                                        data-facility-type-label="{{ $facilityTypeLabel }}"
+                                        data-facility-capacity="{{ $facility->capacity }}"
+                                        data-facility-location="{{ $facility->location }}"
+                                        data-facility-search="{{ $facilitySearchText }}"
+                                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-background">
 
-                            {{-- Selected Facility --}}
-                            <div class="mb-6 rounded-2xl border border-accent/20 bg-accent/5 p-4">
-
-                                <div class="flex items-start gap-4">
-
-                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-card text-primary shadow-sm ring-1 ring-border">
-
-                                        @if ($selectedFacility->facility_type === 'vehicle')
+                                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary">
 
                                             <svg
-                                                class="h-6 w-6"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24">
-
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M3 13l2-5a2 2 0 011.9-1.4h10.2A2 2 0 0119 8l2 5M5 13h14v6H5v-6zm2 6v2m10-2v2M7 15h.01M17 15h.01" />
-
-                                            </svg>
-
-                                        @else
-
-                                            <svg
-                                                class="h-6 w-6"
+                                                class="h-4 w-4"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24">
@@ -2461,310 +1479,227 @@
 
                                             </svg>
 
-                                        @endif
-
-                                    </div>
+                                        </span>
 
 
-                                    <div class="min-w-0 flex-1">
+                                        <span class="min-w-0 flex-1">
 
-                                        <div class="flex flex-wrap items-start justify-between gap-2">
-
-                                            <div>
-
-                                                <p class="font-heading text-base font-semibold text-primary">
-                                                    {{ $selectedFacility->name }}
-                                                </p>
-
-                                                <p class="mt-0.5 text-xs text-slate-500">
-
-                                                    {{ str($selectedFacility->facility_type)->headline() }}
-
-                                                    @if ($selectedFacility->capacity !== null)
-
-                                                        <span class="mx-1 text-slate-300">•</span>
-
-                                                        {{ number_format($selectedFacility->capacity) }}
-
-                                                        {{
-                                                            $selectedFacility->facility_type === 'vehicle'
-                                                                ? 'passengers'
-                                                                : 'people'
-                                                        }}
-
-                                                    @endif
-
-                                                </p>
-
-                                            </div>
-
-
-                                            <span class="badge badge-success">
-                                                <span class="mr-1.5 h-1.5 w-1.5 rounded-full bg-success"></span>
-                                                Available
+                                            <span class="block truncate text-sm font-semibold text-primary">
+                                                {{ $facilityDisplayName }}
                                             </span>
 
-                                        </div>
+                                            <span class="mt-0.5 block truncate text-[11px] text-slate-400">
+
+                                                {{ $facilityTypeLabel }}
+
+                                                @if ($facility->location)
+                                                    <span class="mx-1">•</span>
+                                                    {{ $facility->location }}
+                                                @endif
+
+                                            </span>
+
+                                        </span>
+
+                                    </button>
+
+                                @endforeach
 
 
-                                        @if ($selectedFacility->location)
+                                <div
+                                    data-reservation-facility-empty
+                                    class="hidden px-3 py-6 text-center">
 
-                                            <div class="mt-3 flex items-center gap-1.5 text-xs text-slate-500">
+                                    <p class="text-sm font-semibold text-primary">
+                                        No facilities found
+                                    </p>
 
-                                                <svg
-                                                    class="h-3.5 w-3.5 shrink-0 text-accent"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-
-                                                </svg>
-
-                                                {{ $selectedFacility->location }}
-
-                                            </div>
-
-                                        @endif
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="space-y-5">
-
-                                {{-- Date --}}
-                                <div>
-
-                                    <label
-                                        for="reservation_date"
-                                        class="label">
-
-                                        Reservation Date
-                                        <span class="text-error">*</span>
-
-                                    </label>
-
-                                    <input
-                                        id="reservation_date"
-                                        type="date"
-                                        name="date"
-                                        min="{{ now()->toDateString() }}"
-                                        value="{{ old('date') }}"
-                                        required
-                                        class="input @error('date') border-error focus:border-error focus:ring-error/20 @enderror">
-
-                                </div>
-
-
-                                {{-- Time --}}
-                                <div>
-
-                                    <label class="label">
-                                        Reservation Time
-                                        <span class="text-error">*</span>
-                                    </label>
-
-                                    <div class="grid gap-4 sm:grid-cols-2">
-
-                                        <div>
-
-                                            <label
-                                                for="reservation_start_time"
-                                                class="mb-1.5 block text-xs font-medium text-slate-500">
-
-                                                Start
-
-                                            </label>
-
-                                            <input
-                                                id="reservation_start_time"
-                                                type="time"
-                                                name="start_time"
-                                                value="{{ old('start_time') }}"
-                                                required
-                                                class="input @error('start_time') border-error focus:border-error focus:ring-error/20 @enderror">
-
-                                        </div>
-
-
-                                        <div>
-
-                                            <label
-                                                for="reservation_end_time"
-                                                class="mb-1.5 block text-xs font-medium text-slate-500">
-
-                                                End
-
-                                            </label>
-
-                                            <input
-                                                id="reservation_end_time"
-                                                type="time"
-                                                name="end_time"
-                                                value="{{ old('end_time') }}"
-                                                required
-                                                class="input @error('end_time') border-error focus:border-error focus:ring-error/20 @enderror">
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-
-                                {{-- Attendees / Passengers --}}
-                                <div>
-
-                                    <label
-                                        for="reservation_attendees"
-                                        class="label">
-
-                                        {{
-                                            $selectedFacility->facility_type === 'vehicle'
-                                                ? 'Number of Passengers'
-                                                : 'Number of Attendees'
-                                        }}
-
-                                        <span class="text-error">*</span>
-
-                                    </label>
-
-                                    <input
-                                        id="reservation_attendees"
-                                        type="number"
-                                        name="attendees"
-                                        min="1"
-                                        required
-                                        value="{{ old('attendees') }}"
-                                        placeholder="{{ $selectedFacility->facility_type === 'vehicle' ? 'e.g. 8 passengers' : 'e.g. 10 attendees' }}"
-                                        class="input @error('attendees') border-error focus:border-error focus:ring-error/20 @enderror">
-
-                                    @if ($selectedFacility->capacity !== null)
-
-                                        <p class="mt-1.5 text-xs text-slate-400">
-                                            Facility capacity:
-                                            {{ number_format($selectedFacility->capacity) }}
-                                            {{
-                                                $selectedFacility->facility_type === 'vehicle'
-                                                    ? 'passengers'
-                                                    : 'people'
-                                            }}.
-                                        </p>
-
-                                    @endif
-
-                                </div>
-
-
-                                {{-- Purpose --}}
-                                <div>
-
-                                    <label
-                                        for="reservation_purpose"
-                                        class="label">
-
-                                        Purpose
-                                        <span class="text-error">*</span>
-
-                                    </label>
-
-                                    <textarea
-                                        id="reservation_purpose"
-                                        name="purpose"
-                                        rows="3"
-                                        maxlength="2000"
-                                        required
-                                        placeholder="Briefly describe the purpose of this reservation..."
-                                        class="input @error('purpose') border-error focus:border-error focus:ring-error/20 @enderror">{{ old('purpose') }}</textarea>
+                                    <p class="mt-1 text-xs text-slate-400">
+                                        Try another facility name, type, or location.
+                                    </p>
 
                                 </div>
 
                             </div>
 
 
-                        @else
-
-                            <div class="rounded-2xl border border-warning/20 bg-warning/5 p-6 text-center">
-
-                                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-warning/10 text-warning">
-
-                                    <svg
-                                        class="h-6 w-6"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24">
-
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16a2 2 0 001.73 3z" />
-
-                                    </svg>
-
-                                </div>
-
-                                <h3 class="mt-3 font-heading text-sm font-semibold text-primary">
-                                    Facility unavailable
-                                </h3>
-
-                                <p class="mt-1 text-xs text-slate-500">
-                                    Return to Facilities and choose an available facility to reserve.
-                                </p>
-
-                            </div>
-
-                        @endif
-
-                    </div>
-
-
-                    {{-- Simple footer --}}
-                    @if ($selectedFacility)
-
-                        <div class="flex shrink-0 items-center justify-between gap-4 border-t border-border bg-background/50 px-5 py-4 sm:px-6">
-
-                            <p class="hidden text-xs text-slate-400 sm:block">
-                                Reservation requests are submitted for approval.
+                            <p
+                                data-reservation-facility-meta
+                                class="mt-1.5 min-h-4 text-xs text-slate-400"
+                                aria-live="polite">
                             </p>
-
-                            <button
-                                type="submit"
-                                class="btn-primary ml-auto inline-flex items-center justify-center gap-2">
-
-                                <svg
-                                    class="h-4 w-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24">
-
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M5 13l4 4L19 7" />
-
-                                </svg>
-
-                                Submit Reservation
-
-                            </button>
 
                         </div>
 
-                    @endif
+                        {{-- Date --}}
+                        <div>
 
-                </form>
+                            <label
+                                for="reservation_date"
+                                class="label">
 
-            </div>
+                                Reservation Date
+                                <span class="text-error">*</span>
+
+                            </label>
+
+                            <input
+                                id="reservation_date"
+                                type="date"
+                                name="date"
+                                min="{{ now()->toDateString() }}"
+                                value="{{ old('date', request('reserve_date')) }}"
+                                required
+                                class="input @error('date') border-error focus:border-error focus:ring-error/20 @enderror">
+
+                        </div>
+
+
+                        {{-- Time --}}
+                        <div>
+
+                            <label class="label">
+                                Reservation Time
+                                <span class="text-error">*</span>
+                            </label>
+
+                            <div class="grid gap-4 sm:grid-cols-2">
+
+                                <div>
+
+                                    <label
+                                        for="reservation_start_time"
+                                        class="mb-1.5 block text-xs font-medium text-slate-500">
+
+                                        Start
+
+                                    </label>
+
+                                    <input
+                                        id="reservation_start_time"
+                                        type="time"
+                                        name="start_time"
+                                        value="{{ old('start_time') }}"
+                                        required
+                                        class="input @error('start_time') border-error focus:border-error focus:ring-error/20 @enderror">
+
+                                </div>
+
+
+                                <div>
+
+                                    <label
+                                        for="reservation_end_time"
+                                        class="mb-1.5 block text-xs font-medium text-slate-500">
+
+                                        End
+
+                                    </label>
+
+                                    <input
+                                        id="reservation_end_time"
+                                        type="time"
+                                        name="end_time"
+                                        value="{{ old('end_time') }}"
+                                        required
+                                        class="input @error('end_time') border-error focus:border-error focus:ring-error/20 @enderror">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- Attendees --}}
+                        <div>
+
+                            <label
+                                for="reservation_attendees"
+                                class="label">
+
+                                <span data-reservation-attendees-label>
+                                    Number of Attendees
+                                </span>
+
+                                <span class="text-error">*</span>
+
+                            </label>
+
+                            <input
+                                id="reservation_attendees"
+                                data-reservation-attendees
+                                type="number"
+                                name="attendees"
+                                min="1"
+                                required
+                                value="{{ old('attendees') }}"
+                                class="input @error('attendees') border-error focus:border-error focus:ring-error/20 @enderror">
+
+                            <p
+                                data-reservation-capacity-help
+                                class="mt-1.5 text-xs text-slate-400">
+                            </p>
+
+                        </div>
+
+
+                        {{-- Purpose --}}
+                        <div>
+
+                            <label
+                                for="reservation_purpose"
+                                class="label">
+
+                                Purpose
+                                <span class="text-error">*</span>
+
+                            </label>
+
+                            <textarea
+                                id="reservation_purpose"
+                                name="purpose"
+                                rows="3"
+                                maxlength="2000"
+                                required
+                                placeholder="Briefly describe the purpose of this reservation..."
+                                class="input @error('purpose') border-error focus:border-error focus:ring-error/20 @enderror">{{ old('purpose') }}</textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="flex shrink-0 items-center justify-end border-t border-border bg-background/50 px-5 py-4 sm:px-6">
+
+                    <button
+                        type="submit"
+                        data-reservation-create-submit
+                        class="btn-primary inline-flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50">
+
+                        <svg
+                            class="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24">
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M5 13l4 4L19 7" />
+
+                        </svg>
+
+                        Submit Reservation
+
+                    </button>
+
+                </div>
+
+            </form>
 
         </div>
 
@@ -2775,6 +1710,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
     const modal =
         document.querySelector(
             '[data-reservation-create-modal]'
@@ -2783,6 +1719,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modal) {
         return;
     }
+
+
+    const openButtons =
+        document.querySelectorAll(
+            '[data-reservation-create-open]'
+        );
 
     const closeButtons =
         modal.querySelectorAll(
@@ -2794,11 +1736,316 @@ document.addEventListener('DOMContentLoaded', () => {
             '[data-reservation-create-backdrop]'
         );
 
+    const picker =
+        modal.querySelector(
+            '[data-reservation-facility-picker]'
+        );
+
+    const searchInput =
+        modal.querySelector(
+            '[data-reservation-facility-search]'
+        );
+
+    const facilityId =
+        modal.querySelector(
+            '[data-reservation-facility-id]'
+        );
+
+    const results =
+        modal.querySelector(
+            '[data-reservation-facility-results]'
+        );
+
+    const emptyState =
+        modal.querySelector(
+            '[data-reservation-facility-empty]'
+        );
+
+    const optionButtons =
+        Array.from(
+            modal.querySelectorAll(
+                '[data-reservation-facility-option]'
+            )
+        );
+
+    const facilityMeta =
+        modal.querySelector(
+            '[data-reservation-facility-meta]'
+        );
+
+    const attendeesLabel =
+        modal.querySelector(
+            '[data-reservation-attendees-label]'
+        );
+
+    const attendeesInput =
+        modal.querySelector(
+            '[data-reservation-attendees]'
+        );
+
+    const capacityHelp =
+        modal.querySelector(
+            '[data-reservation-capacity-help]'
+        );
+
+    const submitButton =
+        modal.querySelector(
+            '[data-reservation-create-submit]'
+        );
+
+
+    let selectedOption = null;
     let previouslyFocused = null;
     let previousBodyOverflow = '';
 
 
+    const setExpanded =
+        (expanded) => {
+
+            results?.classList.toggle(
+                'hidden',
+                !expanded
+            );
+
+            searchInput?.setAttribute(
+                'aria-expanded',
+                expanded
+                    ? 'true'
+                    : 'false'
+            );
+
+        };
+
+
+    const clearFacilityDetails =
+        () => {
+
+            facilityId.value = '';
+
+            selectedOption = null;
+
+            facilityMeta.textContent =
+                'Select an available facility.';
+
+            attendeesLabel.textContent =
+                'Number of Attendees';
+
+            capacityHelp.textContent = '';
+
+            attendeesInput.removeAttribute(
+                'max'
+            );
+
+            submitButton.disabled = true;
+
+        };
+
+
+    const selectFacility =
+        (
+            option,
+            closeResults = true
+        ) => {
+
+            if (!option) {
+                clearFacilityDetails();
+                return;
+            }
+
+
+            selectedOption = option;
+
+            facilityId.value =
+                option.dataset.facilityId || '';
+
+            searchInput.value =
+                option.dataset.facilityName || '';
+
+            const type =
+                option.dataset.facilityType || '';
+
+            const typeLabel =
+                option.dataset.facilityTypeLabel || '';
+
+            const capacity =
+                option.dataset.facilityCapacity || '';
+
+            const location =
+                option.dataset.facilityLocation || '';
+
+            const isVehicle =
+                type === 'vehicle';
+
+
+            attendeesLabel.textContent =
+                isVehicle
+                    ? 'Number of Passengers'
+                    : 'Number of Attendees';
+
+
+            const details = [];
+
+            if (typeLabel) {
+                details.push(typeLabel);
+            }
+
+            if (location) {
+                details.push(location);
+            }
+
+            if (capacity) {
+
+                details.push(
+                    `Capacity ${capacity} ${
+                        isVehicle
+                            ? 'passengers'
+                            : 'people'
+                    }`
+                );
+
+                attendeesInput.max =
+                    capacity;
+
+                capacityHelp.textContent =
+                    `Maximum capacity: ${capacity} ${
+                        isVehicle
+                            ? 'passengers'
+                            : 'people'
+                    }.`;
+
+            } else {
+
+                attendeesInput.removeAttribute(
+                    'max'
+                );
+
+                capacityHelp.textContent = '';
+
+            }
+
+
+            facilityMeta.textContent =
+                details.join(' • ');
+
+            submitButton.disabled = false;
+
+
+            optionButtons.forEach(
+                (button) => {
+
+                    const active =
+                        button === option;
+
+                    button.classList.toggle(
+                        'bg-accent/10',
+                        active
+                    );
+
+                    button.setAttribute(
+                        'aria-selected',
+                        active
+                            ? 'true'
+                            : 'false'
+                    );
+
+                }
+            );
+
+
+            if (closeResults) {
+                setExpanded(false);
+            }
+
+        };
+
+
+    const filterFacilities =
+        () => {
+
+            const query =
+                String(
+                    searchInput.value || ''
+                )
+                    .trim()
+                    .toLowerCase();
+
+            let visibleCount = 0;
+
+
+            optionButtons.forEach(
+                (option) => {
+
+                    const matches =
+                        query === ''
+                        ||
+                        String(
+                            option.dataset.facilitySearch || ''
+                        ).includes(query);
+
+                    option.classList.toggle(
+                        'hidden',
+                        !matches
+                    );
+
+                    if (matches) {
+                        visibleCount++;
+                    }
+
+                }
+            );
+
+
+            emptyState?.classList.toggle(
+                'hidden',
+                visibleCount !== 0
+            );
+
+
+            setExpanded(true);
+
+        };
+
+
+    const initialiseFacility =
+        () => {
+
+            const initialId =
+                String(
+                    facilityId.value || ''
+                );
+
+            if (!initialId) {
+
+                clearFacilityDetails();
+                return;
+
+            }
+
+
+            const option =
+                optionButtons.find(
+                    (button) =>
+                        String(
+                            button.dataset.facilityId
+                        ) === initialId
+                );
+
+
+            if (option) {
+                selectFacility(
+                    option,
+                    true
+                );
+            }
+            else {
+                clearFacilityDetails();
+            }
+
+        };
+
+
     const openModal = () => {
+
         previouslyFocused =
             document.activeElement;
 
@@ -2809,18 +2056,35 @@ document.addEventListener('DOMContentLoaded', () => {
             'fams-modal-closing'
         );
 
-        modal.classList.remove('hidden');
+        modal.classList.remove(
+            'hidden'
+        );
 
         document.body.style.overflow =
             'hidden';
 
-        window.requestAnimationFrame(() => {
-            modal
-                .querySelector(
-                    '#reservation_date'
-                )
-                ?.focus();
-        });
+        initialiseFacility();
+
+
+        window.requestAnimationFrame(
+            () => {
+
+                if (facilityId.value) {
+
+                    modal.querySelector(
+                        '#reservation_date'
+                    )?.focus();
+
+                }
+                else {
+
+                    searchInput?.focus();
+
+                }
+
+            }
+        );
+
     };
 
 
@@ -2835,9 +2099,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+        setExpanded(false);
+
+
         const finishClose = () => {
 
-            modal.classList.add('hidden');
+            modal.classList.add(
+                'hidden'
+            );
 
             modal.classList.remove(
                 'fams-modal-closing'
@@ -2848,10 +2117,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (
                 previouslyFocused
-                && typeof previouslyFocused.focus === 'function'
+                &&
+                typeof previouslyFocused.focus ===
+                    'function'
             ) {
                 previouslyFocused.focus();
             }
+
         };
 
 
@@ -2863,6 +2135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             finishClose();
             return;
+
         }
 
 
@@ -2874,15 +2147,87 @@ document.addEventListener('DOMContentLoaded', () => {
             finishClose,
             190
         );
+
     };
 
 
-    closeButtons.forEach((button) => {
-        button.addEventListener(
-            'click',
-            closeModal
-        );
-    });
+    openButtons.forEach(
+        (button) => {
+
+            button.addEventListener(
+                'click',
+                openModal
+            );
+
+        }
+    );
+
+
+    optionButtons.forEach(
+        (option) => {
+
+            option.addEventListener(
+                'click',
+                () => {
+
+                    selectFacility(
+                        option
+                    );
+
+                    modal.querySelector(
+                        '#reservation_date'
+                    )?.focus();
+
+                }
+            );
+
+        }
+    );
+
+
+    searchInput?.addEventListener(
+        'focus',
+        filterFacilities
+    );
+
+
+    searchInput?.addEventListener(
+        'click',
+        filterFacilities
+    );
+
+
+    searchInput?.addEventListener(
+        'input',
+        () => {
+
+            if (
+                selectedOption
+                &&
+                searchInput.value !==
+                    selectedOption.dataset.facilityName
+            ) {
+
+                clearFacilityDetails();
+
+            }
+
+            filterFacilities();
+
+        }
+    );
+
+
+    closeButtons.forEach(
+        (button) => {
+
+            button.addEventListener(
+                'click',
+                closeModal
+            );
+
+        }
+    );
 
 
     backdrop?.addEventListener(
@@ -2892,23 +2237,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     document.addEventListener(
-        'keydown',
+        'click',
         (event) => {
+
             if (
-                event.key === 'Escape'
-                && ! modal.classList.contains('hidden')
+                !modal.classList.contains('hidden')
+                &&
+                picker
+                &&
+                !picker.contains(event.target)
             ) {
-                closeModal();
+                setExpanded(false);
             }
+
         }
     );
 
 
+    document.addEventListener(
+        'keydown',
+        (event) => {
+
+            if (
+                event.key === 'Escape'
+                &&
+                !modal.classList.contains(
+                    'hidden'
+                )
+            ) {
+
+                if (
+                    results
+                    &&
+                    !results.classList.contains(
+                        'hidden'
+                    )
+                ) {
+
+                    setExpanded(false);
+                    searchInput?.focus();
+                    return;
+
+                }
+
+                closeModal();
+
+            }
+
+        }
+    );
+
+
+    initialiseFacility();
+
+
     if (
-        modal.dataset.openReservation === 'true'
+        modal.dataset.openReservation ===
+        'true'
     ) {
         openModal();
     }
+
 });
 </script>
 

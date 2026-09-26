@@ -4,6 +4,7 @@
     'href' => null,
     'helper' => null,
     'tone' => 'primary',
+    'showAction' => true,
 ])
 
 @php
@@ -97,7 +98,7 @@
     @endif
 
 
-    @if ($href)
+    @if ($href && $showAction)
 
         <div class="mt-3 flex items-center gap-1 text-[11px] font-semibold text-slate-400 transition group-hover:text-primary">
 

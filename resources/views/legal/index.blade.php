@@ -16,31 +16,18 @@
     ])->filter(fn ($value) => filled($value))->count();
 @endphp
 
-<div class="space-y-6">
+<div class="space-y-4">
 
     {{-- =====================================================
          LEGAL MANAGEMENT HEADER
     ====================================================== --}}
     <x-page-header
-        eyebrow="Legal & Compliance"
+
         title="Legal Management"
-        badge="Legal Workspace"
-        description="Manage legal matters, permits, licenses, compliance obligations, reviews, deadlines, assignments, and supporting records.">
+
+        description="Manage legal matters, reviews, deadlines, and compliance records.">
 
         <x-slot:actions>
-
-            @if ($activeFilters > 0)
-
-                <a
-                    href="{{ route('legal.index') }}"
-                    class="btn-outline">
-
-                    Clear {{ $activeFilters }}
-                    {{ \Illuminate\Support\Str::plural('Filter', $activeFilters) }}
-
-                </a>
-
-            @endif
 
 
             @can('manageLegal')
@@ -78,21 +65,19 @@
     {{-- =====================================================
          LEGAL PORTFOLIO OVERVIEW
     ====================================================== --}}
-    <section class="space-y-4">
+    <section class="space-y-3">
 
-        <x-section-header
-            eyebrow="Overview"
-            title="Legal Portfolio"
-            description="A current snapshot of legal matters, review obligations, and deadline exposure." />
+        <x-section-header title="Legal Portfolio" />
 
 
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
 
             <x-metric-card
                 label="Total Matters"
+                :show-action="false"
                 :value="number_format($kpis['total'])"
                 :href="route('legal.index')"
-                helper="All legal and compliance matters within your current access scope."
+                helper="Accessible matters."
                 tone="primary">
 
                 <x-slot:icon>
@@ -118,9 +103,10 @@
 
             <x-metric-card
                 label="Active"
+                :show-action="false"
                 :value="number_format($kpis['active'])"
                 :href="route('legal.index', ['status' => 'active'])"
-                helper="Legal matters currently active in the management lifecycle."
+                helper="In progress."
                 tone="success">
 
                 <x-slot:icon>
@@ -146,9 +132,10 @@
 
             <x-metric-card
                 label="Action Required"
+                :show-action="false"
                 :value="number_format($kpis['action_required'])"
                 :href="route('legal.index', ['review_status' => 'action_required'])"
-                helper="Matters currently requiring legal review or follow-up."
+                helper="Requires follow-up."
                 tone="error">
 
                 <x-slot:icon>
@@ -174,9 +161,10 @@
 
             <x-metric-card
                 label="Due Soon"
+                :show-action="false"
                 :value="number_format($kpis['due_soon'])"
                 :href="route('legal.index', ['deadline' => 'due_soon'])"
-                helper="Matters with required actions due within the next seven days."
+                helper="Due within 7 days."
                 tone="warning">
 
                 <x-slot:icon>
@@ -202,8 +190,9 @@
 
             <x-metric-card
                 label="Overdue / Expired"
+                :show-action="false"
                 :value="number_format($kpis['overdue'])"
-                helper="Matters whose due date or validity period has already elapsed."
+                helper="Past due or expired."
                 tone="error">
 
                 <x-slot:icon>
@@ -233,7 +222,7 @@
     {{-- Search + Filters --}}
     <div class="card overflow-hidden">
 
-        <div class="border-b border-border bg-background/40 px-5 py-4">
+        <div class="border-b border-border bg-background/40 px-4 py-3 sm:px-5">
 
             <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
 
@@ -243,17 +232,7 @@
                         Legal Record Register
                     </h3>
 
-                    <p class="mt-0.5 text-xs text-slate-500">
-                        Search, prioritize, assign, and monitor legal matters and compliance deadlines.
-                    </p>
-
                 </div>
-
-
-                <p class="text-xs font-medium text-slate-400">
-                    {{ $records->total() }}
-                    {{ \Illuminate\Support\Str::plural('record', $records->total()) }}
-                </p>
 
             </div>
 
@@ -263,9 +242,10 @@
         <form
             method="GET"
             action="{{ route('legal.index') }}"
-            class="border-b border-border px-5 py-4">
+            data-legal-filter-bar
+            class="border-b border-border px-4 py-3 sm:px-5">
 
-            <div class="grid gap-3 lg:grid-cols-12">
+            <div class="grid gap-2 lg:grid-cols-12">
 
                 <div class="lg:col-span-4">
 
@@ -296,7 +276,7 @@
                             type="search"
                             name="q"
                             value="{{ $filters['q'] ?? '' }}"
-                            placeholder="Search title, reference, authority, category..."
+                            placeholder="Search legal records..."
                             class="input pl-10">
 
                     </div>
@@ -423,7 +403,7 @@
             </div>
 
 
-            <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
 
                 <select
                     name="review_status"
@@ -505,22 +485,19 @@
                 </select>
 
 
-                <div class="flex items-center rounded-xl border border-border bg-background/50 px-4 text-xs text-slate-500">
+                <div class="flex items-center">
 
                     @if ($activeFilters > 0)
 
-                        <span>
+                        <span class="text-xs text-slate-500">
+
                             <strong class="font-semibold text-primary">
                                 {{ $activeFilters }}
                             </strong>
+
                             active
                             {{ \Illuminate\Support\Str::plural('filter', $activeFilters) }}
-                        </span>
 
-                    @else
-
-                        <span>
-                            Showing all accessible legal records.
                         </span>
 
                     @endif

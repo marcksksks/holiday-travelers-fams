@@ -16,7 +16,7 @@
 @endphp
 
 
-<section class="space-y-4">
+<section class="space-y-3">
 
     {{-- Header --}}
     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -34,7 +34,7 @@
                 </span>
 
                 <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-success">
-                    Live Operations
+                    Live
                 </p>
 
             </div>
@@ -43,10 +43,6 @@
             <h2 class="font-heading text-lg font-semibold text-primary">
                 Current Operations
             </h2>
-
-            <p class="mt-1 text-xs text-slate-500">
-                Current visitor, appointment, and facility activity using Asia/Manila system time.
-            </p>
 
         </div>
 
@@ -71,7 +67,7 @@
             </svg>
 
             <span>
-                Live from server time
+                Auto-refresh
             </span>
 
         </div>
@@ -82,7 +78,7 @@
     {{-- Operational cards --}}
     <div
         @class([
-            'grid gap-5',
+            'grid gap-3',
             'lg:grid-cols-3' => $liveOperationsCardCount >= 3,
             'sm:grid-cols-2' => $liveOperationsCardCount === 2,
             'grid-cols-1' => $liveOperationsCardCount === 1,
@@ -94,7 +90,7 @@
 
             <a
                 href="{{ route('visitors.index', ['status' => 'checked_in']) }}"
-                class="group card relative overflow-hidden p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
+                class="group card relative overflow-hidden p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft">
 
                 <div class="absolute inset-x-0 top-0 h-1 bg-success"></div>
 
@@ -155,7 +151,7 @@
 
                     @if ($checkedInVisitors === 0)
 
-                        No visitors are currently checked in.
+                        No visitors on site.
 
                     @elseif ($checkedInVisitors === 1)
 
@@ -173,7 +169,7 @@
                 <div class="mt-4 flex items-center gap-1 text-xs font-semibold text-success">
 
                     <span>
-                        Open Visitor Desk
+                        Visitor Desk
                     </span>
 
                     <span class="transition-transform group-hover:translate-x-1">
@@ -193,7 +189,7 @@
 
             <a
                 href="{{ route('appointments.index') }}"
-                class="group card relative overflow-hidden p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
+                class="group card relative overflow-hidden p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft">
 
                 <div class="absolute inset-x-0 top-0 h-1 bg-accent"></div>
 
@@ -263,7 +259,7 @@
                             </p>
 
                             <p class="mt-2 text-xs text-slate-500">
-                                There are no scheduled or confirmed appointments ahead.
+                                Nothing scheduled.
                             </p>
 
                         @endif
@@ -300,7 +296,7 @@
         {{-- Facilities currently occupied --}}
         <a
             href="{{ route('reservations.index', ['status' => 'approved']) }}"
-            class="group card relative overflow-hidden p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-soft">
+            class="group card relative overflow-hidden p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft">
 
             <div class="absolute inset-x-0 top-0 h-1 bg-secondary"></div>
 
@@ -390,7 +386,7 @@
             @else
 
                 <p class="mt-3 text-xs text-slate-500">
-                    No approved facility reservations are currently in progress.
+                    No facilities in use.
                 </p>
 
             @endif
@@ -399,7 +395,7 @@
             <div class="mt-4 flex items-center gap-1 text-xs font-semibold text-secondary">
 
                 <span>
-                    View reservations
+                    Reservations
                 </span>
 
                 <span class="transition-transform group-hover:translate-x-1">

@@ -35,9 +35,7 @@ class VisitorDeskWorkspaceTest extends TestCase
                 route('visitors.index')
             )
             ->assertOk()
-            ->assertSee(
-                'Front Desk Operations'
-            )
+            ->assertDontSee('Front Desk Operations')
             ->assertSee(
                 'Visitor Status'
             )
@@ -147,9 +145,8 @@ class VisitorDeskWorkspaceTest extends TestCase
                 route('visitors.index')
             )
             ->assertOk()
-            ->assertSee(
-                'Search visitor, company, host, email or badge...'
-            )
+            ->assertSee('Search visitors...')
+            ->assertSee('data-visitor-filter-bar', false)
             ->assertSee(
                 'All statuses'
             )

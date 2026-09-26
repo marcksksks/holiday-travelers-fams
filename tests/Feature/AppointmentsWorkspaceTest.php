@@ -35,17 +35,19 @@ class AppointmentsWorkspaceTest extends TestCase
                 route('appointments.index')
             )
             ->assertOk()
-            ->assertSee(
-                'Schedule Management'
-            )
+            ->assertDontSee('Schedule Management')
             ->assertSee(
                 'Schedule Overview'
             )
-            ->assertSee(
-                'Find Appointments'
-            )
+            ->assertSee('data-appointment-filter-bar', false)
             ->assertSee(
                 'Appointment Schedule'
+            )
+            ->assertSee(
+                'Schedule Appointment'
+            )
+            ->assertDontSee(
+                'Schedule a Visit'
             )
             ->assertSee(
                 'Schedule Appointment'
@@ -68,15 +70,13 @@ class AppointmentsWorkspaceTest extends TestCase
             ->assertSee(
                 'Schedule Overview'
             )
-            ->assertSee(
-                'Find Appointments'
-            )
+            ->assertSee('data-appointment-filter-bar', false)
             ->assertDontSee(
                 'Schedule Appointment'
             );
     }
 
-    public function test_appointment_schedule_contains_responsive_mobile_card_and_correct_scheduled_label(): void
+    public function test_appointment_schedule_contains_responsive_card_and_correct_scheduled_label(): void
     {
         $employee =
             $this->user(
@@ -110,6 +110,14 @@ class AppointmentsWorkspaceTest extends TestCase
             )
             ->assertSee(
                 'data-appointment-mobile-card',
+                false
+            )
+            ->assertSee(
+                'data-appointment-card-grid',
+                false
+            )
+            ->assertDontSee(
+                'table-shell hidden md:block',
                 false
             )
             ->assertSee(

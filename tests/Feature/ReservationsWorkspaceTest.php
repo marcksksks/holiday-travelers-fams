@@ -45,15 +45,22 @@ class ReservationsWorkspaceTest extends TestCase
                 route('reservations.index')
             )
             ->assertOk()
+            ->assertDontSee('Approval Workspace')
+            ->assertSee('Reservation Status')
             ->assertSee(
-                'Approval Workspace'
+                'data-reservation-create-open',
+                false
             )
             ->assertSee(
-                'Reservation Overview'
+                'data-reservation-facility-search',
+                false
             )
-            ->assertSee(
-                'Total Requests'
+            ->assertSee('data-reservation-facility-results', false)
+            ->assertDontSee(
+                '<details class="group relative">',
+                false
             )
+            ->assertDontSee('Total Requests')
             ->assertSee(
                 'Pending'
             )
@@ -87,12 +94,8 @@ class ReservationsWorkspaceTest extends TestCase
                 route('reservations.index')
             )
             ->assertOk()
-            ->assertSee(
-                'Personal Requests'
-            )
-            ->assertSee(
-                'Reservation Overview'
-            )
+            ->assertDontSee('Personal Requests')
+            ->assertSee('Reservation Status')
             ->assertSee(
                 'My Reservations'
             )

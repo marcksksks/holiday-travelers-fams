@@ -2477,10 +2477,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const svg =
                 chart.querySelector(
-                    'svg'
+                    '[data-dashboard-chart-svg]'
                 );
 
-            const dataElement =
+                        const dashboardEmptyState =
+                chart.querySelector(
+                    '[data-dashboard-chart-empty]'
+                );
+
+const dataElement =
                 chart.querySelector(
                     '[data-dashboard-chart-data]'
                 );
@@ -2557,11 +2562,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
+            const hasActivity =
+                values.some(
+                    (value) =>
+                        value > 0
+                );
+
+
+            svg.classList.toggle(
+                'hidden',
+                !hasActivity
+            );
+
+
+            if (dashboardEmptyState) {
+                dashboardEmptyState.classList.toggle(
+                    'hidden',
+                    hasActivity
+                );
+
+                dashboardEmptyState.classList.toggle(
+                    'flex',
+                    !hasActivity
+                );
+            }
+
+
+            if (!hasActivity) {
+                return;
+            }
+
+
             const maxValue =
                 Math.max(
-                    1,
                     ...values
                 );
+
+            const tickCount =
+                Math.min(
+                    4,
+                    Math.max(
+                        1,
+                        maxValue
+                    )
+                );
+
+            const tickStep =
+                Math.max(
+                    1,
+                    Math.ceil(
+                        maxValue /
+                        tickCount
+                    )
+                );
+
+            const axisMax =
+                tickStep *
+                tickCount;
 
 
             const xFor =
@@ -2587,19 +2644,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     top +
                     plotHeight -
                     (
-                        value /
-                        maxValue
+                        value / axisMax
                     ) *
                     plotHeight;
 
 
             for (
                 let gridIndex = 0;
-                gridIndex <= 4;
+                gridIndex <= tickCount;
                 gridIndex++
             ) {
                 const ratio =
-                    gridIndex / 4;
+                    gridIndex / tickCount;
 
                 const y =
                     top +
@@ -2672,8 +2728,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 label.textContent =
                     String(
                         Math.round(
-                            maxValue *
-                            (1 - ratio)
+                            axisMax * (1 - ratio)
                         )
                     );
 

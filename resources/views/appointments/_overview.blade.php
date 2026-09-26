@@ -2,21 +2,20 @@
      APPOINTMENT OVERVIEW
 ====================================================== --}}
 
-<section class="space-y-4">
+<section class="space-y-3">
 
     <x-section-header
-        eyebrow="Overview"
-        title="Schedule Overview"
-        description="A current snapshot of today's schedule, upcoming visits, and visitors already checked in." />
+        title="Schedule Overview" />
 
 
     <div class="grid gap-3 sm:grid-cols-3">
 
         <x-metric-card
             label="Today's Appointments"
+            :show-action="false"
             :value="number_format($todayCount)"
             :href="route('appointments.index', ['scope' => 'today'])"
-            helper="Appointments scheduled for the current day."
+            helper="Scheduled today."
             tone="accent"
             class="{{ $scope === 'today' ? 'ring-2 ring-accent/30' : '' }}">
 
@@ -43,9 +42,10 @@
 
         <x-metric-card
             label="Upcoming"
+            :show-action="false"
             :value="number_format($upcomingCount)"
             :href="route('appointments.index', ['scope' => 'upcoming'])"
-            helper="Scheduled and confirmed visits that are still ahead."
+            helper="Scheduled or confirmed ahead."
             tone="warning"
             class="{{ $scope === 'upcoming' ? 'ring-2 ring-warning/30' : '' }}">
 
@@ -72,9 +72,10 @@
 
         <x-metric-card
             label="Checked In"
+            :show-action="false"
             :value="number_format($checkedInCount)"
             :href="route('appointments.index', ['status' => 'checked_in'])"
-            helper="Appointment visitors currently recorded on site."
+            helper="Currently checked in."
             tone="success"
             class="{{ $status === 'checked_in' ? 'ring-2 ring-success/30' : '' }}">
 

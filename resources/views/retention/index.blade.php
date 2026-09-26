@@ -4,36 +4,34 @@
 
 @section('content')
 
-<div class="space-y-6">
+<div class="space-y-4">
 
     {{-- =====================================================
      RETENTION WORKSPACE HEADER
 ====================================================== --}}
 <x-page-header
-    eyebrow="Records Governance"
+
     title="Records Retention & Compliance"
-    badge="Governance Workspace"
-    description="Monitor retention periods, compliance conditions, review schedules, policies, and controlled record disposition." />
+
+    description="Manage retention records, reviews, policies, and disposition." />
 
 
 {{-- =====================================================
      RETENTION OVERVIEW
 ====================================================== --}}
-<section class="space-y-4">
+<section class="space-y-3">
 
-    <x-section-header
-        eyebrow="Overview"
-        title="Compliance Status"
-        description="A current snapshot of records under retention control and areas requiring compliance attention." />
+    <x-section-header title="Compliance Status" />
 
 
     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
         <x-metric-card
             label="Tracked Records"
+            :show-action="false"
             :value="number_format($stats['total'])"
             :href="route('retention.index', ['tab' => 'records'])"
-            helper="Records currently operating under retention control."
+            helper="Under retention control."
             tone="primary">
 
             <x-slot:icon>
@@ -59,12 +57,13 @@
 
         <x-metric-card
             label="Compliant"
+            :show-action="false"
             :value="number_format($stats['compliant'])"
             :href="route('retention.index', [
                 'tab' => 'records',
                 'compliance' => 'compliant',
             ])"
-            helper="Records currently meeting their retention requirements."
+            helper="Requirements met."
             tone="success">
 
             <x-slot:icon>
@@ -90,12 +89,13 @@
 
         <x-metric-card
             label="At Risk"
+            :show-action="false"
             :value="number_format($stats['at_risk'])"
             :href="route('retention.index', [
                 'tab' => 'records',
                 'compliance' => 'at_risk',
             ])"
-            helper="Records currently requiring compliance attention."
+            helper="Requires attention."
             tone="warning">
 
             <x-slot:icon>
@@ -121,12 +121,13 @@
 
         <x-metric-card
             label="Review Required"
+            :show-action="false"
             :value="number_format($stats['review_required'])"
             :href="route('retention.index', [
                 'tab' => 'records',
                 'status' => 'review_required',
             ])"
-            helper="Records currently awaiting a retention review decision."
+            helper="Awaiting review."
             tone="error">
 
             <x-slot:icon>
@@ -182,7 +183,7 @@
         <a
             href="{{ route('retention.index', ['tab' => 'records']) }}"
             @class([
-                'group inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition',
+                'group inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-semibold transition',
                 'border-primary text-primary' => $retentionTab === 'records',
                 'border-transparent text-slate-500 hover:border-slate-300 hover:text-primary' => $retentionTab !== 'records',
             ])
@@ -223,7 +224,7 @@
             <a
                 href="{{ route('retention.index', ['tab' => 'disposal']) }}"
                 @class([
-                    'group inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition',
+                    'group inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-semibold transition',
                     'border-warning text-amber-700' => $retentionTab === 'disposal',
                     'border-transparent text-slate-500 hover:border-slate-300 hover:text-primary' => $retentionTab !== 'disposal',
                 ])
@@ -266,7 +267,7 @@
             <a
                 href="{{ route('retention.index', ['tab' => 'policies']) }}"
                 @class([
-                    'group inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition',
+                    'group inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-semibold transition',
                     'border-primary text-primary' => $retentionTab === 'policies',
                     'border-transparent text-slate-500 hover:border-slate-300 hover:text-primary' => $retentionTab !== 'policies',
                 ])
@@ -305,7 +306,7 @@
 
     </nav>
 
-    <div class="space-y-6">
+    <div class="space-y-4">
 
         {{-- Track Record --}}
         @can('manageRetention')
@@ -635,9 +636,9 @@
 
         {{-- Register --}}
         @if ($retentionTab === 'records')
-        <div class="min-w-0 space-y-4">
+        <div class="min-w-0 space-y-3">
 
-            <div class="space-y-4">
+            <div class="space-y-3">
 
                 {{-- Workspace heading --}}
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -651,16 +652,7 @@
                                 Retention Register
                             </h3>
 
-                            <span class="rounded-full bg-primary/5 px-2.5 py-1 text-[10px] font-semibold text-primary ring-1 ring-inset ring-primary/10">
-                                {{ number_format($retentions->total()) }}
-                                {{ Str::plural('record', $retentions->total()) }}
-                            </span>
-
                         </div>
-
-                        <p class="mt-1 text-xs leading-5 text-slate-500">
-                            Monitor lifecycle status, review schedules, policies, and compliance health.
-                        </p>
 
                     </div>
 
@@ -686,9 +678,7 @@
                                     d="M12 4v16m8-8H4" />
 
                             </svg>
-
-                            Track Retention Record
-
+                            Track Record
                         </button>
 
                     @endcan

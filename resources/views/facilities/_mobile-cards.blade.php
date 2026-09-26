@@ -1,4 +1,4 @@
-<div class="grid gap-3 md:hidden">
+<div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
 
     @forelse ($facilities as $facility)
 
@@ -22,9 +22,9 @@
 
         <article
             data-facility-mobile-card
-            class="card overflow-hidden">
+            class="card group flex h-full min-h-[136px] flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-soft">
 
-            <div class="p-4">
+            <div class="flex-1 p-3">
 
                 <div class="flex items-start justify-between gap-3">
 
@@ -32,7 +32,7 @@
 
                         <div
                             @class([
-                                'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
+                                'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
                                 'bg-success/10 text-success' => $facility->status === 'available',
                                 'bg-warning/10 text-amber-600' => $facility->status === 'maintenance',
                                 'bg-slate-100 text-slate-500' => in_array(
@@ -120,9 +120,9 @@
                 </div>
 
 
-                <div class="mt-4 grid grid-cols-2 gap-3">
+                <div class="mt-2.5 grid grid-cols-2 gap-2">
 
-                    <div class="rounded-xl bg-background px-3 py-2.5">
+                    <div class="rounded-lg bg-background/70 px-2.5 py-2">
 
                         <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
                             Location
@@ -135,7 +135,7 @@
                     </div>
 
 
-                    <div class="rounded-xl bg-background px-3 py-2.5">
+                    <div class="rounded-lg bg-background/70 px-2.5 py-2">
 
                         <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
                             Capacity
@@ -168,7 +168,7 @@
 
                 @if ($facility->description)
 
-                    <p class="mt-3 line-clamp-2 text-xs leading-5 text-slate-500">
+                    <p class="mt-2 line-clamp-1 text-[11px] leading-4 text-slate-500">
                         {{ $facility->description }}
                     </p>
 
@@ -177,7 +177,7 @@
             </div>
 
 
-            <div class="flex items-center gap-2 border-t border-border bg-background/40 px-4 py-3">
+            <div class="mt-auto flex items-center justify-end gap-2 border-t border-border bg-background/40 px-3 py-2">
 
                 <button
                     type="button"
@@ -189,18 +189,39 @@
                     data-facility-capacity="{{ $facility->capacity }}"
                     data-facility-type="{{ $facility->facility_type }}"
                     data-facility-status="{{ $facility->status }}"
-                    class="btn-outline flex-1 justify-center">
+                    class="hidden">
 
                     View Details
 
                 </button>
 
 
+
+                @can('manageFacilities')
+
+                    <a
+                        href="{{ route('facilities.edit', $facility) }}"
+                        data-facility-edit-open
+                        data-facility-id="{{ $facility->id }}"
+                        data-facility-name="{{ $facility->name }}"
+                        data-facility-description="{{ $facility->description }}"
+                        data-facility-location="{{ $facility->location }}"
+                        data-facility-capacity="{{ $facility->capacity }}"
+                        data-facility-type="{{ $facility->facility_type }}"
+                        data-facility-status="{{ $facility->status }}"
+                        data-facility-update-url="{{ route('facilities.update', $facility) }}"
+                        class="hidden"
+                        tabindex="-1"
+                        aria-hidden="true">
+                    </a>
+
+                @endcan
+
                 @if ($facility->status === 'available')
 
                     <a
                         href="{{ route('reservations.index', ['reserve_facility' => $facility->id]) }}"
-                        class="btn-primary flex-1 justify-center">
+                        class="btn-primary px-3 py-2 text-xs">
 
                         Reserve
 

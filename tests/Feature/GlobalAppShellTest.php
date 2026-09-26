@@ -73,7 +73,12 @@ class GlobalAppShellTest extends TestCase
             )
             ->assertOk()
             ->assertSee(
-                'Facilities Reservation'
+                'data-sidebar-tooltip="Facilities"',
+                false
+            )
+            ->assertSee(
+                'data-sidebar-tooltip="Reservations"',
+                false
             )
             ->assertSee(
                 'Appointments'
@@ -108,7 +113,11 @@ class GlobalAppShellTest extends TestCase
                 false
             )
             ->assertSee(
-                'data-sidebar-tooltip="Facilities Reservation"',
+                'data-sidebar-tooltip="Facilities"',
+                false
+            )
+            ->assertSee(
+                'data-sidebar-tooltip="Reservations"',
                 false
             )
             ->assertSee(

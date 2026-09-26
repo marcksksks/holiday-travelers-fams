@@ -10,21 +10,13 @@
          VISITOR DESK HEADER
     ====================================================== --}}
     <x-page-header
-        eyebrow="Reception Operations"
+
         title="Visitor Desk"
-        badge="Front Desk Operations"
-        description="Manage arrivals, host coordination, active visits, departures, and visitor records from one workspace.">
+
+        description="Manage arrivals, active visits, and visitor records.">
 
         <x-slot:actions>
-
-            @can('useAiAssist')
-
-
-
-            @endcan
-
-
-            @can('operateVisitorDesk')
+@can('operateVisitorDesk')
 
                 <a
                     href="#register-visitor"
@@ -59,25 +51,23 @@
     {{-- =====================================================
          VISITOR OPERATIONS OVERVIEW
     ====================================================== --}}
-    <section class="space-y-4">
+    <section class="space-y-3">
 
-        <x-section-header
-            eyebrow="Overview"
-            title="Visitor Status"
-            description="A live operational snapshot of arrivals, host coordination, active visits, and completed visitor records." />
+        <x-section-header title="Visitor Status" />
 
 
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
             <x-metric-card
                 label="Expected"
+                :show-action="false"
                 :value="number_format($visitorCounts['expected'])"
                 :href="route('visitors.index', array_filter([
                     'status' => 'expected',
                     'q' => request('q'),
                     'visitor_type' => request('visitor_type'),
                 ]))"
-                helper="Visitors registered and currently awaiting arrival."
+                helper="Awaiting arrival."
                 tone="accent">
 
                 <x-slot:icon>
@@ -103,13 +93,14 @@
 
             <x-metric-card
                 label="Awaiting Host"
+                :show-action="false"
                 :value="number_format($visitorCounts['awaiting_host'])"
                 :href="route('visitors.index', array_filter([
                     'status' => 'awaiting_host',
                     'q' => request('q'),
                     'visitor_type' => request('visitor_type'),
                 ]))"
-                helper="Arrivals currently requiring host coordination."
+                helper="Waiting for host."
                 tone="warning">
 
                 <x-slot:icon>
@@ -135,13 +126,14 @@
 
             <x-metric-card
                 label="On Site"
+                :show-action="false"
                 :value="number_format($visitorCounts['checked_in'])"
                 :href="route('visitors.index', array_filter([
                     'status' => 'checked_in',
                     'q' => request('q'),
                     'visitor_type' => request('visitor_type'),
                 ]))"
-                helper="Visitors currently checked in and present on site."
+                helper="Currently checked in."
                 tone="success">
 
                 <x-slot:icon>
@@ -167,13 +159,14 @@
 
             <x-metric-card
                 label="Completed"
+                :show-action="false"
                 :value="number_format($visitorCounts['completed'])"
                 :href="route('visitors.index', array_filter([
                     'status' => 'completed',
                     'q' => request('q'),
                     'visitor_type' => request('visitor_type'),
                 ]))"
-                helper="Visitor records with a completed visit lifecycle."
+                helper="Completed visits."
                 tone="primary">
 
                 <x-slot:icon>
@@ -199,40 +192,7 @@
         </div>
 
 
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
 
-            <div>
-
-                <p class="text-xs font-semibold text-primary">
-                    Visitor Records
-                </p>
-
-                <p class="mt-0.5 text-[11px] text-slate-500">
-
-                    {{ number_format($visitorCounts['total']) }}
-
-                    total visitor
-                    {{ $visitorCounts['total'] === 1 ? 'record' : 'records' }}
-
-                </p>
-
-            </div>
-
-
-            @if ($visitorCounts['declined'] > 0)
-
-                <a
-                    href="{{ route('visitors.index', ['status' => 'declined']) }}"
-                    class="text-xs font-semibold text-error transition hover:text-primary">
-
-                    {{ number_format($visitorCounts['declined']) }}
-                    declined →
-
-                </a>
-
-            @endif
-
-        </div>
 
     </section>
 
@@ -256,30 +216,9 @@
         @include('visitors._decline-modal')
 
         {{-- Visitor Records --}}
-        <div class="min-w-0 space-y-4">
+        <div class="min-w-0 space-y-3">
 
-            <x-section-header
-                eyebrow="Visitor Queue"
-                title="Visitor Activity"
-                description="Monitor arrivals, host coordination, active visits, and completed records.">
-
-                <x-slot:actions>
-
-                    <div class="text-left sm:text-right">
-
-                        <p class="font-heading text-lg font-bold text-primary">
-                            {{ number_format($visitors->total()) }}
-                        </p>
-
-                        <p class="text-[9px] uppercase tracking-wide text-slate-400">
-                            {{ $visitors->total() === 1 ? 'result' : 'results' }}
-                        </p>
-
-                    </div>
-
-                </x-slot:actions>
-
-            </x-section-header>
+            <x-section-header title="Visitor Activity" />
 
 
             {{-- =====================================================
@@ -288,6 +227,7 @@
             <form
                 method="GET"
                 action="{{ route('visitors.index') }}"
+                data-visitor-filter-bar
                 class="card p-3">
 
                 <div class="flex flex-col gap-2 lg:flex-row lg:items-center">
@@ -318,7 +258,7 @@
                             type="search"
                             name="q"
                             value="{{ request('q') }}"
-                            placeholder="Search visitor, company, host, email or badge..."
+                            placeholder="Search visitors..."
                             class="input pl-9">
 
                     </div>

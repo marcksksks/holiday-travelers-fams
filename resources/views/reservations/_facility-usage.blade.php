@@ -126,7 +126,7 @@
                     </h2>
 
                     <p class="mt-0.5 text-xs text-slate-500">
-                        Shared occupancy from reservations and appointments.
+                        Reservations and appointments.
                     </p>
 
                 </div>
@@ -180,7 +180,7 @@
         <div class="flex items-center justify-between gap-3 border-b border-border px-5 py-3 sm:border-b-0 sm:border-r">
 
             <span class="text-xs text-slate-500">
-                Upcoming blocks
+                Upcoming
             </span>
 
             <span class="font-heading text-lg font-bold text-secondary">
@@ -193,7 +193,7 @@
         <div class="flex items-center justify-between gap-3 px-5 py-3">
 
             <span class="text-xs text-slate-500">
-                Scheduled facilities
+                Facilities
             </span>
 
             <span class="font-heading text-lg font-bold text-accent">
@@ -228,25 +228,17 @@
         <div class="flex max-h-[calc(100vh-1rem)] w-full max-w-7xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:max-h-[calc(100vh-2.5rem)]">
 
             {{-- Modal header --}}
-            <div class="flex shrink-0 items-start justify-between gap-4 border-b border-border px-4 py-4 sm:px-6">
+            <div class="flex shrink-0 items-center justify-between gap-4 border-b border-border px-4 py-3 sm:px-6">
 
                 <div>
 
-                    <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">
-                        Facilities Reservation
-                    </p>
-
                     <h2
                         id="facility-calendar-title"
-                        class="mt-1 font-heading text-lg font-semibold text-primary">
+                        class="font-heading text-lg font-semibold text-primary">
 
                         Facility Schedule
 
                     </h2>
-
-                    <p class="mt-1 text-xs text-slate-500">
-                        Current and upcoming facility occupancy.
-                    </p>
 
                 </div>
 
@@ -277,7 +269,7 @@
 
 
             {{-- Calendar controls --}}
-            <div class="flex shrink-0 flex-col gap-3 border-b border-border bg-background/35 px-4 py-3 lg:flex-row lg:items-center lg:justify-between sm:px-6">
+            <div class="flex shrink-0 flex-col gap-2.5 border-b border-border bg-background/35 px-4 py-2.5 lg:flex-row lg:items-center lg:justify-between sm:px-6">
 
                 <div class="flex flex-wrap items-center gap-2">
 
@@ -363,25 +355,48 @@
                     </select>
 
 
-                    <div class="hidden items-center gap-3 text-[10px] font-medium text-slate-500 sm:flex">
+                    <div class="flex flex-wrap items-center gap-3 text-[10px] font-medium text-slate-500">
 
-                        <span class="inline-flex items-center gap-1.5">
+    <span class="inline-flex items-center gap-1.5">
 
-                            <span class="h-2 w-2 rounded-full bg-secondary"></span>
+        <span class="h-2 w-2 rounded-full bg-secondary"></span>
 
-                            Reservation
+        Reservation
 
-                        </span>
+    </span>
 
-                        <span class="inline-flex items-center gap-1.5">
 
-                            <span class="h-2 w-2 rounded-full bg-accent"></span>
+    <span class="inline-flex items-center gap-1.5">
 
-                            Appointment
+        <span class="h-2 w-2 rounded-full bg-accent"></span>
 
-                        </span>
+        Appointment
 
-                    </div>
+    </span>
+
+
+    <span
+        class="inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-400 transition hover:bg-card hover:text-primary"
+        title="Appointment entries show occupancy only. Visitor, host, contact, and appointment details remain private."
+        aria-label="Appointment entries show occupancy only. Visitor, host, contact, and appointment details remain private.">
+
+        <svg
+            class="h-3.5 w-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24">
+
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+        </svg>
+
+    </span>
+
+</div>
 
                 </div>
 
@@ -447,31 +462,7 @@
 
 
             {{-- Privacy footer --}}
-            <div class="shrink-0 border-t border-border bg-background/50 px-4 py-3 sm:px-6">
 
-                <div class="flex items-start gap-2">
-
-                    <svg
-                        class="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24">
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-
-                    </svg>
-
-                    <p class="text-[10px] leading-5 text-slate-400 sm:text-[11px]">
-                        Appointment entries display occupancy only. Visitor, host, contact, and appointment details remain private.
-                    </p>
-
-                </div>
-
-            </div>
 
         </div>
 
@@ -662,6 +653,21 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
 
+
+    const facilityLabel =
+        (value) => {
+
+            const label =
+                String(
+                    value || 'Facility'
+                ).trim();
+
+            return /^\d+$/.test(label)
+                ? `Facility ${label}`
+                : label;
+
+        };
+
     const filteredEvents =
         () => {
 
@@ -702,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             String(facility.id);
 
                         option.textContent =
-                            facility.name;
+                            facilityLabel(facility.name);
 
                         facilityFilter.appendChild(
                             option
@@ -980,8 +986,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                                 <p class="truncate text-xs font-semibold text-primary">
                                     ${escapeHtml(
-                                        event.facility_name ||
-                                        'Facility'
+                                        facilityLabel(event.facility_name)
                                     )}
                                 </p>
 
@@ -1236,7 +1241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     }`;
 
                                 pill.textContent =
-                                    `${timeLabel(event.start_time)} ${event.facility_name}`;
+                                    `${timeLabel(event.start_time)} · ${facilityLabel(event.facility_name)}`;
 
                                 eventContainer.appendChild(
                                     pill

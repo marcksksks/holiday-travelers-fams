@@ -34,12 +34,11 @@ class ReportsWorkspaceTest extends TestCase
                 route('reports.index')
             )
             ->assertOk()
-            ->assertSee(
-                'Operational Intelligence'
-            )
+            ->assertDontSee('Operational Intelligence')
             ->assertSee(
                 'Report Window'
             )
+            ->assertSee('data-report-filter-bar', false)
             ->assertSee(
                 'Executive Summary'
             )

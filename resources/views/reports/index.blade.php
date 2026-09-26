@@ -70,20 +70,20 @@
     }
 @endphp
 
-<div class="space-y-6">
+<div class="space-y-4">
 
     {{-- =====================================================
          REPORTS & ANALYTICS HEADER
     ====================================================== --}}
     <x-page-header
-        eyebrow="Management Intelligence"
+
         title="Reports & Analytics"
-        badge="Operational Intelligence"
-        description="Monitor operational performance, facilities, visitors, records, compliance, legal matters, and contracts from one analytics workspace.">
+
+        description="Review operational activity, compliance, facilities, legal matters, and contracts.">
 
         <x-slot:actions>
 
-            <div class="rounded-xl border border-border bg-card px-4 py-2.5 shadow-card">
+            <div class="rounded-xl border border-border bg-card px-3 py-2 shadow-card">
 
                 <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
                     Reporting Period
@@ -109,13 +109,9 @@
         class="card overflow-hidden"
         aria-labelledby="report-export-title">
 
-        <div class="flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex flex-col gap-3 p-3 sm:p-4 lg:flex-row lg:items-center lg:justify-between">
 
             <div class="min-w-0">
-
-                <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
-                    Report Delivery
-                </p>
 
                 <h2
                     id="report-export-title"
@@ -124,13 +120,6 @@
                     Export &amp; Print
 
                 </h2>
-
-                <p class="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
-
-                    Download the currently filtered management report as PDF,
-                    Excel, or CSV, or open the print-optimized report.
-
-                </p>
 
             </div>
 
@@ -214,42 +203,15 @@
 
         </div>
 
-
-        <div class="border-t border-border bg-background/40 px-4 py-3">
-
-            <p class="text-[11px] leading-5 text-slate-500">
-
-                <span class="font-semibold text-primary">
-                    Current export:
-                </span>
-
-                {{ $from->format('M d, Y') }}
-                &ndash;
-                {{ $to->format('M d, Y') }}
-
-                <span aria-hidden="true">
-                    &bull;
-                </span>
-
-                Facility order:
-                {{ str($facilitySort)->replace('_', ' ')->headline() }}
-
-            </p>
-
-        </div>
-
     </section>
 
 
     {{-- =====================================================
          REPORTING PERIOD
     ====================================================== --}}
-    <section class="space-y-4">
+    <section class="space-y-3">
 
-        <x-section-header
-            eyebrow="Reporting Period"
-            title="Report Window"
-            description="Adjust the period used for operational activity metrics and facility-utilization analytics." />
+        <x-section-header title="Report Window" />
 
 
         <div class="card overflow-hidden">
@@ -257,7 +219,8 @@
             <form
                 method="GET"
                 action="{{ route('reports.index') }}"
-                class="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-end">
+                data-report-filter-bar
+                class="grid gap-3 p-3 sm:p-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-end">
 
                 <div>
 
@@ -399,7 +362,7 @@
             </form>
 
 
-            <div class="flex flex-wrap items-center gap-2 border-t border-border bg-background/40 px-4 py-3">
+            <div class="flex flex-wrap items-center gap-2 border-t border-border bg-background/40 px-3 py-2.5 sm:px-4">
 
                 <span class="mr-1 text-[9px] font-semibold uppercase tracking-wider text-slate-400">
                     Quick Range
@@ -456,9 +419,8 @@
     <section class="space-y-4">
 
         <x-section-header
-            eyebrow="Performance"
             title="Executive Summary"
-            description="Selected-period activity with current portfolio and operational-capacity indicators clearly identified." />
+            description="Selected-period activity and current portfolio indicators." />
 
 
         <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -685,10 +647,9 @@
     {{-- =====================================================
          CURRENT COMPLIANCE WATCH
     ====================================================== --}}
-    <section class="space-y-4">
+    <section class="space-y-3">
 
         <x-section-header
-            eyebrow="Current State"
             title="Compliance Watch"
             description="Current lifecycle and deadline conditions. These indicators are not limited by the selected reporting period." />
 
@@ -697,6 +658,7 @@
 
             <x-metric-card
                 label="Retention Issues"
+                :show-action="false"
                 :value="number_format($summary['retention_issues'])"
                 :href="route('retention.index', ['compliance' => 'at_risk'])"
                 helper="Retention records currently at risk or non-compliant."
@@ -725,6 +687,7 @@
 
             <x-metric-card
                 label="Disposal Approvals"
+                :show-action="false"
                 :value="number_format($summary['pending_disposals'])"
                 :href="route('retention.index', ['tab' => 'disposal'])"
                 helper="Controlled disposition requests currently awaiting approval."
@@ -753,6 +716,7 @@
 
             <x-metric-card
                 label="Legal Action Required"
+                :show-action="false"
                 :value="number_format($summary['legal_action_required'])"
                 :href="route('legal.index', ['review_status' => 'action_required'])"
                 helper="Legal matters currently marked for follow-up."
@@ -781,6 +745,7 @@
 
             <x-metric-card
                 label="Contracts Expiring"
+                :show-action="false"
                 :value="number_format($summary['contracts_expiring_soon'])"
                 :href="route('contracts.index', ['deadline' => 'due_soon'])"
                 helper="Active contracts with recorded end dates within the next 30 days."
@@ -839,14 +804,11 @@
     {{-- =====================================================
          OPERATIONAL BREAKDOWNS
     ====================================================== --}}
-    <x-section-header
-        eyebrow="Analytics"
-        title="Operational Breakdowns"
-        description="Distribution views for operational activity and current governance portfolios." />
+    <x-section-header title="Operational Breakdowns" />
 
 
     {{-- Operational Breakdowns --}}
-    <div class="grid gap-6 xl:grid-cols-2">
+    <div class="grid gap-3 xl:grid-cols-2">
 
         @php
             $sections = [
@@ -937,7 +899,7 @@
 
             <section class="card overflow-hidden">
 
-                <div class="border-b border-border px-5 py-4">
+                <div class="border-b border-border px-4 py-3">
 
                     <h3 class="font-heading text-base font-semibold text-primary">
                         {{ $section['title'] }}
@@ -949,7 +911,7 @@
 
                 </div>
 
-                <div class="space-y-4 p-5">
+                <div class="space-y-3 p-4">
 
                     @forelse ($section['data'] as $label => $count)
 
@@ -995,16 +957,10 @@
     </div>
 
 
-    <x-section-header
-        eyebrow="Facilities"
-        title="Facility Utilization"
-        description="Approved facility use ranked across the selected reporting period." />
-
-
     {{-- Facility Utilization --}}
     <section class="card overflow-hidden">
 
-        <div class="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-2 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 
             <div>
                 <h3 class="font-heading text-base font-semibold text-primary">

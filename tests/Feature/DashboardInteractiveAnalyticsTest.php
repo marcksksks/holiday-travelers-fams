@@ -277,6 +277,7 @@ class DashboardInteractiveAnalyticsTest extends TestCase
             '[data-dashboard-analytics-range]',
             '[data-dashboard-analytics-panel]',
             '[data-dashboard-line-chart]',
+            '[data-dashboard-chart-svg]',
             'renderLineChart',
             'famsDashboardAnalyticsRefresh',
         ] as $expected) {

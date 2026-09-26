@@ -48,9 +48,7 @@ class DashboardRealtimeTest extends TestCase
             ->assertSee(
                 'Current Operations'
             )
-            ->assertSee(
-                'Needs Attention'
-            )
+            ->assertDontSee('Needs Attention')
             ->assertHeader(
                 'Cache-Control'
             );

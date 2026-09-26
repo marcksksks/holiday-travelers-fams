@@ -36,14 +36,18 @@ class FacilitiesWorkspaceTest extends TestCase
             )
             ->assertOk()
             ->assertSee(
-                'Resource Directory'
+                'data-sidebar-tooltip="Facilities"',
+                false
             )
+            ->assertSee(
+                'data-sidebar-tooltip="Reservations"',
+                false
+            )
+            ->assertDontSee('Resource Directory')
             ->assertSee(
                 'Facility Status'
             )
-            ->assertSee(
-                'Total Facilities'
-            )
+            ->assertDontSee('Total Facilities')
             ->assertSee(
                 'Available'
             )
