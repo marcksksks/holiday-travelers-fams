@@ -257,6 +257,11 @@
 
     </section>
 
+    {{-- =====================================================
+         AI-ASSISTED VISITOR TRAFFIC INTELLIGENCE
+    ====================================================== --}}
+    @include('visitors._traffic-forecast')
+
     {{-- AI Visitor Assistant Modal --}}
     @include('visitors._ai-assistant-modal')
 

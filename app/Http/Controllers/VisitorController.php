@@ -9,6 +9,8 @@ use App\Services\AuditService;
 use App\Services\CalendarSyncService;
 use App\Services\PrivacyService;
 use App\Services\VisitorCheckService;
+use App\Services\VisitorForecastDemoDataService;
+use App\Services\VisitorTrafficForecastService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -230,13 +232,72 @@ class VisitorController extends Controller
 
                 ->withQueryString();
 
+        /*
+         * AI-assisted Visitor Traffic Intelligence.
+         *
+         * The forecasting engine operates locally. It does not call
+         * OpenAI, Gemini, or another external AI provider.
+         *
+         * During cold start, known scheduled demand is displayed but
+         * historical walk-in demand is not invented.
+         */
+        $trafficForecastService =
+            app(
+                VisitorTrafficForecastService::class
+            );
+
+        $trafficForecastWeek =
+            collect(
+                range(
+                    1,
+                    7
+                )
+            )
+                ->map(
+                    fn (int $offset): array => $trafficForecastService
+                        ->forecastForDisplayDay(
+                            now()
+                                ->addDays(
+                                    $offset
+                                )
+                                ->toDateString()
+                        )
+                )
+                ->values()
+                ->all();
+
+        $trafficForecastTomorrow =
+            $trafficForecastWeek[0];
+
+        $trafficForecastValidation =
+            $trafficForecastService
+                ->validateSyntheticDemoModel(
+                    now()
+                        ->addDay()
+                        ->toDateString()
+                );
+
+        /*
+         * Explicitly expose whether synthetic academic demonstration
+         * records are present so the UI cannot present demo history as
+         * client production history.
+         */
+        $trafficForecastDemoStatus =
+            app(
+                VisitorForecastDemoDataService::class
+            )->status();
+
         return view(
             'visitors.index',
             compact(
                 'visitors',
                 'visitorCounts',
                 'allowedStatuses',
-                'allowedVisitorTypes'
+                'allowedVisitorTypes',
+                'trafficForecastTomorrow',
+                'trafficForecastWeek',
+                'trafficForecastDemoStatus',
+                'trafficForecastValidation'
             )
         );
     }
