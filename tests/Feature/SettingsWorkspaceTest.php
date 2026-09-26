@@ -168,4 +168,79 @@ class SettingsWorkspaceTest extends TestCase
             $layout
         );
     }
+
+    public function test_profile_update_accepts_current_users_existing_email(): void
+    {
+        $user =
+            $this->employee();
+
+        $response =
+            $this
+                ->actingAs($user)
+                ->put(
+                    route('settings.profile.update'),
+                    [
+                        'full_name' => 'Updated Employee',
+                        'email' => $user->email,
+                    ]
+                );
+
+        $response
+            ->assertRedirect()
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas(
+                'status',
+                'Profile settings updated successfully.'
+            );
+
+        $this->assertDatabaseHas(
+            'users',
+            [
+                'id' => $user->id,
+                'full_name' => 'Updated Employee',
+                'email' => $user->email,
+            ]
+        );
+    }
+
+    public function test_profile_update_rejects_another_users_email(): void
+    {
+        $existing =
+            $this->employee();
+
+        $user =
+            $this->employee();
+
+        $originalEmail =
+            $user->email;
+
+        $response =
+            $this
+                ->actingAs($user)
+                ->from(
+                    route('settings.index')
+                )
+                ->put(
+                    route('settings.profile.update'),
+                    [
+                        'full_name' => $user->full_name,
+                        'email' => $existing->email,
+                    ]
+                );
+
+        $response
+            ->assertRedirect(
+                route('settings.index')
+            )
+            ->assertSessionHasErrors(
+                'email'
+            );
+
+        $this->assertSame(
+            $originalEmail,
+            $user
+                ->fresh()
+                ->email
+        );
+    }
 }

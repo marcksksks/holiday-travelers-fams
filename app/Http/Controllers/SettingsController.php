@@ -158,8 +158,9 @@ class SettingsController extends Controller
                 Rule::unique(
                     'users',
                     'email'
-                )->ignore(
-                    $user
+                )->whereNot(
+                    'id',
+                    (int) $user->getKey()
                 ),
             ],
 
