@@ -394,6 +394,14 @@
                 root.innerHTML =
                     html;
 
+                if (
+                    typeof window.famsDashboardAnalyticsRefresh
+                    ===
+                    'function'
+                ) {
+                    window.famsDashboardAnalyticsRefresh();
+                }
+
                 root.dataset.dashboardReceivedAtMs =
                     String(
                         Date.now()

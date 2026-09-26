@@ -10,10 +10,15 @@ use App\Models\LegalRecord;
 use App\Models\RecordRetention;
 use App\Models\Reservation;
 use App\Models\Visitor;
+use App\Services\DashboardAnalyticsService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private DashboardAnalyticsService $analytics
+    ) {}
+
     public function index(Request $request)
     {
         $data =
@@ -51,6 +56,12 @@ class DashboardController extends Controller
 
         $now =
             now();
+
+        $dashboardAnalytics =
+            $this->analytics->build(
+                $user,
+                $now
+            );
 
         $today =
             $now->toDateString();
@@ -250,6 +261,8 @@ class DashboardController extends Controller
                 ->get();
 
         return [
+            'dashboardAnalytics' => $dashboardAnalytics,
+
             'liveNextAppointment' => $liveNextAppointment,
 
             'liveReservationsInUse' => $liveReservationsInUse,

@@ -2445,3 +2445,622 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     });
 });
+
+// =====================================================
+// FAMS DASHBOARD INTERACTIVE ANALYTICS
+// =====================================================
+
+(() => {
+
+    const svgNamespace =
+        'http://www.w3.org/2000/svg';
+
+    const createSvgElement =
+        (name) =>
+            document.createElementNS(
+                svgNamespace,
+                name
+            );
+
+
+    const renderLineChart =
+        (panel) => {
+
+            const chart =
+                panel.querySelector(
+                    '[data-dashboard-line-chart]'
+                );
+
+            if (!chart) {
+                return;
+            }
+
+            const svg =
+                chart.querySelector(
+                    'svg'
+                );
+
+            const dataElement =
+                chart.querySelector(
+                    '[data-dashboard-chart-data]'
+                );
+
+            if (!svg || !dataElement) {
+                return;
+            }
+
+            let payload;
+
+            try {
+                payload =
+                    JSON.parse(
+                        dataElement.textContent
+                    );
+            } catch (error) {
+                console.warn(
+                    'Dashboard analytics payload could not be parsed.',
+                    error
+                );
+
+                return;
+            }
+
+            const points =
+                Array.isArray(
+                    payload.points
+                )
+                    ? payload.points
+                    : [];
+
+            const series =
+                Array.isArray(
+                    payload.series
+                )
+                    ? payload.series
+                    : [];
+
+            svg.replaceChildren();
+
+            if (points.length === 0 || series.length === 0) {
+                return;
+            }
+
+            const width = 720;
+            const height = 260;
+
+            const left = 48;
+            const right = 18;
+            const top = 18;
+            const bottom = 38;
+
+            const plotWidth =
+                width - left - right;
+
+            const plotHeight =
+                height - top - bottom;
+
+            const values = [];
+
+            points.forEach((point) => {
+
+                series.forEach((item) => {
+
+                    const value =
+                        Number(
+                            point[item.key]
+                            ?? 0
+                        );
+
+                    if (Number.isFinite(value)) {
+                        values.push(value);
+                    }
+                });
+            });
+
+            const maxValue =
+                Math.max(
+                    1,
+                    ...values
+                );
+
+
+            const xFor =
+                (index) => {
+
+                    if (points.length === 1) {
+                        return left + plotWidth / 2;
+                    }
+
+                    return (
+                        left +
+                        (
+                            index /
+                            (points.length - 1)
+                        ) *
+                        plotWidth
+                    );
+                };
+
+
+            const yFor =
+                (value) =>
+                    top +
+                    plotHeight -
+                    (
+                        value /
+                        maxValue
+                    ) *
+                    plotHeight;
+
+
+            for (
+                let gridIndex = 0;
+                gridIndex <= 4;
+                gridIndex++
+            ) {
+                const ratio =
+                    gridIndex / 4;
+
+                const y =
+                    top +
+                    ratio *
+                    plotHeight;
+
+                const line =
+                    createSvgElement(
+                        'line'
+                    );
+
+                line.setAttribute(
+                    'x1',
+                    String(left)
+                );
+
+                line.setAttribute(
+                    'x2',
+                    String(width - right)
+                );
+
+                line.setAttribute(
+                    'y1',
+                    String(y)
+                );
+
+                line.setAttribute(
+                    'y2',
+                    String(y)
+                );
+
+                line.setAttribute(
+                    'class',
+                    'stroke-slate-200 dark:stroke-slate-700'
+                );
+
+                line.setAttribute(
+                    'stroke-width',
+                    '1'
+                );
+
+                svg.appendChild(line);
+
+
+                const label =
+                    createSvgElement(
+                        'text'
+                    );
+
+                label.setAttribute(
+                    'x',
+                    String(left - 8)
+                );
+
+                label.setAttribute(
+                    'y',
+                    String(y + 4)
+                );
+
+                label.setAttribute(
+                    'text-anchor',
+                    'end'
+                );
+
+                label.setAttribute(
+                    'class',
+                    'fill-slate-400 text-[10px]'
+                );
+
+                label.textContent =
+                    String(
+                        Math.round(
+                            maxValue *
+                            (1 - ratio)
+                        )
+                    );
+
+                svg.appendChild(label);
+            }
+
+
+            const labelInterval =
+                points.length <= 7
+                    ? 1
+                    : 5;
+
+
+            points.forEach(
+                (point, index) => {
+
+                    const isLast =
+                        index ===
+                        points.length - 1;
+
+                    if (index % labelInterval !== 0 && !isLast) {
+                        return;
+                    }
+
+                    const text =
+                        createSvgElement(
+                            'text'
+                        );
+
+                    text.setAttribute(
+                        'x',
+                        String(
+                            xFor(index)
+                        )
+                    );
+
+                    text.setAttribute(
+                        'y',
+                        String(
+                            height - 12
+                        )
+                    );
+
+                    text.setAttribute(
+                        'text-anchor',
+                        'middle'
+                    );
+
+                    text.setAttribute(
+                        'class',
+                        'fill-slate-400 text-[10px]'
+                    );
+
+                    text.textContent =
+                        point.label
+                        || '';
+
+                    svg.appendChild(text);
+                }
+            );
+
+
+            series.forEach((item) => {
+
+                const group =
+                    createSvgElement(
+                        'g'
+                    );
+
+                group.setAttribute(
+                    'class',
+                    item.class_name
+                    || 'text-primary'
+                );
+
+
+                const coordinates =
+                    points.map(
+                        (point, index) => {
+
+                            const value =
+                                Math.max(
+                                    0,
+                                    Number(
+                                        point[item.key]
+                                        ?? 0
+                                    )
+                                );
+
+                            return {
+                                x:
+                                    xFor(index),
+
+                                y:
+                                    yFor(value),
+
+                                value,
+
+                                point,
+                            };
+                        }
+                    );
+
+
+                const path =
+                    createSvgElement(
+                        'path'
+                    );
+
+                path.setAttribute(
+                    'd',
+                    coordinates
+                        .map(
+                            (
+                                coordinate,
+                                index
+                            ) =>
+                                `${
+                                    index === 0
+                                        ? 'M'
+                                        : 'L'
+                                } ${coordinate.x} ${coordinate.y}`
+                        )
+                        .join(' ')
+                );
+
+                path.setAttribute(
+                    'fill',
+                    'none'
+                );
+
+                path.setAttribute(
+                    'stroke',
+                    'currentColor'
+                );
+
+                path.setAttribute(
+                    'stroke-width',
+                    '3'
+                );
+
+                path.setAttribute(
+                    'stroke-linecap',
+                    'round'
+                );
+
+                path.setAttribute(
+                    'stroke-linejoin',
+                    'round'
+                );
+
+                group.appendChild(path);
+
+
+                coordinates.forEach(
+                    (coordinate) => {
+
+                        const circle =
+                            createSvgElement(
+                                'circle'
+                            );
+
+                        circle.setAttribute(
+                            'cx',
+                            String(
+                                coordinate.x
+                            )
+                        );
+
+                        circle.setAttribute(
+                            'cy',
+                            String(
+                                coordinate.y
+                            )
+                        );
+
+                        circle.setAttribute(
+                            'r',
+                            points.length <= 7
+                                ? '4'
+                                : '2.75'
+                        );
+
+                        circle.setAttribute(
+                            'fill',
+                            'currentColor'
+                        );
+
+
+                        const title =
+                            createSvgElement(
+                                'title'
+                            );
+
+                        title.textContent =
+                            `${item.label}: ${coordinate.value} · ${coordinate.point.date}`;
+
+                        circle.appendChild(title);
+
+                        group.appendChild(circle);
+                    }
+                );
+
+                svg.appendChild(group);
+            });
+        };
+
+
+    const initializeDashboardAnalytics =
+        () => {
+
+            const dashboardRoot =
+                document.querySelector(
+                    '[data-dashboard-realtime-root]'
+                );
+
+            if (!dashboardRoot) {
+                return;
+            }
+
+            const analyticsRoot =
+                dashboardRoot.querySelector(
+                    '[data-dashboard-analytics-root]'
+                );
+
+            if (!analyticsRoot) {
+                return;
+            }
+
+            const buttons =
+                Array.from(
+                    analyticsRoot.querySelectorAll(
+                        '[data-dashboard-analytics-range]'
+                    )
+                );
+
+            const panels =
+                Array.from(
+                    analyticsRoot.querySelectorAll(
+                        '[data-dashboard-analytics-panel]'
+                    )
+                );
+
+            const liveRegion =
+                analyticsRoot.querySelector(
+                    '[data-dashboard-analytics-live]'
+                );
+
+            if (buttons.length === 0 || panels.length === 0) {
+                return;
+            }
+
+            const availableRanges =
+                buttons.map(
+                    (button) =>
+                        button.dataset
+                            .dashboardAnalyticsRange
+                );
+
+            const defaultRange =
+                analyticsRoot.dataset
+                    .dashboardAnalyticsDefaultRange
+                || '7';
+
+            let selectedRange =
+                dashboardRoot.dataset
+                    .dashboardAnalyticsSelectedRange
+                || defaultRange;
+
+            if (!availableRanges.includes(selectedRange)) {
+                selectedRange =
+                    defaultRange;
+            }
+
+
+            const applyRange =
+                (range) => {
+
+                    if (!availableRanges.includes(range)) {
+                        return;
+                    }
+
+                    dashboardRoot.dataset
+                        .dashboardAnalyticsSelectedRange =
+                            range;
+
+
+                    buttons.forEach(
+                        (button) => {
+
+                            const active =
+                                button.dataset
+                                    .dashboardAnalyticsRange
+                                === range;
+
+                            button.setAttribute(
+                                'aria-pressed',
+                                String(active)
+                            );
+
+                            button.classList.toggle(
+                                'bg-primary',
+                                active
+                            );
+
+                            button.classList.toggle(
+                                'text-white',
+                                active
+                            );
+
+                            button.classList.toggle(
+                                'shadow-sm',
+                                active
+                            );
+
+                            button.classList.toggle(
+                                'text-slate-500',
+                                !active
+                            );
+                        }
+                    );
+
+
+                    panels.forEach(
+                        (panel) => {
+
+                            const active =
+                                panel.dataset
+                                    .dashboardAnalyticsPanel
+                                === range;
+
+                            panel.classList.toggle(
+                                'hidden',
+                                !active
+                            );
+
+                            panel.setAttribute(
+                                'aria-hidden',
+                                String(!active)
+                            );
+
+                            if (active) {
+                                renderLineChart(
+                                    panel
+                                );
+                            }
+                        }
+                    );
+
+
+                    if (liveRegion) {
+                        liveRegion.textContent =
+                            `Showing analytics for the last ${range} days.`;
+                    }
+                };
+
+
+            buttons.forEach(
+                (button) => {
+
+                    button.addEventListener(
+                        'click',
+                        () => {
+
+                            applyRange(
+                                button.dataset
+                                    .dashboardAnalyticsRange
+                            );
+                        }
+                    );
+                }
+            );
+
+
+            applyRange(
+                selectedRange
+            );
+        };
+
+
+    window.famsDashboardAnalyticsRefresh =
+        initializeDashboardAnalytics;
+
+
+    document.addEventListener(
+        'DOMContentLoaded',
+        initializeDashboardAnalytics
+    );
+
+})();
