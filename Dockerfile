@@ -14,18 +14,12 @@ RUN apk add --no-cache \
         libxml2-dev \
         oniguruma-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        pdo \
+    && docker-php-ext-install -j1 \
         pdo_pgsql \
         bcmath \
         gd \
         zip \
-        mbstring \
-        dom \
-        simplexml \
-        xml \
-        xmlreader \
-        xmlwriter
+    && php -r '$required = ["PDO", "pdo_pgsql", "bcmath", "gd", "zip", "mbstring", "dom", "simplexml", "xml", "xmlreader", "xmlwriter", "fileinfo"]; foreach ($required as $extension) { if (! extension_loaded($extension)) { fwrite(STDERR, "Missing required PHP extension: ".$extension.PHP_EOL); exit(1); } } echo "Required PHP extensions verified.".PHP_EOL;'
 
 FROM php-runtime AS vendor
 
