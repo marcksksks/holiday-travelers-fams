@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM php:8.3-fpm-alpine AS php-runtime
+FROM php:8.4-fpm-alpine AS php-runtime
 
 RUN apk add --no-cache \
         nginx \
